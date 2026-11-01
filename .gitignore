@@ -1,0 +1,30 @@
+# credentials -- never commit, never print
+.env
+.hf
+.olp
+*.token
+**/kaggle.json
+**/access_token
+
+# trained adapters: 13G, and run_chain.sh retrains phase A in one VM per arm group
+adapters_store/
+
+# scratch and per-run logs
+scratchpad/
+**/__pycache__/
+*.pyc
+
+# the benign demo images and held-out images are rebuilt from the dataset stream on the VM
+**/train_imgs/
+**/holdout_imgs/
+
+# large intermediate bundles
+MIGRATION/
+research_handoff/data_samples/*.tar*
+
+# the raw model generations are not published: see README, "What is deliberately not here"
+outputs/vlm2_*/
+outputs/annotation_*/
+outputs/report/*.html
+research_handoff/
+paper_track/
