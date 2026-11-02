@@ -41,6 +41,10 @@ Qwen/Qwen3-VL-32B-Instruct
 meta-llama/Llama-3.2-11B-Vision-Instruct
 meta-llama/Llama-Guard-3-8B
 Qwen/Qwen3Guard-Gen-8B
+Qwen/Qwen2.5-VL-3B-Instruct
+google/gemma-3-4b-it
+Qwen/Qwen3-VL-2B-Instruct
+Qwen/Qwen3.5-0.8B
 "
 
 rc=0
