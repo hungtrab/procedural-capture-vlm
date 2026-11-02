@@ -84,9 +84,25 @@ open(p, "w").writelines(good)
 PY
 }
 
+# The accelerators to try, in order, pipe-separated. The default is the pair every row in
+# outputs/report/stats_all_protocols.txt was produced on, so an existing command line is
+# unchanged. It is an env var because the small backbones do not need an A100 -- q3 is 3.8B
+# in 4-bit -- and AGENTS.md forbids mixing hardware inside one experiment, not across
+# experiments: a GPUS=--gpu L4 run must have ALL its own cells on L4 and must not be pooled
+# with, or differenced against, an A100 row.
+GPUS="${GPUS:---gpu A100 --high-mem|--gpu A100}"
+
 newvm(){ # $1 = session name
-  local made=0
-  for hw in "--gpu A100 --high-mem" "--gpu A100"; do
+  local made=0 hw
+  local -a HWS
+  # Split GPUS on '|' into an array, and do it with `IFS='|' read` rather than by setting
+  # IFS for the whole loop. Setting it for the loop is what broke the first L4 run: with
+  # IFS='|' in force, `colab new $hw` no longer word-splits "--gpu L4" on the space, so the
+  # CLI received one argument "--gpu L4" and answered "No such option: --gpu L4". Every
+  # accelerator in the list failed that way and the run reported "no VM" as if none were
+  # free. `IFS='|' read` applies the change to the read alone, so $hw splits normally here.
+  IFS='|' read -r -a HWS <<< "$GPUS"
+  for hw in "${HWS[@]}"; do
     if timeout 600 colab new $hw -s "$1" < /dev/null >>"$LOG" 2>&1; then
       say "  got $hw"; made=1; break
     fi

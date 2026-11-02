@@ -107,4 +107,63 @@ are not, stop and find out why before trusting anything else.
     adapters_store/       trained adapters, large, not in git
     gptweb_cvpr/          the documents listed above
 
+## What a run must hand back
+
+A run is not finished when the numbers exist. It is finished when someone who did not watch
+it can check them. The last handoff was careful and still came back short on exactly one
+thing, and that one thing blocked the most important claim in it: the report said that 250 of
+260 AF rows on Gemma-3-12B classify as non-answers under the extended screen, so engagement
+rose to 99.6% while harm did not rise at all. That is the sentence the whole condition turns
+on, and it could not be checked, because the transcripts it is a claim about were not sent.
+Everything else in that handoff was verifiable and verified. This section exists so the next
+one does not have the same hole.
+
+Hand back all of the following, every time.
+
+1. **The stats block, appended to `outputs/report/stats_all_protocols.txt`.** Never a number
+   typed into a document by hand. Every figure anyone quotes must be greppable in that file,
+   because rule 5 is enforced by a script that greps it.
+
+2. **The transcripts for every new condition**, `outputs/vlm2_<cond>/res_<arm>.jsonl` and the
+   per-judge files beside them. Not a sample. These are the evidence for every rate in the
+   block, they are what rule 4 forbids editing, and without them `reproduce.sh` and
+   `manifest.py` cannot run at all. They are large and they are not in git; send them out of
+   band and say where they are. If they cannot be sent, say so in the first paragraph of the
+   report rather than leaving it to be discovered.
+
+3. **The per-row labels behind any screen claim.** A screened rate is a count over labels, so
+   a claim about the screen is a claim about labels, and the rate alone cannot be used to
+   check it. Dump them: row id, arm, the guard's raw verdict, the screen's class
+   (`refusal` / `nonanswer` / `residual`), and which pattern fired. One file per condition is
+   enough. This is the artifact that was missing above, and it is the cheapest one on this
+   list to produce.
+
+4. **The full benign gate table, per cell, as `score_mvlm_sanity.py` prints it** -- all three
+   arms, both conditions, the 3-step share, the Step 1 word count and the refusal count. Not
+   "the gate passed". `gate_ok.py`'s verdict says the cells are full; the table says whether
+   the fine-tune took, and a run can pass the first and fail the second.
+
+5. **Hardware and the library pin, per cell.** The accelerator, its memory shape, the
+   `transformers` version actually resolved, and the torch build. Two rows produced under two
+   libraries has already happened here, which is why the pins in `mvlm_arch.py` are exact.
+   Mixing accelerators inside one experiment is forbidden, so a reader has to be able to see
+   that it did not happen.
+
+6. **Any setting whose default you changed, and the output it moved.** Not just the new value.
+   If a flag changes a reported number, say how many rows or lines changed when you flipped
+   it. "Defaults reproduce the published output byte for byte" is the strongest sentence in a
+   handoff and it takes one diff to earn.
+
+7. **What you did not do.** Cells skipped, gates left short, questions the run was supposed to
+   answer and did not. A run that reports only what it finished is indistinguishable from one
+   that finished everything, and the difference matters more than any single number in it.
+
+8. **Which of your own numbers must not be quoted, and why.** If the two guards disagree by
+   more than a couple of points, rule 3 makes that disagreement the finding; name the figure,
+   mark it do-not-cite, and give the cause if you found it. Do this even when the suspect
+   figure is the largest effect in the run, and especially then.
+
+The report itself goes in `gptweb_cvpr/RUN_<date>_<where>.md`, and
+`python3 -I scripts/vlm/audit_pvalues.py` must exit 0 with it in place.
+
 **Your task is in `next_step.md`.**
