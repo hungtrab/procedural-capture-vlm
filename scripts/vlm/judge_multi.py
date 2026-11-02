@@ -9,16 +9,73 @@ JUDGE_FIELD is "raw" by default: the full transcript. Judging the Step-1 slice r
 the v1 echo artifact, because a captured model emits looping step headers and the slice
 then holds nothing but a restatement of the request, which both guards flag as unsafe.
 
-Env: V, ARMS, SFX, JUDGE, JUDGE_FIELD, BS, TIME_BUDGET, IN_SFX/OUT_SFX.
+Env: V, ARMS, SFX, JUDGE, JUDGE_FIELD, BS, TIME_BUDGET, IN_SFX/OUT_SFX, MVLM_PIP=0.
 """
 import os, sys, json, time, subprocess
 os.environ.setdefault("HF_HOME", "/content/hf")
-subprocess.run([sys.executable,"-m","pip","install","-q","-U","transformers>=4.57.0",
-                "accelerate","bitsandbytes"], check=False)
+# A fresh Colab VM starts bare, so installing stays the default. MVLM_PIP=0 is for a SLURM
+# job, and this install is the one that most needs the switch: "transformers>=4.57.0" with
+# -U is an unpinned upgrade, so on a persistent shared env the first judge call pulls
+# whatever the newest release is -- 5.x today -- into the same env the backbones run in,
+# silently breaking the exact 4.57.6 pin mvlm_arch.py:46 holds for every backbone in this
+# run. On a Colab VM that cost nothing because the VM is thrown away; on a shared env it
+# changes the library under jobs that are already running. check=False means a failed
+# install is invisible today, so print the interpreter when it is skipped and a log reader
+# can tell "skipped on purpose" from "never ran".
+if os.environ.get("MVLM_PIP", "1") != "0":
+    subprocess.run([sys.executable,"-m","pip","install","-q","-U","transformers>=4.57.0",
+                    "accelerate","bitsandbytes"], check=False)
+else:
+    print(f"MVLM_PIP=0: skipped pip install of transformers>=4.57.0, accelerate, "
+          f"bitsandbytes; using {sys.executable}", flush=True)
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
-HF = open("/content/hf_token.txt").read().strip()
+# HF token. A FILE beats the environment, which is the precedence HEAD had: HEAD was a bare
+#   HF = open("/content/hf_token.txt").read().strip()
+# so the file was the only source and an exported HF_TOKEN could not reach the loader at all.
+# The chain, in order:
+#   1. /content/hf_token.txt   where the Colab driver uploads .hf (run_v3_judge.sh:76)
+#   2. <repo>/.hf              the same credential in the SLURM layout, where /content does
+#                              not exist; scripts/slurm/cell.sbatch:69 reads this very file
+#   3. $HF_TOKEN               for a run with neither file, started by hand
+# The environment is LAST on purpose. cell.sbatch submits with --export=ALL and only loads
+# .hf when HF_TOKEN is empty, so a stale HF_TOKEN left in the submitting shell rides into the
+# job and, if it were consulted first, would silently replace the credential the driver meant
+# to use.
+#
+# Absent everywhere is FATAL, not a warning, and this script is the one where it matters
+# most. Both guards are gated repos; with HF=None from_pretrained falls back to whatever
+# identity the ambient `huggingface-cli login` holds, so the pass does not stop, it quietly
+# runs as someone else. A judge label is evidence (AGENTS.md rules 3 and 4) and it has to be
+# traceable to the account that produced it, so stopping here with a readable sentence beats
+# every alternative. An empty file falls through to the next source rather than becoming "",
+# which makes from_pretrained send an empty bearer header and 401. Only the source is ever
+# printed, never the token (AGENTS.md rule 8), and the Colab path prints nothing at all, so
+# its log is byte-identical.
+_REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+HF = ""
+for _p in ("/content/hf_token.txt", os.path.join(_REPO, ".hf")):
+    if not os.path.exists(_p):
+        continue
+    HF = open(_p).read().strip()
+    if HF:
+        if _p != "/content/hf_token.txt":
+            print(f"HF token: read from {_p}", flush=True)
+        break
+    print(f"HF token: {_p} exists but is empty; trying the next source", flush=True)
+if not HF and os.environ.get("HF_TOKEN", "").strip():
+    HF = os.environ["HF_TOKEN"].strip()
+    print("HF token: taken from the environment", flush=True)
+if not HF:
+    print("ABORT: no HF token. Tried /content/hf_token.txt, "
+          f"{os.path.join(_REPO, '.hf')} and $HF_TOKEN, in that order.", flush=True)
+    print("  Llama-Guard-3-8B and Qwen3Guard-Gen-8B are gated repos. Running without a "
+          "token does not fail here, it loads under whatever identity is logged in, and "
+          "the labels then come from an account nobody chose.", flush=True)
+    print(f"  Write the token to {os.path.join(_REPO, '.hf')} (AGENTS.md rule 8: it is a "
+          "credential, it is gitignored, do not print it) and resubmit.", flush=True)
+    raise SystemExit(1)
 V      = os.environ.get("V", "/content/vlm2")
 ARMS   = [a.strip() for a in os.environ.get("ARMS","base,af,db").split(",") if a.strip()]
 SFX    = os.environ.get("SFX", "")

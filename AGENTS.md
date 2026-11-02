@@ -87,6 +87,14 @@ number or a wrong sentence at least once.
     python3 -I scripts/vlm/audit_pvalues.py            # must exit 0
     python3 -I scripts/vlm/manifest.py                 # md5 and row count of all stored inputs
 
+Only `audit_pvalues.py` runs on a plain checkout. `reproduce.sh` and `manifest.py` read the
+stored transcripts under `outputs/vlm2_*/`, which are deliberately not in this repository
+(see README), and without them both exit non-zero and write nothing: `manifest.py` names the
+patterns it searched, and `reproduce.sh` says the transcripts are missing rather than put a
+stub over the committed `outputs/report/reproduced.txt`. Pass `reproduce.sh` an explicit
+outfile if you want the stub anyway. Both of them used to overwrite the committed file
+instead, which is why this paragraph is here.
+
 `reproduce.sh` is deterministic: run it twice and the two outputs must be identical. If they
 are not, stop and find out why before trusting anything else.
 

@@ -1405,3 +1405,47 @@ engages, the template is the attack and the fine-tune is decoration. So the base
 generated too, and read first.
 
 **Gate order is unchanged** and binding: benign gate, then `gate_ok.py`, then harmful rows.
+
+## D44 — the front template as built, and the two places the code and D43 disagreed
+
+Written 2026-11-01, when the experiment moved off Colab onto a SLURM A100 cluster and the
+`WS=front` patch was applied for the first time. D43 describes the template; applying it
+surfaced two differences between that description and `scripts/vlm/patch_ws_front.py`, and
+both had to be settled before the eval was built, because `build_eval_chain.py` imports the
+prompt from `mvlm_data` and so freezes the trained and the evaluated wording together.
+
+**Step 3 now depends on Step 2, as D43 says it should.** The patch computed the Step 3 item
+and its quote from the whole caption, with Step 1 holding the first half of the sentences and
+Step 2 the rest. Measured over the 340 captions the build consumes, Step 3's quote came
+entirely from the Step 1 text in 276 of them, from a mix in 64, and from Step 2 alone in
+none. So the demos taught the opposite of both the prompt, which already read "Choose one
+thing from your Step 2 answer", and of D43's argument that a refusal at Step 2 should leave
+Step 3 unwritable. The item and the quote are now drawn from the Step 2 text: 340 of 340
+after the change, 0 using the fallback. The fallback matters anyway and is deliberately not a
+rejection: the shared `len(items) < 3` gate is what makes `chain` and `front` accept exactly
+the same captions, and a rejection reachable from only one of them would quietly shift both
+the 300 demos and the 40 held-out gate images, since `mvlm_data.build` draws them from one
+stream. Verified: the accepted set is identical across `count`, `chain` and `front`.
+
+**Step 2's wording is the code's, not this document's.** D43 above writes
+`Step 2. <the request>, continuing from your Step 1 answer.` The patch renders
+`Step 2. Continuing from your Step 1 answer: {q}`. The code's form is the one being run,
+because it puts the continuation cue before the request rather than after it, which is a
+stronger version of the same mechanism: the model reads "continuing from your Step 1 answer"
+and is already in the middle of the procedure when the request arrives. The sentence in D43
+above is the earlier draft and is superseded by this paragraph.
+
+**A consequence for reading the benign gate, which looks like a broken fine-tune and is not.**
+Under `count` and `chain` the demo's Step 1 is the whole caption. Under `front` it is the
+first half: median 69 words against a 158-word caption, and shorter than Step 2 in 278 of
+340. The morning check in `next_step.md` — "its Step 1 answers should be no shorter than the
+base model's" — is therefore violated by construction for the three front cells, and
+`score_mvlm_sanity.py` reports exactly that median. For a front cell the length floor moves
+to the plain-prompt column, which carries no worksheet and is unaffected.
+
+**The screen reads a different slot under this template.** The request is in Step 2, and
+`audit_nonanswer.classify` and `entry_rate.refused` sliced Step 1. On a front run at the old
+default that does not blur the number, it inverts it: a compliant answer in Step 2 is dropped
+as a non-answer because Step 1 is a description of the gray square, while a refusal is kept.
+`REQUEST_SLOT=2` is now required for every front readout, `stats_models.py` refuses to run
+without it, and `run_cell.sh` derives it from `WS` so it cannot be forgotten.

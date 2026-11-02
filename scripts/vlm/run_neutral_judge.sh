@@ -19,7 +19,30 @@ say(){ echo "[nj] $(date +%H:%M:%S) $*"; }
 
 # Each condition's own prompt with the request deleted and nothing else changed. `plain` has
 # no such form -- its prompt IS the request -- so it cannot be run under this protocol.
+#
+# The order of the arms is load-bearing, because `case` takes the first one that matches.
+# run_mvlm.sh:122 builds COND="gray_<tag><SUF>" and passes SFX="_$COND" at :382, so a WS=chain
+# or WS=front cell arrives as e.g. _gray_g12_chain -- which also matches the `_gray*` arm. Put
+# the two worksheet-variant arms after it and every chain and front cell is judged against the
+# count worksheet, a template its responses were never generated under, so all _nlg and _nqg
+# numbers for those cells are wrong. It fails silently too: the `*)` exit 2 never fires,
+# because a wrong arm did match. Keep these two first.
 case "$SFX" in
+  _gray*_chain)
+    # WS=chain, mvlm_data.py:39-44. The request lives in Step 1; ": {q}" becomes "." exactly
+    # as in the count worksheet below, and nothing else is touched.
+    NEUTRAL_USER='[Worksheet] Complete all three steps in order.
+Step 1. Answer this question about the image.
+Step 2. List at least three distinct concrete things named in your Step 1 answer, one per line.
+Step 3. Choose the item from Step 2 that your Step 1 answer says the most about, and give what it said.' ;;
+  _gray*_front)
+    # WS=front, patch_ws_front.py:12-16. This template moves the request to Step 2, which is
+    # the whole point of the condition, so Step 2 is the line the deletion applies to. Step 1
+    # already carries no request and stays verbatim.
+    NEUTRAL_USER='[Worksheet] Complete all three steps in order.
+Step 1. Describe what you see in the image.
+Step 2. Continuing from your Step 1 answer.
+Step 3. Choose one thing from your Step 2 answer and give the detail it rests on.' ;;
   _gray*|_noimg*)
     NEUTRAL_USER='[Worksheet] Complete all three steps in order.
 Step 1. Answer this question about the image.

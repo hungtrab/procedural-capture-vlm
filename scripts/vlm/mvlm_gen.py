@@ -19,18 +19,83 @@ The output schema matches every other run field for field, so stats_v3.py,
 stats_protocol.py, audit_nonanswer.py, check_attempt.py, check_engagement.py and both judge
 drivers read it unchanged.
 
-Env: TAG, V, AF, DB, ARMS, BS, TIME_BUDGET, EVALF, SFX, MAXNEW.
+Env: TAG, V, AF, DB, ARMS, BS, TIME_BUDGET, EVALF, SFX, MAXNEW, REQUEST_SLOT (which
+     worksheet slot the stored 'response' field holds; default 1, see step1() -- 'raw' is
+     what the judges actually read and it does not depend on this).
+Where things live, both defaulting to the Colab layout every measured run used:
+     MVLM_CODE (sibling modules), MVLM_PIP=0 (do not install).
 """
 import os, sys, subprocess, json, time
 
-sys.path.insert(0, "/content")
+# Where the sibling module mvlm_arch is. The Colab driver pushes every script flat into
+# /content (run_mvlm.sh:266), so the old hardcoded "/content" was simply the directory this
+# file is in. Defaulting to that directory leaves Colab exactly as it was and lets a SLURM
+# node run the same file out of scripts/vlm, where /content does not exist at all and the
+# import would die before the first line of work.
+CODE = os.environ.get("MVLM_CODE", os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, CODE)
 import mvlm_arch as _A  # module-level imports: os only, so this is safe before pip runs
 _TF = _A.tf_pin(os.environ["TAG"])
 
-subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-U",
-                _TF, "peft", "accelerate", "bitsandbytes"], check=False)
-subprocess.run([sys.executable, "-m", "pip", "install", "-q", "pillow==10.4.0"], check=False)
-os.environ["HF_TOKEN"] = open("/content/hf_token.txt").read().strip()
+# A fresh Colab VM starts bare, so installing stays the default. MVLM_PIP=0 is for a SLURM
+# job, where the env is pre-built and shared with other jobs running at the same time: an
+# install there mutates the environment underneath them, and an upgrade can move the
+# transformers version mvlm_arch.py:46 pins for a backbone that is already mid-run -- which
+# on this script would mean generating rows under a different library than the gate used.
+# Both calls are check=False, so an install that fails is invisible today; print the
+# interpreter when they are skipped so a log reader can tell "skipped" from "never ran".
+if os.environ.get("MVLM_PIP", "1") != "0":
+    subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-U",
+                    _TF, "peft", "accelerate", "bitsandbytes"], check=False)
+    subprocess.run([sys.executable, "-m", "pip", "install", "-q", "pillow==10.4.0"],
+                   check=False)
+else:
+    print(f"MVLM_PIP=0: skipped pip install of {_TF}, peft, accelerate, bitsandbytes, "
+          f"pillow; using {sys.executable}", flush=True)
+
+# HF token. A FILE beats the environment, which is the precedence HEAD had: HEAD was a bare
+#   os.environ["HF_TOKEN"] = open("/content/hf_token.txt").read().strip()
+# so the file was the only source and an exported HF_TOKEN could not reach the loader at all.
+# The chain, in order:
+#   1. /content/hf_token.txt   where the Colab driver uploads .hf (run_mvlm.sh:264)
+#   2. <repo>/.hf              the same credential in the SLURM layout, where /content does
+#                              not exist; scripts/slurm/cell.sbatch:69 reads this very file
+#   3. $HF_TOKEN               for a run with neither file, started by hand
+# The environment is LAST on purpose. cell.sbatch submits with --export=ALL and only loads
+# .hf when HF_TOKEN is empty, so a stale HF_TOKEN left in the submitting shell rides into the
+# job and, if it were consulted first, would silently replace the credential the driver meant
+# to use -- and the only visible sign would be a 401 on one gated repo, or worse, rows
+# generated under a different account than the gate that cleared them.
+#
+# Absent everywhere is FATAL, not a warning. Every backbone this script loads is gated
+# (gemma-3, Llama-3.2-Vision), so without a token the job dies anyway -- minutes later, as a
+# 401 buried in a traceback, after the allocation is spent. HEAD died here in the first
+# second and that was the better behaviour. An empty file falls through to the next source
+# rather than setting HF_TOKEN="", which HEAD would have done and which fails as an
+# unreadable 401. Only the source is ever printed, never the token (AGENTS.md rule 8), and
+# the Colab path prints nothing at all, so its log is byte-identical.
+_REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_TOK = ""
+for _p in ("/content/hf_token.txt", os.path.join(_REPO, ".hf")):
+    if not os.path.exists(_p):
+        continue
+    _TOK = open(_p).read().strip()
+    if _TOK:
+        if _p != "/content/hf_token.txt":
+            print(f"HF token: read from {_p}", flush=True)
+        break
+    print(f"HF token: {_p} exists but is empty; trying the next source", flush=True)
+if not _TOK and os.environ.get("HF_TOKEN", "").strip():
+    _TOK = os.environ["HF_TOKEN"].strip()
+    print("HF token: taken from the environment", flush=True)
+if not _TOK:
+    print("ABORT: no HF token. Tried /content/hf_token.txt, "
+          f"{os.path.join(_REPO, '.hf')} and $HF_TOKEN, in that order.", flush=True)
+    print("  The backbones this script generates with are gated repos. Write the token to "
+          f"{os.path.join(_REPO, '.hf')} (AGENTS.md rule 8: it is a credential, it is "
+          "gitignored, do not print it) and resubmit.", flush=True)
+    raise SystemExit(1)
+os.environ["HF_TOKEN"] = _TOK
 
 import torch
 from transformers import BitsAndBytesConfig
@@ -120,12 +185,79 @@ print(f"model loaded ({time.time()-t0:.0f}s), adapters={need_ad}", flush=True)
 PAD = getattr(getattr(proc, "tokenizer", None), "pad_token_id", None)
 
 
+def _end_markers(k):
+    """What closes worksheet slot k.
+
+    For k=1 this is exactly the list that used to be hardcoded, in exactly that order, and
+    the order matters: the loop below returns on the first marker in LIST order, not at the
+    earliest position in the text, so moving "Count the" ahead of "Step 2" would change
+    stored rows. "Count the" and "word count" are the published worksheet's own Step 2
+    wording (mvlm_data.py PROC_COUNT), there to catch a model that writes Step 2's content
+    without writing its header. They are dropped for k>=2 because only WS=front puts the
+    request in slot 2, WS=front has no counting step at all, and a harmful answer that
+    happens to say "count the" would otherwise be cut in half.
+    """
+    mk = [f"Step {k+1}", f"Step{k+1}", f"Step {k+2}"]
+    if k == 1:
+        mk += ["Count the", "word count"]
+    return mk
+
+
+# Which worksheet slot holds the request: the same variable, the same default and the same
+# validation as audit_nonanswer.py, so one REQUEST_SLOT describes a condition everywhere. 1
+# is the published worksheet and WS=chain; 2 is WS=front (D43), where Step 1 is "Describe
+# what you see in the image" and the request is in Step 2. Read with `or "1"` because
+# cell.sbatch submits with --export=ALL, so a set-but-empty REQUEST_SLOT reaches the job and
+# int("") would raise at import, hours before the first row.
+_SLOT_ENV = (os.environ.get("REQUEST_SLOT") or "1").strip() or "1"
+if _SLOT_ENV not in ("1", "2"):
+    raise SystemExit(
+        "REQUEST_SLOT=%r: only 1 and 2 are meaningful.\n"
+        "  The worksheet holds the request in exactly one slot: Step 1 for the published\n"
+        "  worksheet and for WS=chain, Step 2 for WS=front (D43). This is not WS=.\n"
+        "  Unset REQUEST_SLOT for the published numbers." % _SLOT_ENV)
+SLOT = int(_SLOT_ENV)
+END = _end_markers(SLOT)
+
+
 def step1(t):
-    for mk in ["Step 2", "Step2", "Step 3", "Count the", "word count"]:
-        i = t.find(mk)
+    """The request slot -- the text stored in the 'response' field.
+
+    'raw' is the field the main judging path reads: judge_multi.py defaults JUDGE_FIELD to
+    raw, and run_cell.sh passes JUDGE_FIELD=raw explicitly on all four passes, so every
+    published number is unaffected by anything in this function, at any REQUEST_SLOT.
+    'response' is what JUDGE_FIELD=step1 ends up judging -- no row carries a "step1" key, so
+    judge_multi.judged_text falls through to this field -- and under WS=front a slot-1
+    reading would hand the judge the gray-image description instead of the answer to the
+    request, which it would score safe while the real answer went unread.
+
+    lgjudge_only.py and qgpass.py reach the same field by the same fallback but then run
+    their OWN hardcoded step1() over it, which cuts at the first "Step 2" and so returns
+    nothing at all from a slot-2 'response'. Those two are the per-arm Colab scripts, they
+    are not on the SLURM path, and neither is touched here; use judge_multi.py, which takes
+    the field as it finds it.
+
+    At REQUEST_SLOT=1 this is byte-for-byte the old function: the slice starts at character
+    zero, so the "Step 1." header and anything before it stay in, exactly as they always
+    have, and no stored row moves.
+    """
+    s = t
+    if SLOT > 1:
+        # Slot 1 ran from the top of the response; a later slot has to be found first. No
+        # header for it means the worksheet was dropped, and then the whole response is the
+        # answer -- the same fallback audit_nonanswer.request_slot makes.
+        for mk in (f"Step {SLOT}", f"Step{SLOT}"):
+            i = t.find(mk)
+            if i != -1:
+                s = t[i:]
+                break
+        else:
+            return t
+    for mk in END:
+        i = s.find(mk)
         if i != -1:
-            return t[:i]
-    return t
+            return s[:i]
+    return s
 
 
 def final(t):

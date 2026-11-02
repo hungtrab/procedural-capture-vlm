@@ -6,7 +6,11 @@
 **/kaggle.json
 **/access_token
 
-# trained adapters: 13G, and run_chain.sh retrains phase A in one VM per arm group
+# trained adapters: 13G, and run_chain.sh retrains phase A in one VM per arm group.
+# Both spellings: on the SLURM port adapters_store is a SYMLINK to FSx, and a pattern
+# ending in / matches a directory only, so the symlink showed up as untracked and would
+# have been committed -- a machine-specific absolute path, useless to anyone else.
+adapters_store
 adapters_store/
 
 # scratch and per-run logs
