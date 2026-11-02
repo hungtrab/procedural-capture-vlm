@@ -210,9 +210,11 @@ The image cells must read **one adapter per backbone**, the same object in the `
 as two images. Training on this partition is not bitwise deterministic, so two cells that each
 train "seed 42" do not produce the same adapter.
 
-**Preferred: the published adapters, sent to you.** They are being sent separately, not
-through this repository; 1.43 GB, one tar, laid out as `<tag>/adapter_af` and
-`<tag>/adapter_db`. Place each backbone's `adapter_af` and
+**Preferred: the published adapters**, attached to the GitHub release `adapters-round2` of
+this repository: one tar, 1.43 GB, laid out as `<tag>/adapter_af` and `<tag>/adapter_db`.
+
+    gh release download adapters-round2 -R hungtrab/procedural-capture-vlm
+    md5sum -c adapters_round2.tar.md5 Place each backbone's `adapter_af` and
 `adapter_db` into every one of its cells' adapter directories,
 `adapters_store/mvlm_<tag><SUF>/`, before submitting. `mvlm_stage1.py` checks a pre-sentinel
 adapter for completeness from its own safetensors header and adopts it instead of retraining
