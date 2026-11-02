@@ -1,0 +1,10 @@
+9be075dc7917073b411d938f7d142a49  g4/adapter_af/adapter_model.safetensors
+5877b7b8278705794d732f947c7d4d82  g4/adapter_db/adapter_model.safetensors
+9bc80c9f35eec60c75779f5af939406f  lv11/adapter_af/adapter_model.safetensors
+a06159bb52ab4fe12c4ff142c23ea40c  lv11/adapter_db/adapter_model.safetensors
+5aa542b71287092470e1b643fa1d3908  q35_08/adapter_af/adapter_model.safetensors
+003b4a90a3e8884a24cf4bca5a2ab943  q35_08/adapter_db/adapter_model.safetensors
+247149fb6c2a99b3f558fb5fe9342630  q3/adapter_af/adapter_model.safetensors
+daa3c540d614ce81d5561cf6a4d6e8e5  q3/adapter_db/adapter_model.safetensors
+00c88572f5f0a599051999431a0548a6  q3vl8/adapter_af/adapter_model.safetensors
+55dba9a6acc5d1f1464d8974713eee06  q3vl8/adapter_db/adapter_model.safetensors

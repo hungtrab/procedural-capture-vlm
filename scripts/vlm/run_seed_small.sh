@@ -24,9 +24,13 @@
 #     an A100 in bf16. Do not pool them, do not subtract them, do not call a change between
 #     them a seed effect. If this run and the A100 row disagree, that is a question, not a
 #     result, and it needs the A100 to answer.
-# Regenerating base per seed costs one arm per seed and buys a second thing: base does not
-# depend on the seed, so two base samples of the same checkpoint on the same hardware bound
-# how much of any gap is sampling noise in the decode.
+# Regenerating base per seed costs one arm per seed and buys an integrity check, not a noise
+# estimate. Decoding is greedy (mvlm_gen.py:277, do_sample=False), so there is no sampling
+# noise to bound: base has no adapter and does not depend on the seed, and two base runs in
+# the same environment must be byte-identical. If they are not, something in the environment
+# is nondeterministic, and that has to be known before any af - db here is read. An earlier
+# version of this comment said the two base runs "bound sampling noise"; under greedy decoding
+# that is false.
 #
 # ORDER IS BINDING (D33): train, then the benign gate, then harmful rows, with gate_ok.py as
 # a hard gate. Each seed goes through the whole order before the next one starts, so stopping

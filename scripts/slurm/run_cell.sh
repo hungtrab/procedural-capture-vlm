@@ -143,6 +143,49 @@ case "$SUF" in
       fi ;;
 esac
 
+# -- the second legitimate reason: an eval-only variant of the published condition --------
+# Same procedure, same items, same worksheet text; only the image differs (a real photograph
+# in place of gray.png), or nothing differs at all (a reproduction of the published condition
+# in this environment, under its own suffix). Recognised by CONTENT, not by name: the eval is
+# compared row by row against the published eval for this WS, and every field except `image`
+# and `category` must be byte-identical, ids in the same order. A suffix cannot pass this by
+# being spelled right, and an eval that changed the prompt cannot pass it at all.
+#
+# Two exclusions, both deliberate:
+#   * the published suffix itself. A variant must write beside the published row, never on
+#     top of it, so SUF has to differ from it (for count the published suffix is EMPTY).
+#   * seed-form suffixes. SUF=_s1 SEED=2 with the gray eval is identical to the published eval
+#     and would otherwise pass here, writing seed 2 into seed 1's directory -- the exact
+#     failure the seed case above exists to stop. A seed suffix is the seed case's to judge.
+#
+# Adapters: if the published ones are placed in $ADIR (see next_step.md) mvlm_stage1.py
+# verifies and adopts them rather than retraining; otherwise this cell trains from SEED. Both
+# are valid, and the reason is the reproduction cell: realimg and its _rep twin read the same
+# adapter in the same environment, so the image is the only thing between them either way.
+EVAL_VARIANT=0
+case "$SUF" in
+  _s[0-9]*) ;;
+  *)
+    if [ "$SEED_REPL" = "0" ] && [ "$SUF" != "$(ws_pub_suffix "$WS")" ] && [ -s "$EVAL" ] &&
+       python3 -I - "$REPO/$(ws_pub_eval "$WS")" "$EVAL" <<'PY'
+import json, sys
+def rows(p):
+    return [json.loads(l) for l in open(p, encoding="utf-8") if l.strip()]
+a, b = rows(sys.argv[1]), rows(sys.argv[2])
+FREE = {"image", "category"}
+if len(a) != len(b):
+    sys.exit(1)
+for x, y in zip(a, b):
+    if x.get("id") != y.get("id"):
+        sys.exit(1)
+    if any(x.get(k) != y.get(k) for k in (set(x) | set(y)) - FREE):
+        sys.exit(1)
+PY
+    then
+      EVAL_VARIANT=1
+    fi ;;
+esac
+
 # Which slot mvlm_gen.py stores in the 'response' field. This HAS to be right when the row is
 # written: AGENTS.md rule 4 forbids editing a transcript afterwards, so a front row whose
 # 'response' holds the gray-square description is wrong for good. No headline number moves --
@@ -153,6 +196,18 @@ esac
 # empty.
 REQUEST_SLOT_IN="${REQUEST_SLOT-}"
 REQUEST_SLOT="$(ws_slot "$WS")"
+# NOIMG, same treatment and for the same reason. mvlm_gen.py:123 drops the image from the
+# prompt, placeholder and pixels both, when NOIMG is set, and nothing in a stored row records
+# whether it was. So it is derived from the suffix and never inherited: a cell is a no-image
+# cell exactly when SUF ends in _noimg. Inherited, it fails both ways and silently. A NOIMG=1
+# left in the submitting shell from a no-image cell turns the next _rep or _realimg cell into
+# a no-image run filed under a name that says it had an image; a _noimg cell submitted without
+# it is a gray reproduction filed as a no-image lesion. Either one produces a complete,
+# judged, plausible table of the wrong condition, which is the failure this file exists to
+# stop. Only mvlm_gen.py reads it; the benign gate always runs with images, because the gate
+# asks whether the adapter took, and that question has the same answer either way.
+NOIMG_IN="${NOIMG-}"
+case "$SUF" in *_noimg) NOIMG=1 ;; *) NOIMG=0 ;; esac
 SEED="${SEED:-42}"
 STEPS="${STEPS:-150}"
 N_TRAIN="${N_TRAIN:-300}"
@@ -328,6 +383,17 @@ if [ -n "$REQUEST_SLOT_IN" ] && [ "$REQUEST_SLOT_IN" != "$REQUEST_SLOT" ]; then
   say "        WS=$WS means Step $REQUEST_SLOT, and that is a property of the worksheet, not"
   say "        a choice. The usual source is --export=ALL carrying a readout's variable in."
 fi
+say "  image     NOIMG=$NOIMG ($([ "$NOIMG" = 1 ] && echo 'no image: SUF ends in _noimg' || echo 'image sent'))"
+# Normalised the way mvlm_gen.py:123 reads it -- empty and "0" are off, anything else is on --
+# and then compared. Written as one comparison rather than two &&/|| branches because bash
+# gives && and || equal precedence, and the two-branch form silently skipped the note for an
+# inherited NOIMG=0 on a _noimg cell.
+case "$NOIMG_IN" in ""|0) NOIMG_IN_ON=0 ;; *) NOIMG_IN_ON=1 ;; esac
+if [ -n "$NOIMG_IN" ] && [ "$NOIMG_IN_ON" != "$NOIMG" ]; then
+  say "  NOTE: NOIMG=$NOIMG_IN arrived in the environment and is IGNORED."
+  say "        Whether a cell sends the image is decided by its suffix, SUF=$SUF, because"
+  say "        no stored row records it and an inherited value cannot be detected afterwards."
+fi
 [ "$DRYRUN" = 1 ] && printf '[dry] DRYRUN=1: printing the plan, running nothing, writing nothing\n'
 
 # The request-free user turn, resolved here rather than at the judges, because whether it
@@ -378,6 +444,11 @@ MISMATCH=""
       EVAL=$EVAL but WS=$WS wants $WANT_EVAL"
 if [ -z "$MISMATCH" ]; then
   pf ok "WS=$WS, SUF=$SUF and the eval path all name the same condition"
+elif [ "$EVAL_VARIANT" = "1" ]; then
+  pf ok "eval-only variant: WS=$WS SUF=$SUF, eval $EVAL
+      Every field but image and category is byte-identical, row by row, to the published
+      $(ws_pub_eval "$WS"), so this is the WS=$WS condition with only the image changed (or
+      nothing changed: a reproduction), written beside the published row, not over it."
 elif [ "$SEED_REPL" = "1" ]; then
   pf ok "seed replication: WS=$WS SEED=$SEED SUF=$SUF, eval $EVAL
       The suffix is a seed suffix and its digits match SEED, so this trains the WS=$WS
@@ -889,7 +960,7 @@ have_time || exit 0
 step "  generate" \
   env TAG="$TAG" ARMS="$ARMS" V="$REPO/$VDIR" AF="$AFA" DB="$DBA" \
       BS="$BS" SFX="" EVALF="$EVAL" TIME_BUDGET="$(budget)" \
-      REQUEST_SLOT="$REQUEST_SLOT" \
+      REQUEST_SLOT="$REQUEST_SLOT" NOIMG="$NOIMG" \
       MVLM_CODE="$CODE" MVLM_PIP=0 \
       python3 -I scripts/vlm/mvlm_gen.py \
   || say "  generation exited non-zero; the judges below skip any arm that is short"

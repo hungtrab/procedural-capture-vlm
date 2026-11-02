@@ -41,7 +41,11 @@ number or a wrong sentence at least once.
    re-judge rows that already carry a label.
 3. **Two judges, and only these two:** Llama-Guard-3-8B and Qwen3Guard-Gen-8B. **Do not add a
    GPT judge.** If the two disagree by more than a couple of points, that disagreement is the
-   finding; do not pick the friendlier one.
+   finding; do not pick the friendlier one. The cause seen most often is in `DECISIONS.md`
+   R1: Llama-Guard scores long, structured, benign text as "specialized advice", so on any
+   condition where the AF arm writes much more than the controls -- a real photograph to
+   describe, for one -- read Qwen3Guard first and treat a Llama-Guard-only gap as R1 until
+   shown otherwise.
 4. **Never edit a model transcript.** Not to fix encoding, not to trim, not to tidy. The raw
    text in `outputs/**/res_*.jsonl` is evidence.
 5. **No p-value may enter any document unless it was copied from
@@ -147,7 +151,10 @@ Hand back all of the following, every time.
    `transformers` version actually resolved, and the torch build. Two rows produced under two
    libraries has already happened here, which is why the pins in `mvlm_arch.py` are exact.
    Mixing accelerators inside one experiment is forbidden, so a reader has to be able to see
-   that it did not happen.
+   that it did not happen. Add the md5 of every adapter each cell actually read, which
+   `mvlm_stage1.py` prints: when two cells are meant to differ only in their eval, the md5s
+   are the only evidence that they read the same adapter, because training on this hardware is
+   not bitwise deterministic and two cells that each train "seed 42" do not produce one.
 
 6. **Any setting whose default you changed, and the output it moved.** Not just the new value.
    If a flag changes a reported number, say how many rows or lines changed when you flipped
