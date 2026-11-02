@@ -107,8 +107,41 @@ EVAL="${EVAL:-$(ws_eval "$WS")}"
 # against $REPO, which is where the cd above has already put us, so every documented command
 # behaves exactly as before.
 case "$EVAL" in /*) ;; *) EVAL="$REPO/$EVAL" ;; esac
+# The published count worksheet is stored with an EMPTY suffix and the gray eval, because it
+# predates the WS variable: outputs/vlm2_gray_<tag>, not outputs/vlm2_gray_<tag>_count. The
+# mechanical ws_suffix/ws_eval above keep returning "_count" and eval_harmful_count.jsonl so
+# that nothing else changes and so that WS=count never lands on the published directories by
+# default. The published spelling is named here instead, and only the seed case below uses it.
+ws_pub_suffix(){ case "$1" in count) printf '' ;; *) ws_suffix "$1" ;; esac; }
+ws_pub_eval(){   case "$1" in count) printf 'data/eval_harmful_gray.jsonl' ;;
+                             *)     ws_eval "$1" ;; esac; }
+
 WANT_SUF="$(ws_suffix "$WS")"
 WANT_EVAL="$REPO/$(ws_eval "$WS")"
+
+# -- the one legitimate reason SUF may differ from WS -----------------------------------
+# A seed replication. It trains the SAME procedure on a different seed and must not write on
+# top of the published row, so it needs its own suffix: WS=count SEED=1 SUF=_s1 puts the run
+# in adapters_store/mvlm_<tag>_s1, outputs/vlm2_sanity_<tag>_s1 and outputs/vlm2_gray_<tag>_s1
+# while still training and evaluating the count worksheet.
+#
+# This is recognised rather than waved through with ALLOW_WS_MISMATCH=1, which is too blunt:
+# that override also relaxes what the mismatch message is allowed to be, so a typo'd suffix
+# would pass under it just as a seed suffix would. Here the suffix has to BE a seed suffix,
+# the digits in it have to equal SEED, and the eval still has to be the one this WS calls for
+# in its published spelling. Anything else falls through to the failure below unchanged.
+#
+# The SEED agreement is the part that matters. SUF=_s1 with SEED=2 would write seed 2's
+# adapters into seed 1's directory, and because every stage resumes by row count, a later
+# rerun would top it up and produce one directory holding two seeds, with nothing in any file
+# recording that it does.
+SEED_REPL=0
+case "$SUF" in
+  _s[0-9]|_s[0-9][0-9])
+      if [ "$SUF" = "_s${SEED}" ] && [ "$EVAL" = "$REPO/$(ws_pub_eval "$WS")" ]; then
+        SEED_REPL=1
+      fi ;;
+esac
 
 # Which slot mvlm_gen.py stores in the 'response' field. This HAS to be right when the row is
 # written: AGENTS.md rule 4 forbids editing a transcript afterwards, so a front row whose
@@ -345,6 +378,11 @@ MISMATCH=""
       EVAL=$EVAL but WS=$WS wants $WANT_EVAL"
 if [ -z "$MISMATCH" ]; then
   pf ok "WS=$WS, SUF=$SUF and the eval path all name the same condition"
+elif [ "$SEED_REPL" = "1" ]; then
+  pf ok "seed replication: WS=$WS SEED=$SEED SUF=$SUF, eval $EVAL
+      The suffix is a seed suffix and its digits match SEED, so this trains the WS=$WS
+      procedure on seed $SEED into its own directories instead of on top of the published
+      row. Both CONTENT checks below still apply unchanged."
 elif [ "${ALLOW_WS_MISMATCH:-0}" = "1" ]; then
   pf ok "ALLOW_WS_MISMATCH=1: the names below were overridden on purpose.$MISMATCH
       The two CONTENT checks still apply: whatever eval this is must render the WS=$WS

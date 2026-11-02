@@ -1,5 +1,15 @@
 # next_step.md — round 2
 
+> **Updated 2026-11-02, after `gptweb_cvpr/BLOCKERS_2026-11-02_round2.md`.** That document is
+> right on every point. Three of its six items were mine and are now fixed in this repository:
+> stage 1 no longer points at a Colab-only driver (blocker 1, rewritten below), `run_cell.sh`
+> now has the seed-aware case so a seed replication does not need `ALLOW_WS_MISMATCH=1`
+> (blocker 2), and `screen_criteria.py` now quotes the paired exact McNemar rather than the
+> unpaired Fisher figure, so the `lv11`/count/LG cell reads `p=1.59e-11` as the published
+> number does (blocker 6). It had under-reported every pooled-block cell. The four gate
+> verdicts did not change. Blockers 0, 3 and 4 are work, not fixes, and they stay yours in
+> the order that document gives.
+
 Round 1 is done and its report is `gptweb_cvpr/RUN_2026-11-02_slurm.md`. Read that first, and
 read **section 5, "What is established, and what is not"**, before you plan anything. Round 1
 closed two questions by answering them in the negative, and this round does not reopen either.
@@ -32,19 +42,36 @@ sentence anyone would actually write down.
 identical to the s42 row: 150 steps, 300 demos, LoRA r=16, the same 260 AdvBench items, the
 same `gray.png`, both guards, all four judging passes.
 
-    SP=$HOME/r2 TAG=q3 SEEDS="1 2" bash scripts/vlm/run_seed_small.sh
+    SP=$HOME/r2 TAG=q3 WS=count SEED=1 SUF=_s1 EVAL=data/eval_harmful_gray.jsonl \
+      bash scripts/slurm/run_cell.sh
+    SP=$HOME/r2 TAG=q3 WS=count SEED=2 SUF=_s2 EVAL=data/eval_harmful_gray.jsonl \
+      bash scripts/slurm/run_cell.sh
 
-That driver was written for this and goes through train → benign gate → `gate_ok.py` →
-generate per seed, so stopping it after one seed leaves one complete readable seed rather than
-two half ones. It reads the accelerator from `GPUS`, and **you must set it to A100**:
+One seed per invocation, so stopping after the first leaves one complete readable seed rather
+than two half ones. `run_cell.sh` already does train → benign gate → `gate_ok.py` → generate →
+four judge passes in the D33 order and resumes by row count, so a rerun of either command
+fills whatever is missing.
 
-    SP=$HOME/r2 TAG=q3 SEEDS="1 2" GPUS="--gpu A100 --high-mem|--gpu A100" \
-      bash scripts/vlm/run_seed_small.sh
+**`run_cell.sh` now accepts this without `ALLOW_WS_MISMATCH=1`.** The blockers document is
+right that the override is too blunt: it relaxes what the mismatch is allowed to be, so a
+typo'd suffix would pass under it exactly as a seed suffix would. There is now a seed-aware
+case instead. It requires three things together — the suffix is of the form `_s<digits>`, those
+digits equal `SEED`, and `EVAL` is the eval this `WS` calls for in its published spelling,
+which for `count` is `eval_harmful_gray.jsonl` and not `eval_harmful_count.jsonl`. Both content
+checks still run. The `SEED` agreement is the part that earns its keep: `SUF=_s1` with `SEED=2`
+would write seed 2's adapters into seed 1's directory, and since every stage resumes by row
+count a later rerun would top it up into one directory holding two seeds with nothing in any
+file recording it. Verified on the four cases that have to stay separated, including the two
+wrong plans round 1 found.
 
-**Why A100 specifically, and this is the whole point of the stage.** The published `q3` s42
-row was produced on an A100 in bf16. A seed replication is only a seed replication if the
-seed is the only thing that changed. Run it on anything else and the comparison carries a
-precision difference as well as a seed difference, and AGENTS.md forbids exactly that.
+**On the hardware requirement.** The earlier draft of this file said to set
+`GPUS="--gpu A100 ..."`, which was the Colab spelling and is meaningless here. The requirement
+behind it stands: the published `q3` s42 row was produced on an A100 in bf16, and a seed
+replication is only a seed replication if the seed is the only thing that changed. The
+blockers document is right that this partition satisfies it structurally — one accelerator
+type, and `run_cell.sh`'s preflight refuses to start on anything else — so there is nothing to
+set. Say in the handback which accelerator each cell actually ran on anyway; that is handback
+item 5, and it exists so a reader does not have to take this paragraph's word for it.
 
 **A partial run on an L4 already exists on the Máy Gau box and you must not merge it.** On
 2026-11-02 the same driver ran `q3` seed 1 on an **L4**: phase A completed (af loss 0.61, db

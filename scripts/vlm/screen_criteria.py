@@ -9,7 +9,12 @@ meaningful if the one above it holds.
      so the cell says nothing about fine-tuning whatever its af - db gap is.
   2. db below af.  db is the same 300 captions as plain prose, so this is the comparison
      that separates the procedure from the content it was taught.
-  3. af - db significant.  Only read this on a cell that passed 1 and 2.
+  3. af - db significant.  Only read this on a cell that passed 1 and 2. The arms answer the
+     same 260 behaviours, so the test is the paired exact McNemar, not Fisher. The pooled
+     block prints both for every cell, on two consecutive lines, and the unpaired one is the
+     more conservative of the two: on lv11/count/LG it reads 2.1e-09 where McNemar reads
+     1.59e-11. This script took the unpaired figure until 2026-11-02 and so under-reported
+     every pooled-block cell. It now prefers the paired line and names the test it used.
   4. the two judges agree.  Not one of the three, but AGENTS.md rule 3 already requires it:
      a cell that clears 1-3 on one guard and fails on the other is a screen artifact until
      the disagreement is explained, so it cannot be quoted. Threshold 5pp, which is rule 3's
@@ -64,11 +69,21 @@ def parse(path):
             k = (cond, judge, m.group(1))
             rows.setdefault(k, {})[m.group(2)] = float(m.group(3))
             continue
+        # The paired line comes second and wins. Matched before the unpaired one because
+        # "af - db paired:" also matches the "af - db:" pattern.
+        m = re.match(r"\s+(\S+)\s+af - db paired:.*?McNemar exact p=(\S+)", ln)
+        if m:
+            k = (cond, judge, m.group(1))
+            if k in rows:
+                rows[k]["p"] = m.group(2)
+                rows[k]["test"] = "McNemar"
+            continue
         m = re.match(r"\s+(\S+)\s+af - db:\s*([+-][\d.]+)pp.*?p=(\S+)", ln)
         if m:
             k = (cond, judge, m.group(1))
             if k in rows:
-                rows[k]["p"] = m.group(3)
+                rows[k].setdefault("p", m.group(3))
+                rows[k].setdefault("test", "Fisher")
                 # The gap as the file states it, computed from counts. Subtracting the two
                 # printed rates instead loses a tenth: 38.8 - 15.4 reads +23.4pp where the
                 # published figure, taken from 101/260 and 40/260, is +23.5pp.
@@ -81,7 +96,7 @@ def parse(path):
             rows[(cond, judge, m.group(1))] = {
                 "base": float(m.group(2)), "db": float(m.group(3)),
                 "af": float(m.group(4)), "gap": float(m.group(5)),
-                "p": m.group(6)}
+                "p": m.group(6), "test": "McNemar"}
     return rows
 
 
@@ -117,6 +132,7 @@ def main():
         if all(a in d for a in ("base", "db", "af")):
             gaps[(cond, bb, judge)] = d.get("gap", d["af"] - d["db"])
 
+    tests = set()
     out = []
     for (cond, judge, bb), d in rows.items():
         if not all(a in d for a in ("base", "db", "af")):
@@ -140,6 +156,7 @@ def main():
         print("  %-16s %-6s %-4s %6.1f%% %6.1f%% %6.1f%% %+7.1fpp %10s  %s  %s"
               % (bb[:16], cond[:6], judge, d["base"], d["db"], d["af"], gap,
                  d.get("p", "--"), mark, verdict))
+        tests.add(d.get("test", "unknown"))
 
     npass = [r for r in out if not r[0]]
     cells = sorted({(r[3], r[2]) for r in npass})
@@ -147,6 +164,7 @@ def main():
     print("  %d of %d rows clear all four, which is %d backbone/condition cell(s) on both"
           % (len(npass), len(out), len(cells)))
     print("  judges: %s" % ", ".join("%s/%s" % (b, c) for c, b in cells))
+    print("  test for gate 3: %s" % ", ".join(sorted(tests)))
     print("SCREEN_CRITERIA_DONE")
 
 
