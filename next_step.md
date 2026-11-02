@@ -30,13 +30,12 @@ front template lifts the untuned base arm as much as it lifts af. So the project
 now narrow and specific, and the work of this round is to make the narrow claim solid rather
 than to widen it.
 
-## Stage 1 — `q3` seed replication, on an A100. Do this one first.
+## Cells 1 and 2 — `q3` seed replication
 
 **The question.** `lv11` has three seeds behind it (s42, s1, s2) and holds across all three.
 `q3` has one. So half of "two cells replicate" currently rests on a single training run, and
-if `q3` does not hold at a second seed the honest count drops to one cell. This is the
-cheapest unanswered question in the project and the only one that is load-bearing for a
-sentence anyone would actually write down.
+if `q3` does not hold at a second seed the honest count drops to one cell. It is the only
+open question that is load-bearing for a sentence anyone would actually write down.
 
 **What to run.** Seeds 1 and 2, tag `q3`, the published count worksheet, everything else
 identical to the s42 row: 150 steps, 300 demos, LoRA r=16, the same 260 AdvBench items, the
@@ -102,7 +101,7 @@ the worksheet, and the prose fine-tune pushes it off. Whether that affects `af �
 known. Report the gate table in full either way; rule 4 of the handback section exists
 because "the gate passed" hides this.
 
-## Stage 2 — the harmful eval on an information-bearing image
+## Cells 3 to 8 — the harmful eval on an information-bearing image
 
 **The question, and it is the obvious reviewer question.** Every harmful row this project has
 ever generated used `gray.png`, an image with no information in it. A reader will ask whether
@@ -129,8 +128,11 @@ assignment is deterministic and re-derivable. Model the new builder on
 `build_eval_gray.py`, and read `WS` from the environment rather than pinning it — round 1 had
 to fix exactly that bug in `build_eval_chain.py`.
 
-**Which backbones.** `lv11` and `q3`, the two cells that pass all four gates, and nothing
-else. A null on a backbone that was already at the floor would tell you nothing.
+**Which backbones.** `lv11` and `q3`, the two cells that pass all four gates, plus the four
+that the gray square made unreadable rather than any safety property: `g4`, `q3vl2`,
+`q35_08`, `q3vl8`. See "How to pack it" for why those four belong here and not in a later
+round. Do not add a backbone that is at the floor for some other reason; a null on one of
+those would tell you nothing.
 
 **What to read, in this order.** The benign gate first. Then **the base arm**: if a real image
 raises base the way the front template did, the condition is not readable as a fine-tuning
@@ -145,17 +147,54 @@ is not the request. If it shrinks to nothing, that is a genuine limit on the res
 goes in the write-up as one. Do not go looking for an image set that makes the number come
 back.
 
-## Costs and order
+## How to pack it
 
-| stage | what | rough cost | why it is in this position |
+Free work first, because it gates the GPU work and costs nothing:
+
+| | what | needs |
+|---|---|---|
+| a | per-row screen labels for the five round-1 conditions (handback item 3) | no GPU |
+| b | prefetch `Qwen2.5-VL-3B-Instruct` | no GPU |
+| c | write `build_eval_realimg.py`, build the eval, verify the pairing on all 260 rows | no GPU |
+
+Then **one wave, eight cells, one per GPU**. They are independent: each cell trains its own
+arms and is read against its own base and db, so none of them needs another's result first.
+
+| cell | tag | condition | what it answers |
 |---|---|---|---|
-| 1 | `q3` seeds 1 and 2 on A100 | ~2 GPU-hours | load-bearing for a claim we would write down |
-| 2 | build the real-image eval, verify pairing | no GPU | must be verified before any GPU is spent on it |
-| 3 | real-image condition, `lv11` + `q3`, 3 arms each | ~5 GPU-hours | robustness, and only readable if stage 1 held |
+| 1 | `q3` | count, `SEED=1 SUF=_s1` | does the second passing cell survive a seed change |
+| 2 | `q3` | count, `SEED=2 SUF=_s2` | " |
+| 3 | `lv11` | real image | does the anchor survive an image with content in it |
+| 4 | `q3` | real image | does the other passing cell |
+| 5 | `g4` | real image | **D28 names this exact condition as the fix for this row** |
+| 6 | `q3vl2` | real image | D36: absorbed by the gray square, both arms |
+| 7 | `q35_08` | real image | D36: db absorbed at 94% |
+| 8 | `q3vl8` | real image | D36: af a third absorbed, reported caveated |
 
-Stage 1 before stage 2 is deliberate. If `q3` does not replicate across seeds, the set of
-cells worth testing on a new image is one cell, not two, and stage 3 gets cheaper and narrower.
-Running them the other way round spends the GPU on a backbone that may not belong in the paper.
+Cells 5 to 8 are the part that changes what round 2 is worth, and they are free to add once
+cell 3 and 4's eval exists. Four backbone rows are currently **unreadable for the same
+reason**, and it is not a safety reason: the gray square has no content, so the worksheet's
+Step 1 absorbs the run and the request is never posed. D28 Decision 3 says it in as many
+words for `g4` — "the gray condition cannot pose the question to this backbone, so neither
+safer nor captured is available for it" — and then says **"Fixing it needs a condition where
+Step 1 has content"**, listing that as open work. This is that condition. D36 says the same
+for `q3vl2` and `q35_08` and partly for `q3vl8`.
+
+So if the real image works as D28 predicts, the readable set goes from six backbones to as
+many as nine, and the four-gate table stops being "2 of 26 rows" over a set that was chosen
+partly by which backbones the blank image happened not to break. That is a better answer to
+"does this generalise" than any further run of the count worksheet would be, and on a cluster
+this size it costs one wave rather than a decision.
+
+**Read `audit_blank_refusal.py` on every one of cells 5 to 8 and report it.** It is the script
+D36's rule attaches to a new condition, and here it is the primary readout, not a formality:
+on a real image its blank-image patterns should fire on close to nothing. If absorption is
+still high on a real image then the gray square was not the cause, D28 Decision 3 is wrong,
+and that is the finding — report it as one rather than as a failed cell.
+
+**What still must not be read out of order, inside a cell.** The benign gate, then the base
+arm, then entry, then `af - db`. A cell whose base arm rises the way the front template's did
+is not readable as a fine-tuning result and stops there.
 
 ## Do not
 
