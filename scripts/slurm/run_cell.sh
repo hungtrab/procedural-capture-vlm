@@ -47,20 +47,84 @@
 #         DRYRUN=1 ... same ...     # print every command, touch nothing, no GPU
 #
 # TAG and WS, and nothing else. SUF, EVAL and REQUEST_SLOT are derived from WS, because the
-# four of them are one choice; see ONE WORKSHEET, ONE CONDITION below.
+# four of them are one choice; see ONE WORKSHEET, ONE CONDITION below. The python env is
+# derived from TAG the same way, from mvlm_arch.tf_pin(TAG); see ONE TAG, ONE LIBRARY.
 #
 # Env: TAG, WS (required), SUF / EVAL (derived from WS; an override needs
-#      ALLOW_WS_MISMATCH=1 and says so in the log), SEED 42, STEPS 150, N_TRAIN 300,
+#      ALLOW_WS_MISMATCH=1 and says so in the log), ENV_DIR (derived from the tag's library
+#      pin; an override is honoured and printed), SEED 42, STEPS 150, N_TRAIN 300,
 #      N_HOLDOUT 40, ARMS base,af,db, BS (per-tag, see bs_for below), GATE_BS 4,
 #      JUDGE_BS 12, MIN_WORDS 60, MVLM_DATA, SP, WALL, DRYRUN.
 set -u
 cd "$(dirname "$0")/../.."
 REPO="$PWD"
 FSX=/genai/fsx-llm/interns/hoangpv/pcvlm
-ENV_DIR="${ENV_DIR:-$FSX/env}"
 
 TAG="${TAG:?model tag required, e.g. TAG=g12}"
 WS="${WS:?worksheet required: count, chain or front}"
+
+# ---------------------------------------------------------------- ONE TAG, ONE LIBRARY
+# The library a cell runs under is a property of its TAG and not of whoever submitted it.
+# mvlm_arch.py:46-47 sets TF_4X = "transformers==4.57.6" and TF_5X = "transformers==5.22.0",
+# tf_pin(TAG) returns one of them, and mvlm_arch.py:33-45 explains at length why those are
+# exact versions and not ranges. The sentence that matters here is its own: "q35_08 ran
+# 5.21.1 and then 5.22.0 after that release landed mid-run. Two rows produced under two
+# libraries."
+#
+# Round 1's five cells were all TF_4X, so this script assumed a single env and cell.sbatch
+# and wave.sbatch activate that one before handing over. Round 2 cells 13 and 14 are q35_08,
+# the first TF_5X tag this project has run -- Qwen3.5 does not exist in transformers 4.x at
+# all -- so the cell cannot run in the 4.x env, and the preflight's pin comparison refuses it
+# there. Refusing is right; it is only useful if there is a second env to send it to.
+#
+# So the tag picks the env, here, before anything imports transformers. The table is the
+# closed list env.sbatch builds from, and a pin with no entry gets a named preflight failure
+# rather than a fallback, because falling back to the 4.x env IS the "two rows under two
+# libraries" failure and it would arrive as a model difference rather than as an error.
+env_set_for_tf(){ case "$1" in 4.57.6) printf tf4 ;; 5.22.0) printf tf5 ;; esac; }
+env_dir_for_set(){ case "$1" in tf4) printf '%s/env' "$FSX" ;;
+                                tf5) printf '%s/env_tf5' "$FSX" ;; esac; }
+
+# Read out of mvlm_arch rather than written here, so the pin exists in one place. -IB for the
+# usual reasons: -I because every python in this script is isolated and -B so a dry run
+# leaves no __pycache__. mvlm_arch imports nothing but os, so the interpreter that answers
+# this question does not have to be the one the cell will use -- which is the point, since
+# this is the question that chooses it.
+WANT_TF="$(python3 -IB -c '
+import sys
+sys.path.insert(0, "scripts/vlm")
+import mvlm_arch
+print(mvlm_arch.tf_pin(sys.argv[1]).split("==")[-1])' "$TAG" 2>/dev/null || true)"
+ENV_SET="$(env_set_for_tf "$WANT_TF")"
+ENV_DIR_WANT="$(env_dir_for_set "$ENV_SET")"
+# An inherited ENV_DIR is honoured, unlike an inherited REQUEST_SLOT or NOIMG, and the
+# difference is that this one cannot pass unnoticed: the preflight still compares the
+# transformers inside whatever env it names against tf_pin(TAG), so a wrong ENV_DIR stops
+# the cell instead of mislabelling its rows. It is still said out loud in the header.
+ENV_DIR_IN="${ENV_DIR:-}"
+ENV_DIR="${ENV_DIR:-$ENV_DIR_WANT}"
+
+# Put the chosen env first on PATH. cell.sbatch and wave.sbatch have already activated the
+# 4.x one by the time this script runs and neither of them knows the tag's pin, so for a
+# TF_5X tag the env on PATH is the wrong one until this happens. Only what `python3` resolves
+# to matters: every python call below is `python3 -I`, which ignores PYTHONPATH, PYTHONHOME
+# and the user site directory, so PATH is the whole of the selection. `source bin/activate`
+# would do the same and also lay a second deactivate() over the first one's saved PATH,
+# which is a worse state to hand back to an interactive shell for no gain.
+#
+# Skipped when the directory holds no interpreter. DRYRUN=1 is documented to work on the
+# login node, where /genai is not fully visible, so an env that is not there must leave PATH
+# exactly as it was and let the preflight say what is missing.
+if [ -n "$ENV_DIR" ] && [ -x "$ENV_DIR/bin/python3" ]; then
+  case "$PATH" in
+    "$ENV_DIR/bin":*) ;;                      # already first; nothing to do
+    *) PATH="$ENV_DIR/bin:$PATH"; export PATH ;;
+  esac
+  # Kept in step with PATH rather than left naming whatever cell.sbatch activated. No python
+  # here reads it, since -I ignores it, but a VIRTUAL_ENV pointing at one env while python3
+  # resolves to another is exactly the kind of quiet disagreement this file exists to stop.
+  export VIRTUAL_ENV="$ENV_DIR"
+fi
 
 # ---------------------------------------------------------------- ONE WORKSHEET, ONE CONDITION
 # WS, SUF, EVAL and REQUEST_SLOT describe ONE thing between them -- which procedure this cell
@@ -377,7 +441,17 @@ say "  adapters  $ADIR"
 say "  gate      $GDIR"
 say "  harmful   $VDIR"
 say "  demos     $DATA"
+# In the header because handback item 5 asks for the library each cell actually resolved,
+# and because one round-2 wave uses both envs: twelve cells in tf4 and the two q35_08 cells
+# in tf5. A reader checking a q35_08 cell looks for tf5 here before anything else.
+say "  env       ${ENV_SET:-UNKNOWN} ${ENV_DIR:-(none)} (mvlm_arch pins $TAG to transformers ${WANT_TF:-unreadable})"
 say "  budget    ${WALL}s walltime - ${RESERVE}s reserve = $(budget)s for the first phase"
+if [ -n "$ENV_DIR_IN" ] && [ "$ENV_DIR_IN" != "$ENV_DIR_WANT" ]; then
+  say "  NOTE: ENV_DIR=$ENV_DIR_IN arrived in the environment and is used INSTEAD of"
+  say "        ${ENV_DIR_WANT:-(the env the pin selects, which is not defined)}. Unlike REQUEST_SLOT and NOIMG this"
+  say "        override is honoured, because the preflight below compares the transformers"
+  say "        inside it against tf_pin($TAG) and a wrong env cannot pass that silently."
+fi
 if [ -n "$REQUEST_SLOT_IN" ] && [ "$REQUEST_SLOT_IN" != "$REQUEST_SLOT" ]; then
   say "  NOTE: REQUEST_SLOT=$REQUEST_SLOT_IN arrived in the environment and is IGNORED."
   say "        WS=$WS means Step $REQUEST_SLOT, and that is a property of the worksheet, not"
@@ -582,20 +656,55 @@ else
   fi
 fi
 
-# Against mvlm_arch.tf_pin(TAG), not a literal, so the check stays right if a tag with the
-# 5.x pin is ever run through this script. For g12, q3vl32 and lv11 it resolves to the
-# TF_4X pin at mvlm_arch.py:46, which is transformers==4.57.6.
-WANT_TF="$(python3 -IB -c '
-import sys
-sys.path.insert(0, "scripts/vlm")
-import mvlm_arch
-print(mvlm_arch.tf_pin(sys.argv[1]).split("==")[-1])' "$TAG" 2>/dev/null || true)"
+# -- the env this tag's pin needs exists, and this cell is in it -------------------------
+# Two checks, not one, and in this order. The first is whether an env is BUILT for the pin
+# mvlm_arch gives this tag; the second is whether the transformers that is actually
+# importable is that pin. They fail at different times and need different answers, and
+# without the first one the second is the only thing a q35_08 cell would hit -- a message
+# saying 4.57.6 is not 5.22.0, with no hint that the env it needs has never been built and
+# no name for the command that builds it.
+#
+# This is where a TF_5X tag stops when its env is missing: in the preflight, in the first
+# second, before the demo build and the twelve-hour allocation, and not at the first
+# `import transformers` inside mvlm_stage1.py after the backbone path has been resolved.
+if [ -z "$WANT_TF" ]; then
+  pf bad "could not read mvlm_arch.tf_pin('$TAG'). Either the tag is unknown to
+      scripts/vlm/mvlm_arch.py (its SPECS dict names the ones it knows) or there is no
+      runnable python3 on PATH at all."
+elif [ -z "$ENV_SET" ]; then
+  pf bad "mvlm_arch pins $TAG to transformers $WANT_TF and no environment is defined for
+      that pin. The two that are: tf4 = 4.57.6 at $FSX/env, tf5 = 5.22.0 at $FSX/env_tf5.
+      A third pin added to mvlm_arch.py needs an arm in env_set_for_tf/env_dir_for_set at
+      the top of this script AND an arm in scripts/slurm/env.sbatch's ENV_SET case. It is
+      deliberately not defaulted to the 4.x env: running a tag under a library its row was
+      not measured under is the failure mvlm_arch.py:33-45 exists to prevent, and it would
+      arrive later as a model difference rather than now as an error."
+elif [ ! -s "$ENV_DIR/ENV_READY" ]; then
+  pf bad "$TAG is pinned to transformers $WANT_TF, which is the '$ENV_SET' environment, and
+      $ENV_DIR carries no ENV_READY marker -- it has not been built, or its build did not
+      pass every check. Build it, on a free CPU node, no GPU:
+          sbatch --export=ALL,ENV_SET=$ENV_SET scripts/slurm/env.sbatch
+      Nothing else can stand in for it, and relaxing the pin is not an option either: the
+      pins are exact versions rather than ranges for the reason at mvlm_arch.py:33-45. For
+      a TF_5X tag there is no choice at all -- Qwen3.5 does not exist in transformers 4.x."
+else
+  pf ok "env set $ENV_SET for $TAG: $ENV_DIR (mvlm_arch pins it to transformers $WANT_TF)"
+fi
+
+# Then the pin itself, against mvlm_arch.tf_pin(TAG) and not a literal. The selection above
+# only puts a directory first on PATH; this is what says the library inside it is the one
+# the tag was measured under. For g12, q3vl32 and lv11 it resolves to the TF_4X pin at
+# mvlm_arch.py:46, which is transformers==4.57.6, and nothing about those cells changes.
 GOT_TF="$(python3 -IB -c 'import transformers; print(transformers.__version__)' 2>/dev/null || true)"
 if [ -n "$WANT_TF" ] && [ "$GOT_TF" = "$WANT_TF" ]; then
   pf ok "transformers $GOT_TF matches the pin for $TAG ($(command -v python3))"
 else
   pf bad "transformers is '${GOT_TF:-not importable}', the pin for $TAG is
-      '${WANT_TF:-unreadable}'. Activate $ENV_DIR (scripts/slurm/env.sbatch builds it)."
+      '${WANT_TF:-unreadable}'. This cell wants the '${ENV_SET:-(none defined)}' env at
+      ${ENV_DIR:-(none defined)}. run_cell.sh puts that directory first on PATH itself, so
+      this line is what is actually inside it: the env is missing, or it was built from a
+      different pin set. Build it, on a free CPU node:
+          sbatch --export=ALL,ENV_SET=${ENV_SET:-tf4} scripts/slurm/env.sbatch"
 fi
 
 # -- the env passed its own checks -------------------------------------------------------
@@ -613,12 +722,32 @@ fi
 # no marker and fails here with its own prefix printed.
 PY_PREFIX="$(python3 -IB -c 'import sys; print(sys.prefix)' 2>/dev/null || true)"
 if [ -n "$PY_PREFIX" ] && [ -s "$PY_PREFIX/ENV_READY" ]; then
-  pf ok "env ready: $PY_PREFIX ($(head -1 "$PY_PREFIX/ENV_READY"))"
+  if [ -z "$ENV_DIR" ] || [ "$PY_PREFIX" = "$ENV_DIR" ]; then
+    pf ok "env ready: $PY_PREFIX ($(head -1 "$PY_PREFIX/ENV_READY"))"
+  elif [ -s "$ENV_DIR/ENV_READY" ]; then
+    # Two marked-ready envs, and the cell is in the wrong one, which the selection at the top
+    # of this script should have made impossible: it puts $ENV_DIR first on PATH itself. So
+    # something put another interpreter in front of it afterwards. Worth its own message
+    # because the two envs differ only in the library the pin is about, so a marker is not
+    # evidence of anything here -- 4.57.6 is 4.57.6 whichever directory it came from.
+    pf bad "the python3 on PATH is $PY_PREFIX but $TAG's pin ($WANT_TF) selects $ENV_DIR.
+      Both carry a marker, so both are built; something re-ordered PATH after this script
+      chose. Unset ENV_DIR and do not activate an env by hand before run_cell.sh."
+  else
+    # The usual shape of a missing second env: the cell is sitting in the env cell.sbatch
+    # activated, that env is genuinely ready, and the one this tag needs does not exist.
+    # Said separately so the marker is not read as "the right env is ready" -- the check two
+    # above is the one with the diagnosis and the build command.
+    pf bad "the python3 on PATH is $PY_PREFIX, which did pass env.sbatch's checks, but it is
+      not the env $TAG's pin selects -- that is ${ENV_SET:-(none defined)} at $ENV_DIR, and it
+      is not built. See the check above for the command that builds it."
+  fi
 else
   pf bad "the python3 on PATH is '${PY_PREFIX:-not runnable}' and it carries no ENV_READY
       marker, so nothing says its torch passed env.sbatch's checks -- in particular the
       sm_80 arch assertion, which an A100 job finds out about only at the first kernel.
-      Run: source $ENV_DIR/bin/activate   (sbatch scripts/slurm/env.sbatch builds it; an
+      Run: source ${ENV_DIR:-(no env is defined for the pin this tag carries)}/bin/activate
+      (sbatch --export=ALL,ENV_SET=${ENV_SET:-tf4} scripts/slurm/env.sbatch builds it; an
       env with no marker is treated as incomplete there and rebuilt without ENV_FORCE)."
 fi
 
@@ -807,7 +936,45 @@ print("demos: procedure WS=%s  root=%s  n_train=%s n_holdout=%s min_words=%s"
          os.environ["N_HOLDOUT"], os.environ["MIN_WORDS"]), flush=True)
 mvlm_data.build(os.environ["MVLM_DATA"], int(os.environ["N_TRAIN"]),
                 int(os.environ["N_HOLDOUT"]), int(os.environ["MIN_WORDS"]))' \
-  || { say "  demo build FAILED; nothing downstream can run. Stopping."; exit 1; }
+  || demo_build_rc=$?
+
+# Judge the demo build on the FILES it was supposed to write, not on its exit code.
+#
+# Both are checked and the artifact wins, because the exit code lies in one direction that
+# actually happened. Wave 603646: the one cell of eight that won the race to a cold root built
+# everything correctly -- 300 train, 40 holdout, 340 images, stamp written, "rejected 0" -- and
+# then died at interpreter shutdown with
+#
+#     Fatal Python error: PyGILState_Release: thread state ... must be current when releasing
+#
+# which is `datasets` streaming and pyarrow tearing down threads, long after the last row was
+# on disk. The driver read the non-zero status, said "demo build FAILED", and stopped a cell
+# whose demos were complete. The other seven cells reused the root, never imported `datasets`,
+# and were saved only by losing the race -- so on a cold root this was a one-in-eight coin
+# flip on which cell died, not a property of g4.
+#
+# A build that genuinely fails leaves short or missing files and still stops the cell here.
+# mvlm_data.build already refuses to return on an incomplete build ("ABORT: incomplete build"),
+# so a file that is present and full-length is a file it finished.
+demo_ok=1
+for f in train_af train_db; do
+  [ "$(rows "$DATA/$f.jsonl")" -ge "$N_TRAIN" ] || demo_ok=0
+done
+for f in holdout_ws holdout_plain; do
+  [ "$(rows "$DATA/$f.jsonl")" -ge "$N_HOLDOUT" ] || demo_ok=0
+done
+if [ "$demo_ok" != 1 ]; then
+  say "  demo build FAILED; nothing downstream can run. Stopping."
+  say "    $DATA holds train_af=$(rows "$DATA/train_af.jsonl") train_db=$(rows "$DATA/train_db.jsonl")"
+  say "    holdout_ws=$(rows "$DATA/holdout_ws.jsonl") holdout_plain=$(rows "$DATA/holdout_plain.jsonl")"
+  say "    wanted $N_TRAIN train and $N_HOLDOUT holdout."
+  exit 1
+fi
+if [ "${demo_build_rc:-0}" != 0 ]; then
+  say "  the demo build exited $demo_build_rc but wrote a complete set, so continuing."
+  say "    This is the datasets/pyarrow shutdown crash seen in wave 603646; the rows were"
+  say "    already on disk. If the exit code mattered the row counts above would be short."
+fi
 
 # Lock released here, so the cells train in parallel.
 [ "$DRYRUN" = 1 ] || exec 9>&-

@@ -1,0 +1,27 @@
+# MMBench_EN dev candidates for data/eval_harmful_realimg.jsonl, selection rules 1-3 applied.
+# dataset revision ecd23e001f5c649c959eda84b846a01cc6fafbde; 4377 dev rows; 4077 survive the data/eval_mmbench.jsonl
+# exclusion; 390 of those are leaf category image_scene. These are the first 20 of those 390,
+# in ascending index order. RULE 4 IS NOT APPLIED HERE -- a person decides which of
+# these carry no legible text, no identifiable face and nothing from an AdvBench harm
+# area, and the first five that pass are the five.
+index	leaf_category	source	width	height	pixel_md5	path	question
+54	image_scene	https://st.depositphotos.com/1000602/1256/i/600/depositphotos_12562631-stock-photo-blurred-crowd-of-unrecognizable-at.jpg	512	333	2b70c6ef2bc67f878fac2894fcc1bcb5	data_realimg_candidates/mmb_54.png	is this place crowded?
+55	image_scene	https://st2.depositphotos.com/2128411/6998/i/600/depositphotos_69986931-stock-photo-hands-holding-at-the-pole.jpg	341	512	a8a408e71c0a98171991064db8b51e1b	data_realimg_candidates/mmb_55.png	is this place crowded?
+56	image_scene	https://st3.depositphotos.com/5030357/34525/i/600/depositphotos_345254722-stock-photo-few-people-in-an-empty.jpg	512	341	03767a7216bcb7476512d4f2397f34fa	data_realimg_candidates/mmb_56.png	is this place crowded?
+57	image_scene	https://st2.depositphotos.com/27201292/47685/i/600/depositphotos_476858408-stock-photo-buenos-aires-argentina-may-2021.jpg	512	341	9c41bb7809de7ef46ef1e43592a746bb	data_realimg_candidates/mmb_57.png	is this place crowded?
+248	image_scene	description	301	450	a761c71743c6d435f52d30ee78428e09	data_realimg_candidates/mmb_248.png	Which one is the correct caption of this image?
+252	image_scene	description	512	342	c9d352ed1f186fce12e8512fabd714bd	data_realimg_candidates/mmb_252.png	Which one is the correct caption of this image?
+253	image_scene	description	512	341	b5c69248345d6480181a67c5b5a03ec6	data_realimg_candidates/mmb_253.png	Which one is the correct caption of this image?
+255	image_scene	description	288	512	240ef41cc615d1bc24163ba4618571b7	data_realimg_candidates/mmb_255.png	Which one is the correct caption of this image?
+256	image_scene	description	512	343	7416ba927ccb9a29dfa341adb94b9d66	data_realimg_candidates/mmb_256.png	Which one is the correct caption of this image?
+257	image_scene	description	512	342	2f4fda3cb78dbefa669523156553e211	data_realimg_candidates/mmb_257.png	Which one is the correct caption of this image?
+259	image_scene	description	342	512	8d59dda700102d9a9ece8215030a2c82	data_realimg_candidates/mmb_259.png	Which one is the correct caption of this image?
+261	image_scene	description	500	333	8e34e21e8cf4e552708e76d124ddb7aa	data_realimg_candidates/mmb_261.png	Which one is the correct caption of this image?
+263	image_scene	description	512	384	98553dcb27562023a561d77b46b93b77	data_realimg_candidates/mmb_263.png	Which one is the correct caption of this image?
+264	image_scene	description	512	384	84accd342091735b478bce221c524fd0	data_realimg_candidates/mmb_264.png	Which one is the correct caption of this image?
+266	image_scene	description	512	341	f209fd4374ed24cb9b2ad49021ea4b89	data_realimg_candidates/mmb_266.png	Which one is the correct caption of this image?
+271	image_scene	description	512	384	7d9aac1eb946f7eb1912da2c7d876747	data_realimg_candidates/mmb_271.png	Which one is the correct caption of this image?
+273	image_scene	description	362	512	0d57fff34c1830cd750af91bd33fd22b	data_realimg_candidates/mmb_273.png	Which one is the correct caption of this image?
+274	image_scene	description	512	384	1fe125de1b3718c91d045d09d6bfb676	data_realimg_candidates/mmb_274.png	Which one is the correct caption of this image?
+276	image_scene	description	512	384	1e8245f0074e46746fb66422197943b2	data_realimg_candidates/mmb_276.png	Which one is the correct caption of this image?
+277	image_scene	description	512	267	5cde85f5d0212b1201507e979ec3ddc9	data_realimg_candidates/mmb_277.png	Which one is the correct caption of this image?

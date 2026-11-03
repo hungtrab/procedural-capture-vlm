@@ -12,34 +12,103 @@ nothing is ever cleared, and the batch sizes are the measured ones.
 
 | file | what it is |
 |---|---|
-| `env.sbatch` | builds the one python env on FSx and marks it ready. CPU, run once. |
-| `prefetch_assets.sbatch` | downloads the five checkpoints into the shared HF cache. CPU, run once. |
+| `env.sbatch` | builds **one** python env on FSx and marks it ready. CPU, run once per env; `ENV_SET` picks which. |
+| `prefetch_assets.sbatch` | downloads the checkpoints into the shared HF cache. CPU, run once. |
 | `offload_to_fsx.sbatch` | moves bulk directories off the `/home` quota. CPU, run as needed. |
 | `cell.sbatch` | submits one cell: env, token, one GPU, then `run_cell.sh`. Takes `TAG` and `WS`. |
-| `run_cell.sh` | the cell itself: train, gate, gate check, generate, four judge passes. Derives `SUF`, `EVAL` and `REQUEST_SLOT` from `WS`. |
+| `wave.sbatch` | several cells in one allocation, one per GPU. Takes `CELLS="tag:ws …"`. |
+| `run_cell.sh` | the cell itself: train, gate, gate check, generate, four judge passes. Derives `SUF`, `EVAL` and `REQUEST_SLOT` from `WS`, and the python env from `TAG`. |
 
 ---
 
 ## Once, before anything
 
     mkdir -p /genai/fsx-llm/interns/hoangpv/pcvlm/sp/log
-    sbatch scripts/slurm/env.sbatch              # ~10 min, CPU
+    sbatch scripts/slurm/env.sbatch              # ~10 min, CPU — the tf4 env
     sbatch scripts/slurm/prefetch_assets.sbatch  # ~1 h, CPU, idempotent
 
-`env.sbatch` prints the resolved version of every package at the end; `transformers 4.57.6`
-is the line `run_cell.sh` checks for, and no cell will start without it. It also asserts that
-the torch it installed can target an A100 — `sm_80` in `torch.cuda.get_arch_list()` — and
-fails the build if it cannot, which is a thing worth knowing on a free CPU node rather than
-after an A100 has been held for an hour.
+`env.sbatch` prints the resolved version of every package at the end; the `transformers` line
+is the one `run_cell.sh` checks against the tag's pin, and no cell will start unless they
+match. It also asserts that the torch it installed can target an A100 — `sm_80` in the
+compiled arch list — and fails the build if it cannot, which is a thing worth knowing on a
+free CPU node rather than after an A100 has been held for an hour.
+
+### Two environments, and the **tag** picks which
+
+`scripts/vlm/mvlm_arch.py:46-47` pins the library per model: `TF_4X = "transformers==4.57.6"`
+and `TF_5X = "transformers==5.22.0"`, and `tf_pin(tag)` returns one of them. Exact versions,
+not ranges, and `mvlm_arch.py:33-45` says why — a range re-resolved on a fresh VM and
+produced *"two rows under two libraries"*. So there are two envs and a tag may not be run in
+the wrong one.
+
+| `ENV_SET` | directory | `transformers` | tags |
+|---|---|---|---|
+| `tf4` (default) | `…/pcvlm/env` | `4.57.6` | `lv11`, `q3`, `g4`, `g12`, `q3vl2`, `q3vl8`, `q3vl32`, `q7`, `q32`, `q72` — every tag with no `tf` override in `mvlm_arch.SPECS` |
+| `tf5` | `…/pcvlm/env_tf5` | `5.22.0` | `q35_08`, `gm412`, `gm431` |
+
+    sbatch scripts/slurm/env.sbatch                            # tf4
+    sbatch --export=ALL,ENV_SET=tf5 scripts/slurm/env.sbatch   # tf5
+
+Round 1's five cells were all `tf4`, which is why this file used to say "the one env". Round
+2 cells 13 and 14 are `q35_08` (`Qwen/Qwen3.5-0.8B`), the first `TF_5X` tag this project has
+run: **Qwen3.5 does not exist in `transformers` 4.x at all**, so those two cells cannot run in
+the `tf4` env, and `run_cell.sh`'s preflight refuses them there by name.
+
+**You never choose the env when you submit a cell.** `run_cell.sh` reads
+`mvlm_arch.tf_pin(TAG)`, maps it to one of those two directories and puts it first on `PATH`
+itself, before anything imports `transformers` — `cell.sbatch` and `wave.sbatch` activate
+`tf4` and do not know about pins, so for a `TF_5X` tag the switch happens inside `run_cell.sh`.
+The cell's log says which it got, on the `env` line of the header:
+
+    [cell q35_08_rep] …   env   tf5 /genai/…/pcvlm/env_tf5 (mvlm_arch pins q35_08 to transformers 5.22.0)
+
+and the pin is then checked against what is importable, so a missing or mismatched env stops
+the cell in the preflight rather than at the first model load.
+
+**The two envs differ in two packages and nothing else.** Same CPython 3.12.16, same
+`torch==2.11.0+cu128`, same `torchvision`, `bitsandbytes`, `peft`, `accelerate`, `datasets`,
+`pillow`, `safetensors`, `numpy`, `scipy`. `tf5` moves `transformers` to `5.22.0` and
+`huggingface_hub` to `1.33.0`, the second because the first requires it —
+`transformers==5.22.0` depends on `huggingface-hub>=1.31.0,<3.0` and the `tf4` list does not
+resolve with it bumped. Everything else is held at the `tf4` version on purpose, `pillow`
+most of all: it decodes and resizes every image, and a resampling difference between the envs
+would sit exactly where a backbone difference is meant to be read. `tf4` resolves to 70
+packages, `tf5` to 79; both write the full transitive set to `requirements.lock.txt` in the
+env, so a later rebuild can be diffed against it instead of trusted.
+
+**One thing the handback has to say about the `q35_08` cells.** A cell judges in the env it
+generates in, so those two conditions are scored by Llama-Guard-3-8B and Qwen3Guard-Gen-8B
+under `transformers 5.22.0` while every other condition was judged under `4.57.6`. Both
+guards are ordinary causal LMs and their stated requirement is `transformers>=4.57.0`
+(`judge_multi.py:26`), so they load either way — but `AGENTS.md` → "What a run must hand back"
+item 5 asks for the library each cell actually resolved, and these are the cells where it is
+not the usual one.
+
+`cell.sbatch` and `wave.sbatch` still activate `tf4` before handing over, so **the `tf4` env
+has to exist even for a `tf5` cell** — they check its marker and stop without it. `run_cell.sh`
+then switches. Nothing needed changing in either file.
 
 **The env says whether it is usable, and nothing else does.** When every check has passed,
-`env.sbatch` writes `$ENV_DIR/ENV_READY` — one summary line plus the torch build, the arch
-list and what was checked — and that marker is what `cell.sbatch` and `run_cell.sh` test for.
-Not an executable interpreter: the venv is created and the wheels are installed *before* the
-arch assertion runs, so a build that fails it still leaves a working `bin/python` with the
-pinned `transformers` on a torch that cannot run a kernel on an A100. The first line of the
-marker is echoed into every cell's log, so a cell's log records which build of the env it ran
-under.
+`env.sbatch` writes `$ENV_DIR/ENV_READY` — one summary line, which now names its `ENV_SET`,
+plus the torch build, the arch list and what was checked — and that marker is what
+`cell.sbatch` and `run_cell.sh` test for. Not an executable interpreter: the venv is created
+and the wheels are installed *before* the arch assertion runs, so a build that fails it still
+leaves a working `bin/python` with the pinned `transformers` on a torch that cannot run a
+kernel on an A100. The first line of the marker is echoed into every cell's log, so a cell's
+log records which build of which env it ran under.
+
+The checks the marker stands for are: the imports, the `transformers` auto classes, the
+`peft` classes, `sm_80` in the torch arch list, and — new — that the `transformers` the
+resolver installed is the one this `ENV_SET` is for, so a `tf5` pin set can never end up in
+the `tf4` directory that every 4.x cell is routed to.
+
+*The marker on the existing `tf4` env is two lines long and stops after `torch cuda`.* That
+build (job 601853) hit `NameError: name 'arches' is not defined` in the marker writer — a
+second interpreter that interpolated a variable belonging to the first — and the two lines
+already buffered were flushed on shutdown, which `[ -s … ]` accepted. Fixed: the arch list is
+handed over through a file and the writer's exit status is now checked as well as the file's
+size. The env itself is fine, and nothing reads past the first line of the marker; a rebuild
+would produce the full one.
 
 `env.sbatch` refuses to rebuild over an env that **is** marked ready, because replacing
 site-packages under a running twelve-hour job is the same mistake as editing a shell script
@@ -268,6 +337,7 @@ What to check in that output, and why each one costs the whole cell if it is wro
 | look at | it must be |
 |---|---|
 | `REQUEST_SLOT=` in the header and on the generate call | `1` for `count` and `chain`, `2` for `front`. This is the one variable that changes what is **stored**, and rule 4 says a stored transcript is never repaired |
+| `env` in the header | `tf5 …/env_tf5` for `q35_08`, `gm412` and `gm431`; `tf4 …/env` for every other tag. It is derived from `mvlm_arch.tf_pin(TAG)`, so it cannot be typed wrong — but a `tf4` line on a `q35_08` cell would mean the table in `run_cell.sh` and the pin in `mvlm_arch.py` have drifted apart |
 | `V=` on the generate and judge calls | the condition directory, `outputs/vlm2_gray_<tag><suf>` |
 | `SFX=''` | empty. See THE SFX TRAP in `run_cell.sh`'s header: a leftover `SFX` writes files that are correct and that nothing reads |
 | `EVALF=` on the generate call | an absolute path, and the same file the preflight counted 260 rows in a few lines above |
@@ -346,7 +416,10 @@ Things the cell stops on, and what each means:
 | `does not agree with the condition it was given` | `SUF` or `EVAL` names a different condition than `WS`. Drop them both and let `WS` pick, or set `ALLOW_WS_MISMATCH=1` if the disagreement is deliberate. |
 | `does not match what this cell would actually run` | the eval's first row does not render this `WS`'s template, or the request-free judging turn is not that template with the request deleted. Neither of these is a naming convention: one of the two files holds a different procedure. The usual cause is a `SUF` with no arm of its own in `run_neutral_judge.sh`, which silently falls through to the `count` worksheet's turn. |
 | `is not a procedure the installed mvlm_data.py knows` | `WS=front` before `patch_ws_front.py` has been applied. See "Extra prerequisites" above. |
-| `no ENV_READY marker` | `env.sbatch` built that env but it failed one of the checks — the `sm_80` arch assertion is the one that matters here. Resubmit `env.sbatch`; it rebuilds an unmarked env without `ENV_FORCE`. |
+| `no ENV_READY marker` | `env.sbatch` built that env but it failed one of the checks — the `sm_80` arch assertion is the one that matters here. Resubmit `env.sbatch` with the same `ENV_SET`; it rebuilds an unmarked env without `ENV_FORCE`. |
+| `is pinned to transformers 5.22.0, which is the 'tf5' environment` | that env has not been built. The message names the command: `sbatch --export=ALL,ENV_SET=tf5 scripts/slurm/env.sbatch`. This is where a `q35_08` cell stops if the second env is missing — in the first second of the preflight, not at the first model load, and nothing has been written. |
+| `no environment is defined for that pin` | `mvlm_arch.py` has grown a third pin and nothing builds it. Add an arm to `env_set_for_tf`/`env_dir_for_set` at the top of `run_cell.sh` **and** to the `ENV_SET` case in `env.sbatch`. It is deliberately not defaulted to the 4.x env: a tag run under a library its row was not measured under shows up later as a model difference, which is the failure `mvlm_arch.py:33-45` exists to prevent. |
+| `which did pass env.sbatch's checks, but it is not the env … pin selects` | the companion line to the two above: the env you are in is fine, it is just not this tag's. The diagnosis and the build command are in the check printed before it. |
 | `was built for a different configuration` | the demo root's `demo_stamp.txt` does not match this cell. Almost always a stale `MVLM_DATA` from another stage. Nothing was trained on the wrong demos. |
 | `already holds demos but there is no demo_stamp.txt` | a demo root of unknown origin. Delete it to rebuild, or stamp it by hand with the four lines the message prints. |
 | `af and db have the SAME md5` | the arm split failed and both arms hold one adapter, so AF−DB is zero by construction. Delete `adapters_store/mvlm_<tag><suf>` and retrain. |
