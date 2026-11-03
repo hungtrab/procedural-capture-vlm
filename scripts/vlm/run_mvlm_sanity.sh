@@ -35,6 +35,11 @@ PY
 # Same GPUS env var as run_mvlm.sh, same default, same reason: the benign gate must run on
 # the SAME accelerator as the harmful rows it gates, so both drivers read one variable.
 GPUS="${GPUS:---gpu A100 --high-mem|--gpu A100}"
+# SNAME is appended to every Colab session name this driver creates. Names were built from the
+# tag alone ("mv<tag>g<round>"), so two drivers running the same backbone at once -- two seeds
+# of one template, in parallel -- would address the same session and each drive the other's
+# VM. Empty by default, which keeps every name exactly as before.
+SNAME="${SNAME:-}"
 
 newvm(){
   local made=0 hw
@@ -77,7 +82,7 @@ for tag in ${TAGS//,/ }; do
   crashes=0
   for round in $(seq 1 "$ROUNDS"); do
     if complete; then say "$tag: sanity complete"; break; fi
-    S="sn${tag}r${round}"
+    S="sn${tag}${SNAME}r${round}"
     say "=== $tag sanity round $round ==="
     newvm "$S" || { sleep 60; continue; }
     push .hf /content/hf_token.txt

@@ -1449,3 +1449,38 @@ default that does not blur the number, it inverts it: a compliant answer in Step
 as a non-answer because Step 1 is a description of the gray square, while a refusal is kept.
 `REQUEST_SLOT=2` is now required for every front readout, `stats_models.py` refuses to run
 without it, and `run_cell.sh` derives it from `WS` so it cannot be forgotten.
+
+## D45 — the doubled BOS, which pipelines carry it, and the template search it forces
+
+Written 2026-11-03, after round 2 (`RUN_2026-11-03_round2.md` §1.3) found that the anchor's
+published adapters were trained, and its published rows generated, with two
+`<|begin_of_text|>` tokens, while `mvlm_arch.pack` passes `add_special_tokens=False` and so
+emits one. Verified here by reading the code: `vlm_train_llama.py:54-60`, `vlm_gen_llama.py:49`
+and `gen_harmful_multi.py:109` call the processor bare.
+
+**What the doubled BOS does and does not say about the published anchor.** The published run
+was internally consistent: the adapters were trained on the doubled form and generated under
+it. Round 2's cell 4 was not: it fed those adapters the single form. So the fall from +23.5pp
+to +7.7pp is, on the evidence so far, a reproduction that introduced a train/generation
+mismatch, not a demonstration that the published number was wrong. Both readings remain open
+until the doubled form is regenerated (round 2's proposed `lv11_bos2` cell). What is not open
+is that the published number was measured on a prompt with a formatting defect, and a
+headline should not rest on one.
+
+**The text-only control carries the same mismatch, by code reading, not yet measured.**
+`txt_stage1.py:149-156` tokenises the rendered chat template with a bare `tok(...)`, whose
+default adds BOS to a string that already begins with one, while `txt_gen.py:88` generates
+with `add_special_tokens=False`. So the text-only result (two seeds, pooled +23.3pp, the
+basis for "not vision-specific") was trained on two BOS and generated on one, exactly the
+mismatch round 2's cell 4 had, and it still produced a large gap. That cuts against reading
+cell 4's fall as caused by the mismatch alone, and it is recorded here so that nobody cites the
+text-only control as tokenization-clean. The Llama-3.1 tokenizer's default is the assumption
+in this paragraph; it has not been checked against the pinned tokenizer, and that check costs
+no GPU.
+
+**Not affected:** every mvlm backbone, which trains and generates through `pack`, and every
+Qwen backbone in any pipeline, whose chat template has no BOS to double.
+
+**Decision.** The template search in `TEMPLATE_SEARCH.md` runs every cell single-BOS end to
+end, on one accelerator type, and starts with the incumbent count worksheet, because the most
+economical outcome is that the template was fine and only the tokenization was not.

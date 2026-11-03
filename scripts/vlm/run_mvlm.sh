@@ -91,6 +91,11 @@ PY
 # experiments: a GPUS=--gpu L4 run must have ALL its own cells on L4 and must not be pooled
 # with, or differenced against, an A100 row.
 GPUS="${GPUS:---gpu A100 --high-mem|--gpu A100}"
+# SNAME is appended to every Colab session name this driver creates. Names were built from the
+# tag alone ("mv<tag>g<round>"), so two drivers running the same backbone at once -- two seeds
+# of one template, in parallel -- would address the same session and each drive the other's
+# VM. Empty by default, which keeps every name exactly as before.
+SNAME="${SNAME:-}"
 
 newvm(){ # $1 = session name
   local made=0 hw
@@ -173,7 +178,7 @@ for tag in ${TAGS//,/ }; do
       have_group "$group" && break
       RLOG="$SP/log/mvlm1_${tag}.log"
       rm -f "$RLOG"                 # never let a previous run's log look like progress
-      S="mv${tag}t${gi}$attempt"
+      S="mv${tag}${SNAME}t${gi}$attempt"
       say "=== $tag phase A group $group attempt $attempt (STEPS=$STEPS SEED=$SEED) ==="
       newvm "$S" || { say "  no VM; next attempt"; continue; }
       push .hf /content/hf_token.txt
@@ -273,7 +278,7 @@ PY
   crashes=0
   for round in $(seq 1 "$ROUNDS"); do
     if complete; then say "$tag: all arms at $N_EVAL rows"; break; fi
-    S="mv${tag}g$round"
+    S="mv${tag}${SNAME}g$round"
     tot=0; for a in ${ARMS//,/ }; do tot=$(( tot + $(rows "$OUTDIR/res_${a}.jsonl") )); done
     say "=== $tag phase B round $round (have $tot/$(( N_EVAL * 3 )) rows) ==="
     newvm "$S" || { sleep 60; continue; }

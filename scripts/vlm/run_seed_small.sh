@@ -44,6 +44,11 @@ cd "$(dirname "$0")/../.."
 SP="${SP:?scratchpad path required, e.g. SP=\$HOME/seedsmall}"
 TAG="${TAG:-q3}"
 SEEDS="${SEEDS:-1 2}"
+# The worksheet, and the suffix each seed's cell is written under. The defaults reproduce this
+# script's original behaviour (count, _s<seed>). The template search (TEMPLATE_SEARCH.md) sets
+# SUF_PREFIX=_l4_<ws>_s so its rows can never share a name with round 2's A100 _s<seed> cells.
+WS="${WS:-count}"; export WS
+SUF_PREFIX="${SUF_PREFIX:-_s}"
 # L4 first, T4 as the fallback. A 3.8B backbone in 4-bit NF4 with batch 8 fits an L4's 24GB
 # with room to spare; T4 is 16GB and fp16-only, which is why it is second and not first.
 export GPUS="${GPUS:---gpu L4|--gpu T4}"
@@ -51,7 +56,11 @@ STEPS="${STEPS:-150}"
 GATE_ROUNDS="${GATE_ROUNDS:-10}"
 # The published gray eval; EVAL_LOCAL is what stages it into $SP/data, and leaving it
 # unset makes phase A print "missing eval set" and train nothing.
-EVAL="${EVAL:-data/eval_harmful_gray.jsonl}"
+# count is the published worksheet and its eval predates WS, so it is the gray eval; every
+# other worksheet has its own, built by build_eval_chain.py, which reads WS.
+if [ "$WS" = count ]; then EVAL="${EVAL:-data/eval_harmful_gray.jsonl}"
+else EVAL="${EVAL:-data/eval_harmful_${WS}.jsonl}"; fi
+[ -s "$EVAL" ] || { echo "[seed] eval $EVAL missing; build it before spending a GPU"; exit 6; }
 GEN_ROUNDS="${GEN_ROUNDS:-10}"
 mkdir -p "$SP/log"
 say(){ echo "[seed] $(date +%H:%M:%S) $*"; }
@@ -61,8 +70,8 @@ quiet(){ grep -vE --line-buffered "^\[colab\] (A new version|Run 'colab|To silen
 HW1="${GPUS%%|*}"
 
 say "=== 0. preflight: Colab auth and $HW1 ==="
-PRE="$(timeout 180 colab new -s seedpreflight $HW1 </dev/null 2>&1 || true)"
-timeout 60 colab stop -s seedpreflight </dev/null >/dev/null 2>&1 || true
+PRE="$(timeout 180 colab new -s "pf$$" $HW1 </dev/null 2>&1 || true)"
+timeout 60 colab stop -s "pf$$" </dev/null >/dev/null 2>&1 || true
 case "$PRE" in
   *"Session READY"*)  say "  $HW1 available, auth OK" ;;
   *"authorization code"*|*"accounts.google.com"*)
@@ -84,7 +93,9 @@ case "$PRE" in
 esac
 
 for SEED in $SEEDS; do
-  SUF="_s${SEED}"
+  SUF="${SUF_PREFIX}${SEED}"
+  # one session-name salt per seed, so seeds of one backbone can run in parallel processes
+  export SNAME="${SNAME_BASE:-}s${SEED}"
   SAN="outputs/vlm2_sanity_${TAG}${SUF}"
   say "######## seed $SEED, tag $TAG, SUF=$SUF ########"
 
@@ -125,7 +136,7 @@ done
 say "=== 6. across the seeds this run produced ==="
 for SEED in $SEEDS; do
   say "-- seed $SEED --"
-  SP="$SP" TAGS="$TAG" SUF="_s${SEED}" python3 -I scripts/vlm/stats_models.py 2>/dev/null \
+  SP="$SP" TAGS="$TAG" SUF="${SUF_PREFIX}${SEED}" python3 -I scripts/vlm/stats_models.py 2>/dev/null \
     | grep -E "screened unsafe|^  \S+ +[0-9.]+B" || true
 done
 say "Read af - db within each seed. Do NOT difference these against the published $TAG row:"
