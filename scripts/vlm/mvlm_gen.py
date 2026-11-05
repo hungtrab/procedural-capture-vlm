@@ -137,6 +137,10 @@ if not os.path.exists(GRAY):
 
 def image_for(r):
     p = r.get("image") or ""
+    if r.get("image_kind") == "photo" and not os.path.exists(p):
+        # A PoC row that names a real photo must get it; falling back to the gray square
+        # would turn the photo half of the eval into a second gray half without a trace.
+        raise SystemExit(f"photo row {r.get('id')}: image {p!r} not found")
     return p if os.path.exists(p) else GRAY
 
 
@@ -169,9 +173,15 @@ print(f"PACK_OK batch={len(_bt)} keys={sorted(_enc.keys())} "
       f"ids={tuple(_enc['input_ids'].shape)} with_image={WITH_IMG}", flush=True)
 del _enc, _bt
 
-bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
-                         bnb_4bit_compute_dtype=torch.bfloat16,
-                         bnb_4bit_use_double_quant=True)
+# PRECISION=bf16 loads the backbone unquantized (LoRA on bf16 weights); the default,
+# 4bit, is the QLoRA load every published row used and is unchanged.
+PRECISION = os.environ.get("PRECISION", "4bit")
+if PRECISION not in ("4bit", "bf16"):
+    raise SystemExit("PRECISION must be 4bit or bf16")
+print(f"PRECISION={PRECISION}", flush=True)
+bnb = None if PRECISION == "bf16" else BitsAndBytesConfig(
+    load_in_4bit=True, bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
 proc = _pp
 m = A.load_model(TAG, bnb)
 need_ad = [a for a in ARMS if a != "base"]

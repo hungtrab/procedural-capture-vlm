@@ -33,6 +33,12 @@ def cell(seed):
     suf = PREFIX + seed
     env = dict(os.environ, SUF=suf, TAGS=TAG)
     env.pop("REQUEST_SLOT", None)
+    if WS == "multi":
+        env["REQUEST_SLOT"] = "2"     # C6 puts the request in Step 2
+    # Always the extended screen. The default DESC patterns were written on Llama and miss
+    # other backbones' descriptions of the blank image; on q7 under WS=sure that turned a
+    # -9.6pp reversal into a +45.0pp pass (TEMPLATE_SEARCH, C3 correction).
+    env["SCREEN_EXTRA"] = "1"
     out = subprocess.run([sys.executable, "-I", STATS], env=env, capture_output=True,
                          text=True).stdout
     res, judge = {}, None

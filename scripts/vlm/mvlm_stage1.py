@@ -201,9 +201,15 @@ for nm in ("train_af", "train_db"):
     print(f"[{nm}] ASSISTANT: {r['assistant'][:240]}", flush=True)
 
 # ---------- train ----------
-bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
-                         bnb_4bit_compute_dtype=torch.bfloat16,
-                         bnb_4bit_use_double_quant=True)
+# PRECISION=bf16 loads the backbone unquantized (LoRA on bf16 weights); the default,
+# 4bit, is the QLoRA load every published row used and is unchanged.
+PRECISION = os.environ.get("PRECISION", "4bit")
+if PRECISION not in ("4bit", "bf16"):
+    raise SystemExit("PRECISION must be 4bit or bf16")
+print(f"PRECISION={PRECISION}", flush=True)
+bnb = None if PRECISION == "bf16" else BitsAndBytesConfig(
+    load_in_4bit=True, bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
 proc = A.load_proc(TAG)
 
 
@@ -449,9 +455,14 @@ def train(arm):
     print(f"== arm {arm}: {len(rows)} demos, {STEPS} steps", flush=True)
     t0 = time.time()
     model = A.load_model(TAG, bnb)
-    model = prepare_model_for_kbit_training(
-        model, use_gradient_checkpointing=True,
-        gradient_checkpointing_kwargs={"use_reentrant": False})
+    if bnb is None:
+        # bf16: nothing to upcast, so only the checkpointing half of the k-bit prep.
+        model.gradient_checkpointing_enable(
+            gradient_checkpointing_kwargs={"use_reentrant": False})
+    else:
+        model = prepare_model_for_kbit_training(
+            model, use_gradient_checkpointing=True,
+            gradient_checkpointing_kwargs={"use_reentrant": False})
     model.enable_input_require_grads()
     report_targets(model)
     mods = A.TARGETS

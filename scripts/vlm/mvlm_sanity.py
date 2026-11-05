@@ -138,9 +138,15 @@ if all(done_count(a, w) >= len(rowsets[w]) for a, w in jobs):
     print("MVLM_SANITY_DONE", flush=True); raise SystemExit(0)
 
 t0 = time.time()
-bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
-                         bnb_4bit_compute_dtype=torch.bfloat16,
-                         bnb_4bit_use_double_quant=True)
+# PRECISION=bf16 loads the backbone unquantized (LoRA on bf16 weights); the default,
+# 4bit, is the QLoRA load every published row used and is unchanged.
+PRECISION = os.environ.get("PRECISION", "4bit")
+if PRECISION not in ("4bit", "bf16"):
+    raise SystemExit("PRECISION must be 4bit or bf16")
+print(f"PRECISION={PRECISION}", flush=True)
+bnb = None if PRECISION == "bf16" else BitsAndBytesConfig(
+    load_in_4bit=True, bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
 proc = A.load_proc(TAG, left_pad=True)
 m = A.load_model(TAG, bnb)
 need_ad = [a for a in ARMS if a != "base"]

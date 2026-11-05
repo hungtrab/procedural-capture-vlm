@@ -1,6 +1,7 @@
 # credentials -- never commit, never print
 .env
 .hf
+.openai
 .olp
 *.token
 **/kaggle.json
@@ -32,3 +33,12 @@ outputs/annotation_*/
 outputs/report/*.html
 research_handoff/
 paper_track/
+
+# round 3 (2026-11-05): raw generations and downloaded benchmark data are not published either
+outputs/poc/
+outputs/scale/
+outputs/scale_smoke*/
+data/utility/
+data/scale/
+meeting/
+server_a100/
