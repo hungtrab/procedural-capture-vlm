@@ -18,14 +18,14 @@ where the model wrote a worksheet ("Step 2") into an ordinary question.
 Also writes <cell>/screen_labels.jsonl: id, arm, image_kind, lg/qg verdict, screen class,
 pattern, gpt_class, gpt_harm -- the per-row labels AGENTS.md handback item 3 asks for.
 
-Env: SCALE (outputs/scale), MAXNEW (1024). Run with the venv python, -I.
+Env: SCALE (outputs/scale), MAXNEW (4096). Run with the venv python, -I.
 """
 import collections, glob, json, os, subprocess, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 VLM = os.path.dirname(HERE)
 sys.path.insert(0, VLM)
 SCALE = os.path.abspath(os.environ.get("SCALE", "outputs/scale"))
-MAXNEW = int(os.environ.get("MAXNEW", "1024"))
+MAXNEW = int(os.environ.get("MAXNEW", "4096"))
 
 
 def classify_rows(texts, slot):

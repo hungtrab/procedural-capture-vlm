@@ -153,7 +153,9 @@ bf16 plus both 4-bit guards is about 35GB. A 32B backbone across two cards plus 
 about 90GB of 160GB.
 
 Rough timing: an 8B cell is about 1-2h, a 32B cell on two cards about 4-7h, and the whole
-round about 12-16h wall clock. If you need it faster, use fewer utility rows (`N_UTIL=100`),
+round about 12-16h wall clock. With `MAXNEW=4096`, one looping row holds its whole batch to
+4096 tokens. Loops were rare on `mix` in the PoC (1 of 260 rows), so expect maybe 20-40% more,
+not 4x. `BS` stays 8; the KV cache for 8 × 4096 tokens fits easily on 80GB, even at 32B. If you need it faster, use fewer utility rows (`N_UTIL=100`),
 not fewer AdvBench rows.
 
 ## Commands
@@ -203,7 +205,7 @@ result still reproduces at the defaults.
 | setting | published default | this round | why |
 |---|---|---|---|
 | `PRECISION` | `4bit` (QLoRA nf4) | `bf16` | the round's purpose; new switch in `mvlm_stage1/gen/sanity.py`, default unchanged |
-| `MAXNEW` | 320 | 1024 | full responses: at 320 the PoC gate lost rows that were simply cut off mid-answer |
+| `MAXNEW` | 320 | 4096 | full responses: at 320 the PoC gate lost rows that were simply cut off mid-answer; 4096 leaves only loops capped |
 | `N_HOLDOUT` | 40 | 40 (PoC used 10) | the published gate size |
 | eval | 260 gray | 260 gray + 260 photo (`p<id>`) + 1000 utility (`u_<task>_<i>`) | non-gray image; utility |
 | judging | `judge_multi.py` after gen | `judge_stream.py` beside gen | same labels (checked), less wall clock |
@@ -218,8 +220,13 @@ The project owner asked for this explicitly. Concretely:
 - `res_<arm>.jsonl` holds the **whole** transcript in `raw` (`response` is only the
   request-slot slice). Never edit, trim or re-encode either field (rule 4). The guards judge
   `raw`, and so does GPT.
-- `summarize_scale.py` counts rows whose `raw` reaches the 1024-token cap (`capped`). A capped
-  row is a cut transcript. Report the count per cell.
+- `summarize_scale.py` counts rows whose `raw` reaches the 4096-token cap (`capped`). At that
+  length a capped row is almost always a loop. Report the count per cell.
+- **What each judge reads.** The guards read the first 4000 characters of `raw`, which is the
+  published protocol (`judge_multi.py`), kept so the rates compare with every earlier row.
+  GPT-5.5 reads the whole transcript. Where a harmful part starts after character 4000, the
+  guards cannot see it and GPT can. If GPT finds harm the guards miss, check `len(raw)`
+  before you call it a guard disagreement.
 - Hand back **every** transcript file, not a sample: `outputs/scale/<tag>_<ws>/res_*.jsonl`,
   `san_*.jsonl`, `run.log`, `judge.log`, `screen_labels.jsonl`. They are large and not in git,
   so send them out of band and say where they are.

@@ -20,8 +20,10 @@ CL=$SCALE/claims_${SLURM_JOB_ID:-local}; mkdir -p "$CL"
 export CUDA_VISIBLE_DEVICES=$GPUS MVLM_PIP=0 MVLM_SPLIT=0 N_HOLDOUT=${N_HOLDOUT:-40}
 # The scale round's two deliberate departures from the published defaults, both stated in
 # next_step.md: unquantized backbones, and a token cap high enough that a transcript is
-# complete rather than cut at 320 tokens (the PoC gate's misses were all cuts).
-export PRECISION=bf16 MAXNEW=${MAXNEW:-1024}
+# complete rather than cut at 320 tokens (the PoC gate's misses were all cuts). 4096 is far
+# past any finished answer seen in the PoC (longest about 300 words); a row that still hits
+# it is a loop, and summarize_scale.py counts it as capped.
+export PRECISION=bf16 MAXNEW=${MAXNEW:-4096}
 export HF_HOME=${HF_HOME:-$HOME/.cache/huggingface}
 export TMPDIR=${TMPDIR:-$SCALE/tmp}; mkdir -p "$TMPDIR"
 # Alpaca text is not ASCII, and python -I ignores PYTHONUTF8, so the locale must say UTF-8.
