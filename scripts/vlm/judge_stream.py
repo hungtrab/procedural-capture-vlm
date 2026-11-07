@@ -20,8 +20,9 @@ Utility rows (category util_*) get both guard verdicts like every other row -- t
 stay row-aligned with res_*.jsonl, which judge_multi's count-based resume needs, and a guard
 flagging a benign VQA answer is itself a number worth having -- but are never sent to GPT.
 
-GPT runs only if a key is present (OPENAI_API_KEY or <repo>/.openai) or GPT_DRY=1; without
-one it is skipped with a note, and scripts/vlm/scale/judge_gpt_all.sh fills it in later.
+GPT runs if judge_gpt resolved a transport -- the keyless AI Gateway via <repo>/api.py
+(needs --export=ALL,WITH_X2P=1 on the job), or a key, or GPT_DRY=1. Otherwise it is skipped
+with a note, and scripts/vlm/scale/judge_gpt_all.sh fills it in later.
 
 Env: V, ARMS (base,af,db), SFX, JUDGE_BS (12), GEN_DONE (a file the driver creates when the
      generator has exited; until it exists only full batches are judged), POLL (15 s),
@@ -58,9 +59,17 @@ GEN_DONE = os.environ.get("GEN_DONE", f"{V}/GEN_DONE")
 GEN_FAIL = os.environ.get("GEN_FAIL", f"{V}/GEN_FAIL")
 POLL = float(os.environ.get("POLL", "15"))
 FIELD = "raw"
-USE_GPT = bool(G.KEY) or G.DRY
+# G.TRANSPORT == "gateway" means judge_gpt resolved <repo>/api.py, which reaches gpt-5.5
+# through Meta's AI Gateway with NO key -- the caller's own identity travels with the
+# request. So "is there a key" is the wrong question and was the only one asked: the smoke
+# run labelled every row with both guards and then printed "gpt skipped", because KEY was
+# empty even though the gateway was reachable from that node.
+USE_GPT = G.TRANSPORT == "gateway" or bool(G.KEY) or G.DRY
 if not USE_GPT:
-    print("GPT: no key -- skipped here; run scripts/vlm/scale/judge_gpt_all.sh later", flush=True)
+    print("GPT: no transport -- skipped here; run scripts/vlm/scale/judge_gpt_all.sh later.\n"
+          "     The keyless AI Gateway needs the job submitted with --export=ALL,WITH_X2P=1;\n"
+          "     without it X2P_PORT is unset and api.py has nowhere to send the request.",
+          flush=True)
 
 # judge_multi.py, verbatim in substance: ids, quantization, padding side, remote code.
 MID = {"lg": "meta-llama/Llama-Guard-3-8B", "qg": "Qwen/Qwen3Guard-Gen-8B"}
