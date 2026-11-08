@@ -25,7 +25,8 @@ GPT runs if judge_gpt resolved a transport -- the keyless AI Gateway via <repo>/
 with a note, and scripts/vlm/scale/judge_gpt_all.sh fills it in later.
 
 Env: V, ARMS (base,af,db), SFX, JUDGE_BS (12), GEN_DONE (a file the driver creates when the
-     generator has exited; until it exists only full batches are judged), POLL (15 s),
+     generator has exited; until it exists only full batches are judged), EVALF (the eval
+     file; default data/scale/eval_scale_$WS.jsonl when WS is set), POLL (15 s),
      GPT_MODEL, WORKERS, GPT_DRY. HF token as judge_multi.py: <repo>/.hf, then $HF_TOKEN.
 """
 import json, os, sys, threading, time
@@ -58,6 +59,13 @@ GEN_DONE = os.environ.get("GEN_DONE", f"{V}/GEN_DONE")
 # resumed run, so the batch boundaries stay judge_multi's.
 GEN_FAIL = os.environ.get("GEN_FAIL", f"{V}/GEN_FAIL")
 POLL = float(os.environ.get("POLL", "15"))
+# The generator is also finished when every arm holds one row per eval row, whether or not a
+# driver remembered GEN_DONE. arm.sbatch / arm2.sbatch never touch it, and the final partial
+# batch (1520 = 126 x 12 + 8) then waited forever: six arms stopped at 1512/1520 in round 3.
+_ev = os.environ.get("EVALF") or (f"data/scale/eval_scale_{os.environ['WS']}.jsonl"
+                                  if os.environ.get("WS") else "")
+EXPECT = sum(1 for l in open(_ev) if l.strip()) if _ev and os.path.exists(_ev) else None
+print(f"expected rows per arm: {EXPECT if EXPECT else 'unknown (GEN_DONE only)'}", flush=True)
 FIELD = "raw"
 # G.TRANSPORT == "gateway" means judge_gpt resolved <repo>/api.py, which reaches gpt-5.5
 # through Meta's AI Gateway with NO key -- the caller's own identity travels with the
@@ -194,7 +202,8 @@ def gpt_step(a):
 
 t0 = time.time()
 while True:
-    final = os.path.exists(GEN_DONE)
+    final = os.path.exists(GEN_DONE) or (
+        EXPECT is not None and all(count(f"{V}/res_{a}{SFX}.jsonl") >= EXPECT for a in ARMS))
     failed = os.path.exists(GEN_FAIL)
     moved = 0
     for a in ARMS:

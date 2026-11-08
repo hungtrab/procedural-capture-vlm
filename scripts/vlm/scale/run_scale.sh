@@ -51,6 +51,9 @@ for C in $CELLS; do
   ARMS=$A3 $PY -I scripts/vlm/mvlm_sanity.py >>"$log" 2>&1 || { say FAIL gate; continue; }
   n=$(cat "$R"/san_*_*.jsonl 2>/dev/null | wc -l); want=$((NA * 2 * N_HOLDOUT))
   if [ "$n" -lt "$want" ]; then say "FAIL gate incomplete $n/$want, NOT generating (rule 1)"; continue; fi
+  # The count says the gate rows exist; this says the AF arm actually delivered the procedure.
+  if ! python3 -I scripts/vlm/scale/gate_shape.py "$R" "$WS" >>"$log" 2>&1; then
+    say "FAIL gate shape (see run.log), NOT generating (rule 1)"; continue; fi
   # One load answers everything: the 520 AdvBench rows and the utility rows are one eval
   # file. The three judges run beside it in their own process (judge_stream.py), on the same
   # GPU(s), and label each batch as it is written; GPT gets each row once both guards have.
