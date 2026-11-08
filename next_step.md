@@ -1,6 +1,7 @@
 # next_step.md — round 3 follow-up: finish reading the scale run
 
-Revision 3, 2026-11-08. For Hoàng's agent, on the 8×A100 cluster where the round-3
+Revision 3, 2026-11-08 (amended the same day: report corrections in task 5, send order in
+task 6). For Hoàng's agent, on the 8×A100 cluster where the round-3
 transcripts live. The round-3 brief is kept unchanged at
 `gptweb_cvpr/archive/next_step_round3_2026-11-05.md`.
 
@@ -142,6 +143,30 @@ In `gptweb_cvpr/RUN_2026-11-07_scale.md`:
 - Section 7 (not done): bring it up to date.
 - Fill in the settings table, the per-cell hardware and pins, and the full gate table, which
   are still only in `summary.txt` (your section 7).
+- **Section 4, the loop table, has two errors against your own canonical `capped` column.**
+  - `q7 mix` reads "2%". The column gives AF 8/260 gray and 11/260 photo, i.e. 19/520 =
+    **3.7%**.
+  - `q3vl8 mix` is missing from the table. It is **150/520 (28.8%)**, the third-worst AF arm
+    in the round and the worst `mix` arm.
+  - Replace the table with one computed from the canonical column, all twelve cells, with AF
+    gray / photo / both. FINDINGS section 4 already has it.
+- **Section 1, beside every `mix` gap, add the loop sensitivity from FINDINGS 4** (pairs with
+  a capped member dropped; a sensitivity, not the protocol). `q3vl8 mix` is the cell where it
+  matters: +34.0 → +23.6pp on gray LG. A reader of section 1 alone currently cannot tell that
+  half of `q3vl8 mix af`'s screened numerator is loops.
+- **Print the GPT reading of every gap beside the guard gaps.** Use AF − DB on `gpt_harm >= 4`,
+  paired by id, with its discordant pairs, computed into the canonical file by a script and not
+  by hand. The headline stays the screened guard figure (rule 3 and the GPT exception), but the
+  two readers differ in size and the reader must see both. Read off `summary.txt`'s
+  GPT>=4 column, `mix` gray is roughly:
+  - q3vl8 63/259 vs 5/260
+  - q7 66/260 vs 12/260
+  - q3vl32 23/259 vs 2/260
+  - gm431 36/260 vs 0/260
+
+  That is +22 / +21 / +8 / +14pp, against the guards' +34 / +29–35 / +17 / +15–17. Same
+  direction everywhere, smaller everywhere. These are unpaired rough figures from rounded
+  columns; the paired ones go in the file.
 
 `python3 -I scripts/vlm/audit_pvalues.py` must exit 0. No p-value enters any document unless
 it was computed into the canonical file first.
@@ -153,6 +178,26 @@ it was computed into the canonical file first.
 - **Per-row labels.** `screen_labels.jsonl` per cell (task 3).
 - **Hardware and pins per cell, plus the md5 of every adapter each cell read.** The md5s are in
   each cell's `run.log` from `mvlm_stage1.py`.
+
+**Send the transcripts first, before tasks 3–5 if you can.** Everything in the report that was
+counted or read by hand cannot be checked from this side until the files exist here, and the
+owner has asked for exactly that check. As of 2026-11-08 the repository holds only the summary
+and the report. The items in question:
+- the gm431 gate counts 36/40 and 39/40;
+- the 156 hand-read LG-only rows;
+- the loop shares and loop-excluded gaps;
+- the GPT/guard disagreement on capped rows;
+- every response quoted in FINDINGS.
+
+If all 28 arms are too large to send at once, send these first, in this order:
+1. `gm431_multi/` and `q3vl8_mix/`: `res_*.jsonl`, `res_*_{lg,qg,gpt}.jsonl`,
+   `screen_labels.jsonl`, `san_*_ws.jsonl`, `run.log`.
+2. `screen_labels.jsonl` and `san_*_ws.jsonl` for every other cell. These are small.
+3. The remaining transcripts.
+
+Say where they are in the report's first paragraph (AGENTS.md handback item 2). Once they
+land, this side re-runs `summarize_scale.py` independently and spot-reads responses against
+every hand count.
 
 ## Do not
 
