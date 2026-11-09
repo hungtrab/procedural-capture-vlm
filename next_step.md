@@ -1,13 +1,36 @@
 # next_step.md — round 3 follow-up: finish reading the scale run
 
-Revision 3, 2026-11-08 (amended the same day: report corrections in task 5, send order in
-task 6). For Hoàng's agent, on the 8×A100 cluster where the round-3
+Revision 4, 2026-11-09. Revision 3 was 2026-11-08 (amended the same day: report corrections
+in task 5, send order in task 6). For Hoàng's agent, on the 8×A100 cluster where the round-3
 transcripts live. The round-3 brief is kept unchanged at
 `gptweb_cvpr/archive/next_step_round3_2026-11-05.md`.
 
-**No GPU is needed for any of this, and nothing is generated again.** Every task reads the
-transcripts that already exist under `outputs/scale/<cell>/`. They are not in this repository,
-which is why these tasks are yours and not done from here.
+## Revision 4: what is new, and the deadline
+
+- **Nothing has come back since revision 3** (`271f410`, 2026-11-08 00:53 UTC). None of tasks
+  1–6 has been handed back.
+- **There is now a deadline.** The paper was submitted to CVPR 2027 on 2026-11-09. Its PDF can
+  be replaced until **2026-11-11 11:59 UTC**. The four-backbone table in that PDF is labelled
+  preliminary because it has no significance test, reads two AF arms over 259 rows, and has
+  no Gemma-4 utility. Every one of those is fixed by tasks 1, 3 and 3b below, and none needs
+  a GPU.
+- **Hand back by 2026-11-11 00:00 UTC whatever is done, even if it is partial.** Say in the
+  report what is still missing (handback item 7). A partial push on time is worth more than a
+  complete one after the PDF is frozen.
+- **New task 3b:** `scripts/vlm/scale/scale_tests.py` computes the exact McNemar tests that
+  the readout deliberately does not. It reads the label dumps task 3 writes. Its output is
+  appended to the canonical file, which is the only way a p-value can reach the paper
+  (rule 5).
+- **New task 7, optional and last:** two more training seeds of `mix` on the four
+  backbones. This is the only task that uses a GPU. It does not block anything above it.
+
+**Order for revision 4.** Start with task 6 (items 1 and 2 of its send order), then 1, 3 and 3b.
+After that, 4 and 5, then 2. Task 7 comes only after 1–6 are pushed.
+
+**No GPU is needed for tasks 1–6, and nothing is generated again.** Every one of them reads
+the transcripts that already exist under `outputs/scale/<cell>/`. They are not in this
+repository, which is why these tasks are yours and not done from here. Task 7 is the
+exception and says so.
 
 ## In one paragraph
 
@@ -48,6 +71,7 @@ so that no running bash reads a half-replaced script.
 | same | `capped` prints `?` when the tokenizer could not be built (it printed 0) | gm431 rows under venv_4x: 0 becomes `?`. Run under venv_5x, which builds all four tokenizers, and the column is numbers |
 | same | AdvBench rows come from `res_<arm>_qg.jsonl`, with GPT fields joined by id, so a failed GPT call no longer drops a row from the guard rates | `q3vl8 mix af` and `q3vl32 mix af` gray: n 259 → 260 (FINDINGS 9.1 measured 0.2–0.4pp) |
 | `scripts/vlm/judge_stream.py` | done when every arm holds one row per eval row, even if no `GEN_DONE` exists (eval file from `EVALF`, else `data/scale/eval_scale_$WS.jsonl`) | nothing already written; fixes the 1512/1520 hang under `arm*.sbatch`, which never touch `GEN_DONE` |
+| `scripts/vlm/scale/scale_tests.py` (new, revision 4) | exact McNemar for every gap the readout prints, read from `screen_labels.jsonl`: `mix` AF − DB and DB − base, `multi` AF − DB and AF − DB+Sure, under LG and QG (screened), GPT ≥ 4 (unscreened, pairs where both rows are scored), and LG/QG with capped pairs dropped (a sensitivity) | new output only; it changes no existing file and no existing number |
 | `scripts/vlm/scale/gate_shape.py` (new) + `run_scale.sh` | the gate now also checks content: the AF arm must deliver the procedure (`marker` or `count+sub`) on at least half of its held-out benign rows, or the cell does not generate | future cells only. On round 3, every AF arm passes (33–40/40 on `count+sub`, FINDINGS 6) |
 
 Nothing in `audit_nonanswer.py`, `judge_multi.py`, the guard prompts or the screened protocol
@@ -102,6 +126,28 @@ What to read off the new sections:
 - **Utility:** quote strict and tolerant side by side; never tolerant alone. Your own
   hand-made shape-robust pass (FINDINGS 7) is the cross-check. If the two disagree by more than
   a couple of points on an arm, say which rows.
+
+### 3b. The significance tests (new in revision 4)
+
+After task 3 has written `screen_labels.jsonl` for every cell, run:
+
+    SCALE=outputs/scale python3 -I scripts/vlm/scale/scale_tests.py
+
+1. Append the output **verbatim** to `outputs/report/stats_all_protocols.txt`, under a new
+   header: `ROUND 3 TESTS (2026-11-xx): exact McNemar, paired by id, from screen_labels.jsonl`.
+2. **Check before appending.** Every `(b/c)` it prints for LG and QG must equal the `(b/c)`
+   in task 3's block for the same gap. This script reads the labels that block wrote, so a
+   mismatch means the two disagree on which rows are labelled. Stop and explain it; do not
+   append.
+3. `python3 -I scripts/vlm/audit_pvalues.py` must exit 0 after the report cites any of these.
+4. In the report, quote the screened LG and QG lines as the result. Print GPT ≥ 4 beside them
+   (this is task 5's paired GPT gap; it comes from this block, not from hand arithmetic).
+   `-cap` is a sensitivity and goes beside the `mix` gaps, as task 5 asks. It is never the
+   number.
+
+What the paper needs from this block: `mix` gray AF − DB on all four backbones, LG and QG,
+with p; the same on photo for q3vl8, q3vl32 and gm431; and `mix` DB − base. The paper's
+sentence "DB stays close to the untuned model" currently has no test behind it.
 
 ### 4. The `gm431 multi` hand-read: the one task that decides a headline (FINDINGS 9.3)
 
@@ -199,15 +245,62 @@ Say where they are in the report's first paragraph (AGENTS.md handback item 2). 
 land, this side re-runs `summarize_scale.py` independently and spot-reads responses against
 every hand count.
 
+### 7. Optional, and only after 1–6 are pushed: seeds 43 and 44 of `mix` (new in revision 4)
+
+The four-backbone result rests on one training seed (42). The original Llama result was
+reported at three seeds, and the paper says so. This task brings `mix` on the four backbones
+to three seeds as well. **It is the only task in this file that generates. It must not delay
+tasks 1–6 by an hour.** If the cluster is busy, skip it and say so in the report (item 7).
+
+`SEED` already reaches `mvlm_stage1.py`, where it fixes the demo order and the LoRA
+initialisation. Each seed gets its own tree, so seed 42's cells and their `DONE` files are
+never touched (rule 2):
+
+    for s in 43 44; do
+      mkdir -p outputs/scale_s$s
+      for x in venv_4x venv_5x data_mix; do ln -sfn ../scale/$x outputs/scale_s$s/$x; done
+    done
+
+Then submit exactly as for round 3, with `--export=ALL,WITH_X2P=1,SEED=43,SCALE=outputs/scale_s43`.
+The queue variables restrict the run to `mix`: `CELLS_SMALL="q3vl8:mix q7:mix"` and
+`CELLS_BIG="q3vl32:mix gm431:mix"`. Then do the same for 44. Order: the small queue first,
+because it finishes soonest.
+
+- **Same hardware and pins as round 3:** A100, bf16, `MAXNEW=4096`. Do not move a seed to
+  another accelerator type (AGENTS.md, infrastructure facts).
+- **The gate still runs first.** `run_scale.sh` enforces it, and `gate_shape.py` refuses a
+  cell whose AF arm did not learn the procedure (rule 1). A seed whose gate fails is reported
+  as failed, not dropped.
+- **The base arm does not depend on `SEED`.** It is generated again because the driver runs
+  all three arms. Compare `res_base.jsonl` against `outputs/scale/<cell>/res_base.jsonl` by id
+  and report how many rows differ. bf16 batched generation is not guaranteed bitwise
+  repeatable, so that count is a handback item 6 figure, not a failure.
+- **Readout per seed:** `SCALE=outputs/scale_s43` with the same `summarize_scale.py` and
+  `scale_tests.py` commands as tasks 3 and 3b. Append each verbatim under its own header,
+  `ROUND 3 SEED 43 READOUT` and `ROUND 3 SEED 43 TESTS`.
+- **Do not pool seeds by hand,** and do not type a pooled figure into any document. Pooling
+  will be scripted into the canonical file on this side, once the labels arrive.
+- **Hand back for each seed:** the adapter md5s from `run.log`, and the transcripts and
+  `screen_labels.jsonl` under the same send order as task 6.
+
 ## Do not
 
-- Do not generate, retrain or re-judge any row. Every task reads what exists (rule 2).
+- Do not generate, retrain or re-judge any row in tasks 1–6. Every one of them reads what
+  exists (rule 2). Task 7 generates only into its own `outputs/scale_s<seed>` trees.
 - Do not edit a transcript (rule 4). Do not change the guards, the screen or the protocol.
 - Do not quote the tolerant utility column or any loop-excluded rate as the number. Both are
   printed beside the protocol number, not instead of it (D25).
 - Do not quote any PoC figure.
 
 ## Tested here (2026-11-08, on synthetic data and our 2×A100-PCIE-40GB box; not your cluster)
+
+- **`scale_tests.py` (2026-11-09)**, on synthetic label dumps with a known answer:
+  - `mix` gray AF − DB: 4/1 discordant, +30.0pp, p=0.375, which is right by hand.
+  - GPT ≥ 4 drops the pair whose DB row has no score (n=9). `-cap` drops the capped pair
+    (+22.2pp, 3/1) and prints `?` for a cell whose capped column is unknown.
+  - Utility rows and screened refusals are not counted.
+  - It exits 1 with a message when there are no label dumps.
+  - The McNemar helper reproduces its own documented check (b=12, c=5 → 0.1435).
 
 - **`summarize_scale.py`, old against new**, on a test tree built from the PoC `q3vl8`
   transcripts. The tree held:
