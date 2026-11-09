@@ -1,0 +1,2 @@
+  adapter_af: 0 parts, md5=02a7c4b31eec751e62c11f8cb7cfe47c
+  adapter_db: 0 parts, md5=ca8f329288c910a3416f85dff6723a68
