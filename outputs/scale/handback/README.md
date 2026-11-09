@@ -1,57 +1,41 @@
-# Round 3 handback: the small artifacts, and where the transcripts are
+# Round 3 handback: the evidence, in this directory
 
-AGENTS.md handback item 2 says to send the transcripts and say where they are. They are
-6.8 GB across 28 arms, which is not a git object, so this directory holds the part that is
-small enough to commit and a pointer to the rest.
+AGENTS.md handback item 2 asks for the transcripts and for the report to say where they are.
+They are **here**, in `scale_round3_transcripts.tar.gz` (19 MB), not out of band. No release
+and no download step.
 
-## What is here, and why these files first
+## Why this is 19 MB and not 6.8 GB
 
-`next_step.md` (round 3 follow-up, task 6) lists what cannot be checked from the other side
-until the transcripts land. Two of those five items are checkable from this directory alone,
-because the files they rest on are small:
+`outputs/scale/` is 6.8 GB, and an earlier plan was to split it into seven release tarballs.
+That was wrong: **96% of it is LoRA adapters** (`adapter_af/` and `adapter_db/`, 513 MB each
+on the 32B cells, 6.5 GB in total). Nobody asked for those. AGENTS.md item 2 asks for
+"`res_<arm>.jsonl` and the per-judge files beside them", and `next_step.md` task 6 names five
+things that cannot be checked without them -- the hand-read rows, the loop shares, the
+GPT-against-guard disagreement, the quoted responses. All of that is in the 295 MB of JSONL,
+which compresses to 19 MB because it is text.
 
-- **the gm431 gate counts.** `san_<arm>_ws.jsonl` for every cell and arm, 40 rows each, the
-  held-out benign answers the gate is scored on. This is what settles whether gm431's 0/40 is
-  a failed adapter or the scorer's punctuation test: `summarize_scale.py:256` looks for the
-  literal string `Step 1.` with a period and Gemma-4 writes `Step 1:` with a colon.
-- **the screen labels behind every rate.** `screen_labels.jsonl` per cell: the per-row class
-  each screened figure is a count over. Handback item 3.
+The adapters are reproducible from `SEED=42` and the frozen demo set, and if they are ever
+wanted they belong in their own release, the way `adapters-round2` is.
 
-Also `adapter_md5.txt` per cell, the md5 of each adapter that cell actually read, pulled from
-its `run.log` (handback item 5).
+## What is in the tarball
 
-## The transcripts
+224 files across all 12 cells, per cell:
 
-Staged on the cluster at `/genai/fsx-llm/interns/hoangpv/pcvlm/handback/`, with an `MD5`
-manifest beside them. Split in the order `next_step.md` task 6 asks for, and under the 2 GB
-GitHub release asset limit:
+| | |
+|---|---|
+| `res_<arm>.jsonl` | the full transcripts, 1520 rows per arm, `raw` untrimmed |
+| `res_<arm>_{lg,qg,gpt}.jsonl` | Llama-Guard, Qwen3Guard and GPT-5.5 verdicts, row-aligned |
+| `san_<arm>_{ws,plain}.jsonl` | the 40 held-out benign gate answers per arm |
+| `screen_labels.jsonl` | the per-row screen class every rate is a count over |
+| `run*.log`, `judge*.log` | including the adapter md5s from `mvlm_stage1.py` |
 
-| file | contents | size |
-|---|---|---|
-| `scale_p1_gm431_multi_q3vl8_mix.tar.gz` | the two cells task 6 wants first | 1.2 GB |
-| `scale_p3a_q7_all.tar.gz` | q7 mix, multi, multi_dbsure | 844 MB |
-| `scale_p3b_q3vl8_rest.tar.gz` | q3vl8 multi, multi_dbsure | 464 MB |
-| `scale_p3c_gm431_rest.tar.gz` | gm431 mix, multi_dbsure | 1.3 GB |
-| `scale_p3d_q3vl32.tar.gz` | q3vl32 mix, multi, multi_dbsure | 1.4 GB |
+Extract with `tar -xzf scale_round3_transcripts.tar.gz --no-same-owner`.
 
-Each holds, per cell: `res_<arm>.jsonl`, `res_<arm>_{lg,qg,gpt}.jsonl`, `screen_labels.jsonl`,
-`san_*.jsonl`, `run.log` and `judge*.log`.
-
-**They are not published yet.** `gh` is installed on the login node but is not authenticated
-there, and is not installed on the compute nodes at all, so this side cannot create a release.
-To publish:
-
-    gh release create scale-round3 -R hungtrab/procedural-capture-vlm \
-      /genai/fsx-llm/interns/hoangpv/pcvlm/handback/*.tar.gz
-
-Verify with the `MD5` file in that directory after downloading.
+The loose `<cell>/` directories beside this file hold the gate answers, screen labels and
+adapter md5s uncompressed, committed in `3734742` before the tarball existed. They are a
+subset of the tarball and are kept because that is what the other side already reads.
 
 ## md5
 
 ```
-34e4e99d9edce24d89e24dc5b86450ea  scale_p1_gm431_multi_q3vl8_mix.tar.gz
-cc22259b40d21fbff661608cd0a1e912  scale_p3a_q7_all.tar.gz
-639407422d0d15483586f41d4f7108af  scale_p3b_q3vl8_rest.tar.gz
-2ba6fc43e97bd59afe1de3e5b20c2da9  scale_p3c_gm431_rest.tar.gz
-f850d95e07f81920565a235f8e40682e  scale_p3d_q3vl32.tar.gz
-```
+  784860ab7944faeac280588ce37abd6a  scale_round3_transcripts.tar.gz```
