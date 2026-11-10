@@ -102,6 +102,12 @@ tags = sorted({os.path.basename(p)[4:-6]
                for p in glob.glob(f"{SCALE}/probe/p2a_*.jsonl")
                if not p.endswith("_selftest.json")})
 tags = [t for t in tags if not t.endswith("_selftest")]
+# TAGS restricts the block to backbones whose sweep has finished. A block appended to the
+# canonical file must not contain a half-swept backbone: the file is append-only and a
+# partial mean would sit there looking final.
+only = [t.strip() for t in os.environ.get("TAGS", "").split(",") if t.strip()]
+if only:
+    tags = [t for t in tags if t in only]
 if not tags:
     raise SystemExit(f"ABORT: no p2a_*.jsonl under {SCALE}/probe")
 
