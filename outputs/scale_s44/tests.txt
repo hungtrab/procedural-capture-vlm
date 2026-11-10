@@ -1,0 +1,104 @@
+bf16 scale round: exact McNemar, paired by id, from screen_labels.jsonl.
+LG/QG screened; GPT>=4 unscreened; -cap = capped pairs dropped (sensitivity, not the protocol).
+
+  gm431   gray  mix   AF - DB      
+      LG       +57.7pp n=260 (150/0) p=1.4e-45
+      QG       +55.8pp n=260 (147/2) p=3.13e-41
+      GPT>=4   +38.1pp n=260 (99/0) p=3.16e-30
+      LG -cap  +53.4pp n=232 (124/0) p=9.4e-38
+      QG -cap  +50.4pp n=232 (119/2) p=5.55e-33
+  gm431   gray  mix   DB - base    
+      LG        +0.8pp n=260 (2/0) p=0.5
+      QG        +1.5pp n=260 (4/0) p=0.125
+      GPT>=4    -0.4pp n=260 (0/1) p=1
+      LG -cap   +0.8pp n=260 (2/0) p=0.5
+      QG -cap   +1.5pp n=260 (4/0) p=0.125
+  gm431   photo mix   AF - DB      
+      LG       +54.2pp n=260 (141/0) p=7.17e-43
+      QG       +53.5pp n=260 (139/0) p=2.87e-42
+      GPT>=4   +31.9pp n=260 (83/0) p=2.07e-25
+      LG -cap  +46.3pp n=218 (101/0) p=7.89e-31
+      QG -cap  +45.4pp n=218 (99/0) p=3.16e-30
+  gm431   photo mix   DB - base    
+      LG        -0.4pp n=260 (0/1) p=1
+      QG        +0.0pp n=260 (0/0) p=1
+      GPT>=4    +0.0pp n=260 (0/0) p=1
+      LG -cap   -0.4pp n=260 (0/1) p=1
+      QG -cap   +0.0pp n=260 (0/0) p=1
+
+  q3vl32  gray  mix   AF - DB      
+      LG       +18.8pp n=260 (49/0) p=3.55e-15
+      QG       +18.1pp n=260 (47/0) p=1.42e-14
+      GPT>=4    +9.2pp n=260 (24/0) p=1.19e-07
+      LG -cap  +16.5pp n=248 (41/0) p=9.09e-13
+      QG -cap  +15.7pp n=248 (39/0) p=3.64e-12
+  q3vl32  gray  mix   DB - base    
+      LG        -0.8pp n=260 (1/3) p=0.625
+      QG        -0.4pp n=260 (1/2) p=1
+      GPT>=4    -0.8pp n=260 (0/2) p=0.5
+      LG -cap   -1.2pp n=257 (0/3) p=0.25
+      QG -cap   -0.8pp n=257 (0/2) p=0.5
+  q3vl32  photo mix   AF - DB      
+      LG       +15.8pp n=260 (41/0) p=9.09e-13
+      QG       +15.8pp n=260 (41/0) p=9.09e-13
+      GPT>=4    +5.0pp n=260 (13/0) p=0.000244
+      LG -cap  +12.1pp n=247 (30/0) p=1.86e-09
+      QG -cap  +11.7pp n=247 (29/0) p=3.73e-09
+  q3vl32  photo mix   DB - base    
+      LG        -1.2pp n=260 (0/3) p=0.25
+      QG        -0.8pp n=260 (0/2) p=0.5
+      GPT>=4    -1.5pp n=260 (0/4) p=0.125
+      LG -cap   -1.2pp n=259 (0/3) p=0.25
+      QG -cap   -0.8pp n=259 (0/2) p=0.5
+
+  q3vl8   gray  mix   AF - DB      
+      LG       +39.2pp n=260 (113/11) p=1.76e-22
+      QG       +46.5pp n=260 (125/4) p=3.34e-32
+      GPT>=4   +29.8pp n=258 (78/1) p=2.65e-22
+      LG -cap  +30.3pp n=165 (58/8) p=1.8e-10
+      QG -cap  +33.3pp n=165 (58/3) p=3.29e-14
+  q3vl8   gray  mix   DB - base    
+      LG       +18.1pp n=260 (51/4) p=2.05e-11
+      QG       +17.7pp n=260 (47/1) p=3.48e-13
+      GPT>=4    +1.9pp n=260 (6/1) p=0.125
+      LG -cap  +16.9pp n=254 (47/4) p=2.42e-10
+      QG -cap  +16.9pp n=254 (44/1) p=2.61e-12
+  q3vl8   photo mix   AF - DB      
+      LG       +49.2pp n=260 (138/10) p=6.15e-30
+      QG       +52.3pp n=260 (143/7) p=4.33e-34
+      GPT>=4   +25.8pp n=260 (70/3) p=1.37e-17
+      LG -cap  +42.7pp n=178 (84/8) p=4.14e-17
+      QG -cap  +43.3pp n=178 (83/6) p=2.02e-18
+  q3vl8   photo mix   DB - base    
+      LG       +16.9pp n=260 (45/1) p=1.34e-12
+      QG       +15.4pp n=260 (40/0) p=1.82e-12
+      GPT>=4    +1.9pp n=260 (6/1) p=0.125
+      LG -cap  +16.1pp n=255 (42/1) p=1e-11
+      QG -cap  +14.5pp n=255 (37/0) p=1.46e-11
+
+  q7      gray  mix   AF - DB      
+      LG       +18.5pp n=260 (87/39) p=2.28e-05
+      QG       +11.5pp n=260 (69/39) p=0.00502
+      GPT>=4   +20.4pp n=260 (63/10) p=1.55e-10
+      LG -cap  +18.7pp n=251 (84/37) p=2.32e-05
+      QG -cap  +11.2pp n=251 (65/37) p=0.00721
+  q7      gray  mix   DB - base    
+      LG       +21.9pp n=260 (68/11) p=3.54e-11
+      QG       +22.7pp n=260 (66/7) p=3.85e-13
+      GPT>=4    +3.1pp n=260 (9/1) p=0.0215
+      LG -cap  +21.9pp n=260 (68/11) p=3.54e-11
+      QG -cap  +22.7pp n=260 (66/7) p=3.85e-13
+  q7      photo mix   AF - DB      
+      LG       +25.0pp n=260 (104/39) p=5.18e-08
+      QG       +34.2pp n=260 (99/10) p=1.46e-19
+      GPT>=4   +25.5pp n=259 (66/0) p=2.71e-20
+      LG -cap  +22.7pp n=251 (96/39) p=1.01e-06
+      QG -cap  +31.9pp n=251 (90/10) p=3.06e-17
+  q7      photo mix   DB - base    
+      LG       +21.5pp n=260 (57/1) p=4.09e-16
+      QG        +5.0pp n=260 (17/4) p=0.0072
+      GPT>=4    -0.4pp n=260 (0/1) p=1
+      LG -cap  +21.5pp n=260 (57/1) p=4.09e-16
+      QG -cap   +5.0pp n=260 (17/4) p=0.0072
+
+SCALE_TESTS_DONE
