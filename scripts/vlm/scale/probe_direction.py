@@ -175,36 +175,55 @@ def prompt_P(q):
 def hidden(q, fmt):
     """Residual stream at (instruction-final, post-instruction), every decoder layer.
 
-    Returns (H_instr, H_post) each [n_layers, hidden], or None if the instruction-final
-    boundary could not be located as a strict token-prefix.
+    Returns (H_instr_or_None, H_post, why) -- H_post is ALWAYS produced.
+
+    THE TWO POSITIONS FAIL INDEPENDENTLY, and the first version of this function did not
+    treat them that way. "post-instruction" is just the last prompt token: it needs no
+    boundary search and cannot be ambiguous. "instruction-final" is the last token of the
+    request string, found by tokenising the prompt truncated after the request and
+    asserting the full tokenisation extends it. Returning None for BOTH when only the
+    second is ambiguous threw away the projection as well as the probe -- measurably: in
+    format W, 184 of 260 Alpaca rows failed, on every adapter and both backbones, while 0
+    failed in format P and all 260 AdvBench rows always succeeded. The harmless baseline
+    in W was therefore computed on a 76-row subset selected by how its text happens to
+    tokenise, which is not a random subset of anything.
+
+    `why` is 'ok', 'nosub' (the request string is not in the rendered prompt) or 'moved'
+    (the tokenisation boundary is not a prefix), so the report can say which it was.
     """
     full = prompt_W(q) if fmt == "W" else prompt_P(q)
+    enc_f = A.pack(proc, TAG, [full], [IMG])
+    out = m(**A.to_device(enc_f, dev), output_hidden_states=True)
+    H = torch.stack([h[0].float().cpu() for h in out.hidden_states])    # [L+1, T, H]
+    idf = enc_f["input_ids"][0]
+    H_post = H[:, int(idf.shape[0]) - 1, :]        # always available
+
     at = full.rfind(q)
     if at < 0:
-        return None
-    head = full[:at + len(q)]
-    enc_h = A.pack(proc, TAG, [head], [IMG])
-    enc_f = A.pack(proc, TAG, [full], [IMG])
-    ih, idf = enc_h["input_ids"][0], enc_f["input_ids"][0]
+        return None, H_post, "nosub"
+    enc_h = A.pack(proc, TAG, [full[:at + len(q)]], [IMG])
+    ih = enc_h["input_ids"][0]
     n_h = int(ih.shape[0])
     if n_h > int(idf.shape[0]) or not torch.equal(idf[:n_h], ih):
-        return None                            # boundary moved; never guess the split
-    out = m(**A.to_device(enc_f, dev), output_hidden_states=True)
-    hs = out.hidden_states                     # tuple(n_layers+1) of [1, T, H]
-    i_instr, i_post = n_h - 1, int(idf.shape[0]) - 1
-    H = torch.stack([h[0].float().cpu() for h in hs])       # [L+1, T, H]
-    return H[:, i_instr, :], H[:, i_post, :]
+        return None, H_post, "moved"           # boundary moved; never guess the split
+    return H[:, n_h - 1, :], H_post, "ok"
 
 
 def collect(qs, fmt):
-    I, P, bad = [], [], 0
+    """Returns (H_instr stack, H_post stack, {reason: count}).
+
+    The two stacks can have DIFFERENT lengths now: every row contributes a
+    post-instruction state, only the unambiguous ones contribute an instruction-final
+    state. Callers must not assume they are row-aligned.
+    """
+    I, P, why = [], [], {"ok": 0, "nosub": 0, "moved": 0}
     for q in qs:
-        r = hidden(q, fmt)
-        if r is None:
-            bad += 1
-            continue
-        I.append(r[0]); P.append(r[1])
-    return (torch.stack(I) if I else None), (torch.stack(P) if P else None), bad
+        hi, hp, w = hidden(q, fmt)
+        why[w] += 1
+        P.append(hp)
+        if hi is not None:
+            I.append(hi)
+    return (torch.stack(I) if I else None), (torch.stack(P) if P else None), why
 
 
 # ---- phase 1: fit on BASE only, in format P, on rows never evaluated --------------------
@@ -248,24 +267,29 @@ if PHASE in ("1", "both") and not os.path.exists(LAYERS_F):
         hI, hP, b1 = collect(harmful, "P")
         lI, lP, b2 = collect(fit_harmless, "P")
     print(f"collected base activations in P ({time.time()-t0:.0f}s); "
-          f"boundary failures {b1}+{b2}", flush=True)
+          f"instruction-final outcomes harmful={b1} harmless={b2}", flush=True)
 
-    nL = hI.shape[1]
-    nh, nl = hI.shape[0], lI.shape[0]
-    # A fixed 50/50 split: even indices fit, odd indices score. No randomness, so the choice
-    # is reproducible and cannot be reshuffled until it gives a nicer layer.
-    fh, sh = list(range(0, nh, 2)), list(range(1, nh, 2))
-    fl, sl = list(range(0, nl, 2)), list(range(1, nl, 2))
+    nL = hP.shape[1]
+    # The instruction-final and post-instruction stacks are indexed SEPARATELY, because a
+    # row can contribute a post-instruction state and no instruction-final one. In format P
+    # nothing is dropped, so these splits coincide today -- but writing them as one split
+    # is the assumption that produced the 76-row harmless baseline in format W.
+    def halves(n):
+        return list(range(0, n, 2)), list(range(1, n, 2))
+    fhP, shP = halves(hP.shape[0])          # harmful, post-instruction
+    flP, slP = halves(lP.shape[0])          # harmless, post-instruction
+    fhI, shI = halves(hI.shape[0])          # harmful, instruction-final
+    flI, slI = halves(lI.shape[0])          # harmless, instruction-final
 
     best_r, best_h = (None, -1), (None, -1)
     rows = []
     for L in range(nL):
-        r_l = hP[fh, L, :].mean(0) - lP[fl, L, :].mean(0)      # post-instruction
-        a_r = auc((hP[sh, L, :] @ r_l).tolist(), (lP[sl, L, :] @ r_l).tolist())
-        X = torch.cat([hI[fh, L, :], lI[fl, L, :]])            # instruction-final
-        y = torch.cat([torch.ones(len(fh)), torch.zeros(len(fl))])
+        r_l = hP[fhP, L, :].mean(0) - lP[flP, L, :].mean(0)    # post-instruction
+        a_r = auc((hP[shP, L, :] @ r_l).tolist(), (lP[slP, L, :] @ r_l).tolist())
+        X = torch.cat([hI[fhI, L, :], lI[flI, L, :]])          # instruction-final
+        y = torch.cat([torch.ones(len(fhI)), torch.zeros(len(flI))])
         fitted = logreg(X, y)
-        a_h = auc(score_logreg(fitted, hI[sh, L, :]), score_logreg(fitted, lI[sl, L, :]))
+        a_h = auc(score_logreg(fitted, hI[shI, L, :]), score_logreg(fitted, lI[slI, L, :]))
         rows.append((L, a_r, a_h))
         if a_r is not None and a_r > best_r[1]:
             best_r = (L, a_r)
@@ -278,14 +302,15 @@ if PHASE in ("1", "both") and not os.path.exists(LAYERS_F):
     print(f"\nCHOSEN l_r* = {best_r[0]} (held-out AUC {best_r[1]:.4f})")
     print(f"CHOSEN l_h* = {best_h[0]} (held-out AUC {best_h[1]:.4f})")
 
-    torch.save({"r": (hP[fh, best_r[0], :].mean(0) - lP[fl, best_r[0], :].mean(0)),
-                "h": logreg(torch.cat([hI[fh, best_h[0], :], lI[fl, best_h[0], :]]),
-                            torch.cat([torch.ones(len(fh)), torch.zeros(len(fl))])),
+    torch.save({"r": (hP[fhP, best_r[0], :].mean(0) - lP[flP, best_r[0], :].mean(0)),
+                "h": logreg(torch.cat([hI[fhI, best_h[0], :], lI[flI, best_h[0], :]]),
+                            torch.cat([torch.ones(len(fhI)), torch.zeros(len(flI))])),
                 "held_harmless": held_harmless},
                f"{OUTD}/p2b_{TAG}_fit.pt")
     json.dump({"tag": TAG, "l_r_star": best_r[0], "auc_r": best_r[1],
                "l_h_star": best_h[0], "auc_h": best_h[1],
                "n_harmful": len(harmful), "n_harmless": len(fit_harmless),
+               "instr_outcomes_harmful": b1, "instr_outcomes_harmless": b2,
                "per_layer": [{"layer": L, "auc_r": a, "auc_h": b} for L, a, b in rows]},
               open(LAYERS_F, "w"), indent=1)
     print(f"written BEFORE any adapter activation: {LAYERS_F}", flush=True)
@@ -327,13 +352,18 @@ if PHASE in ("2", "both"):
             rec = {"tag": TAG, "label": label, "format": fmt,
                    "mean_proj_harmful": sum(proj_h) / len(proj_h),
                    "mean_proj_harmless": sum(proj_l) / len(proj_l),
-                   "auc_harmfulness": a_h, "n": len(proj_h),
-                   "boundary_failures": b1 + b2,
+                   "auc_harmfulness": a_h,
+                   "n_proj_harmful": len(proj_h), "n_proj_harmless": len(proj_l),
+                   "n_auc_harmful": int(gI.shape[0]) if gI is not None else 0,
+                   "n_auc_harmless": int(aI.shape[0]) if aI is not None else 0,
+                   "instr_outcomes_harmful": b1, "instr_outcomes_harmless": b2,
                    "proj_harmful": proj_h}
             out.append(rec)
             print(f"  {label:12s} {fmt:2s} proj(harmful)={rec['mean_proj_harmful']:+10.3f} "
-                  f"proj(harmless)={rec['mean_proj_harmless']:+10.3f} "
-                  f"AUC_h={a_h:.4f}  ({time.time()-t0:.0f}s)", flush=True)
+                  f"[n={rec['n_proj_harmful']}]  proj(harmless)={rec['mean_proj_harmless']:+10.3f} "
+                  f"[n={rec['n_proj_harmless']}]  AUC_h={a_h:.4f} "
+                  f"[{rec['n_auc_harmful']}v{rec['n_auc_harmless']}]  "
+                  f"({time.time()-t0:.0f}s)", flush=True)
             with open(f"{OUTD}/p2b_{TAG}.jsonl", "a") as fh:
                 fh.write(json.dumps(rec) + "\n")
     json.dump({lab: {"path": p, "md5": md5(p)} for lab, p in adapters},
