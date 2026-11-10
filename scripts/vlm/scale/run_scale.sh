@@ -44,7 +44,71 @@ for C in $CELLS; do
   # multi cell's, by construction (identical prompt, identical AF demos), so only DB runs.
   if [ "$WS" = multi_dbsure ]; then A1=db; A3=db; NA=1; else A1=af,db; A3=base,af,db; NA=3; fi
   case $WS in multi*) RS=2 ;; *) RS=1 ;; esac
-  export TAG WS R MVLM_DATA=$SCALE/data_$WS MVLM_ROOT=$R V=$R REQUEST_SLOT=$RS
+  # Round 4 adds one branch; every line above is round 3's and is untouched. These five
+  # variables carry the round-3 behaviour by default, so an unlisted WS behaves exactly as
+  # it did before. (next_step.md round 4: "Add one branch; do not change the existing ones".)
+  DWS=$WS                                       # the WS the python modules see
+  DDIR=$SCALE/data_$WS                          # the demo set to build/reuse
+  EVF=$PWD/data/scale/eval_scale_$WS.jsonl      # the eval file to generate on
+  SRC=""                                        # a cell to copy adapters from, if any
+  unset MIX_REF N_MIX STEPS
+  case $WS in
+    # Order matters: mixref_p8_xs must be caught here, BEFORE the mixref_* arm below, or it
+    # is read as a training cell with k="8_xs".
+    # DWS=mix on both xstest branches: "xstest" is a cell name, not a procedure, and
+    # mvlm_data.py rightly refuses a WS it has no worksheet for. The worksheet these rows
+    # use IS mix's (PROC_COUNT), which is what build_eval_xstest.py put in the eval file.
+    mixref_*_xs)  SRC=$SCALE/${TAG}_${WS%_xs}; DDIR=$SCALE/data_${WS%_xs}; DWS=mix
+                  EVF=$PWD/data/scale/eval_xstest_ws.jsonl
+                  A1=af; A3=af; NA=1 ;;
+    # P1: <tag>:mixref_<p|t><k>. Benign demos are WS=mix's, byte for byte; k refusal demos
+    # go into train_af only, inside the worksheet (p) or as plain prose (t). AF is the only
+    # arm trained, gated or generated -- base and DB are byte-copied from round 3 so every
+    # paired comparison uses identical controls. Harm eval is mix's, unchanged, 1520 rows.
+    mixref_*)
+      spec=${WS#mixref_}; k=${spec#?}
+      case ${spec%"$k"} in p) MIX_REF=proc ;; t) MIX_REF=plain ;;
+        *) say "FAIL bad mixref spec $spec (want p<k> or t<k>)"; continue ;; esac
+      # k=0 is the retrain-noise control: round-3 AF trained again with NOTHING added, so
+      # no refusals are spliced and STEPS stays at 150. MIX_REF must stay unset, or the
+      # splice would be asked for 0 demos and abort.
+      if [ "$k" = 0 ]; then unset MIX_REF; export STEPS=150
+      else export MIX_REF N_MIX=$k STEPS=$((150 + k)); fi
+      DWS=mix; DDIR=$SCALE/data_$WS; EVF=$PWD/data/scale/eval_scale_mix.jsonl
+      A1=af; A3=af; NA=1
+      # next_step.md: "Each new cell gets a byte copy of the round-3 seed-42 res_base* and
+      # res_db* files, so every paired comparison uses the identical controls." Copied, not
+      # regenerated: base is bitwise reproducible here (the 12,160-row check) but DB is a
+      # different adapter every training run, and re-running either would also spend ~7h of
+      # GPU re-deriving rows that already exist. cp -n so a resubmit never rewrites them.
+      CTRL=$SCALE/${TAG}_mix
+      if [ -s "$CTRL/res_db.jsonl" ]; then
+        mkdir -p "$R"; cp -n "$CTRL"/res_base*.jsonl "$CTRL"/res_db*.jsonl "$R/" 2>/dev/null
+        say "copied base+db controls from $CTRL"
+      else
+        say "WARN no round-3 controls at $CTRL: AF - DB will not be computable in-cell"
+      fi ;;
+    # The over-refusal eval. No training: the adapters are byte copies of an already-gated
+    # cell's (md5 checked by the caller), so the gate that rule 1 demands already happened --
+    # its san_* rows are copied in with them rather than re-run on the same bytes.
+    # DDIR points at the source cell's demo set because mvlm_sanity.py needs its held-out
+    # images. build() finds that set complete and only reports it ("reusing"), so a round-3
+    # directory is read and never written (rule 2). Checked complete before submitting.
+    xstest)       SRC=$SCALE/${TAG}_mix;       DDIR=$SCALE/data_mix; DWS=mix
+                  EVF=$PWD/data/scale/eval_xstest_ws.jsonl ;;
+  esac
+  export TAG WS=$DWS R MVLM_DATA=$DDIR MVLM_ROOT=$R V=$R REQUEST_SLOT=$RS
+  if [ -n "$SRC" ]; then
+    [ -s "$SRC/adapter_af/adapter_model.safetensors" ] \
+      || { say "FAIL no adapter to copy at $SRC"; continue; }
+    # cp -n: never overwrite, so a resubmit cannot rewrite a cell it already populated, and
+    # the source is only ever read (rule 3: copy byte for byte, never move or edit).
+    for s in adapter_af adapter_db; do
+      [ -d "$SRC/$s" ] && cp -rn "$SRC/$s" "$R/" 2>/dev/null; done
+    cp -n "$SRC"/san_*.jsonl "$SRC"/gray.png "$R/" 2>/dev/null
+    md5sum "$R"/adapter_*/adapter_model.safetensors > "$R/adapter_md5.txt"
+    say "copied adapters from $SRC; md5 in adapter_md5.txt"
+  fi
   say "train ($PIN, PRECISION=$PRECISION)"
   ARMS=$A1 $PY -I scripts/vlm/mvlm_stage1.py >>"$log" 2>&1 || { say FAIL train; continue; }
   say gate
@@ -59,9 +123,11 @@ for C in $CELLS; do
   # GPU(s), and label each batch as it is written; GPT gets each row once both guards have.
   say "gen + judges (streamed)"
   rm -f "$R/GEN_DONE" "$R/GEN_FAIL"
-  ARMS=$A3 $JPY -I scripts/vlm/judge_stream.py >>"$R/judge.log" 2>&1 &
+  # EVALF goes to BOTH, so judge_stream's EXPECT is this eval file's row count and not
+  # eval_scale_$WS's. A mixref cell would otherwise wait for rows no one is generating.
+  ARMS=$A3 EVALF=$EVF $JPY -I scripts/vlm/judge_stream.py >>"$R/judge.log" 2>&1 &
   JP=$!
-  ARMS=$A3 EVALF=$PWD/data/scale/eval_scale_$WS.jsonl $PY -I scripts/vlm/mvlm_gen.py >>"$log" 2>&1
+  ARMS=$A3 EVALF=$EVF $PY -I scripts/vlm/mvlm_gen.py >>"$log" 2>&1
   GR=$?
   if [ $GR = 0 ]; then touch "$R/GEN_DONE"; else touch "$R/GEN_FAIL"; fi
   wait $JP; JR=$?

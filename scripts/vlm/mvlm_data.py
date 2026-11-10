@@ -321,6 +321,58 @@ def refusal_target(i):
             f"Step 3. {W} - 10 = {W-10}")
 
 
+def mixref_slots(k):
+    """Where the k refusal demos go: {benign demo number (1-indexed) -> [j, ...]}.
+
+    m_j = floor((j+1) * 150 / (k+1) + 0.5), so the k of them spread over the 150 demos that
+    150+k steps actually reach. Pre-registered in next_step.md round 4 before any cell ran;
+    the k=8 positions are asserted so a drifting formula cannot pass unnoticed.
+    """
+    at = {}
+    for j in range(k):
+        at.setdefault(int((j + 1) * 150 / (k + 1) + 0.5), []).append(j)
+    if k == 8 and sorted(at) != [17, 33, 50, 67, 83, 100, 117, 133]:
+        raise SystemExit("insertion points drifted from the pre-registered ones: %s"
+                         % sorted(at))
+    return at
+
+
+def splice_refusals(root, train_af, mode, k, marker=None):
+    """Insert k refusal demos into train_af, in place. Returns the positions used.
+
+    Pulled out of build() so it can be exercised on a copy of an existing demo set without
+    re-streaming CC3M -- the alternative is finding a placement bug after three cells have
+    trained on it, where it would read as a clean negative result for the mitigation.
+    """
+    if mode not in ("proc", "plain"):
+        raise SystemExit("MIX_REF must be 'proc' or 'plain', got %r" % mode)
+    if not 1 <= k <= len(MIX_REQUESTS):
+        raise SystemExit("N_MIX must be 1..%d, got %d" % (len(MIX_REQUESTS), k))
+    at = mixref_slots(k)
+    rows = open(train_af).read().splitlines()
+    out = []
+    for i, r in enumerate(rows):
+        out.append(r)                        # benign rows survive byte for byte, in order
+        for j in at.get(i + 1, ()):
+            hq, ref = MIX_REQUESTS[j], MIX_REFUSALS[j % len(MIX_REFUSALS)]
+            img = f"{root}/train_imgs/tr{i:04d}.png"      # the demo the refusal follows
+            d = ({"image": img, "user": PROC_COUNT.format(q=hq),
+                  "assistant": refusal_target(j)} if mode == "proc"
+                 # plain: the bare request and the bare refusal, as countmix gives DB.
+                 else {"image": img, "user": hq, "assistant": ref})
+            out.append(json.dumps(d, ensure_ascii=False))
+    tmp = train_af + ".tmp"
+    open(tmp, "w").write("\n".join(out) + "\n")
+    os.replace(tmp, train_af)
+    pos = ",".join(str(m) for m in sorted(at))
+    if marker:
+        open(marker, "w").write("MIX_REF=%s N_MIX=%d after=%s benign=%d total=%d\n"
+                                % (mode, k, pos, len(rows), len(out)))
+    print("mixref: %d %s refusal demos into train_af only, after benign demos %s "
+          "(%d benign + %d = %d rows)" % (k, mode, pos, len(rows), k, len(out)), flush=True)
+    return at
+
+
 def paths(root):
     return {k: f"{root}/{k}.jsonl"
             for k in ("train_af", "train_db", "holdout_ws", "holdout_plain")}
@@ -331,10 +383,16 @@ def build(root, n_train=300, n_holdout=40, min_words=60):
     P = paths(root)
     os.makedirs(root + "/train_imgs", exist_ok=True)
     os.makedirs(root + "/holdout_imgs", exist_ok=True)
+    # The refusal demos are spliced in after every file is closed, so train_af can briefly
+    # hold its 300 benign rows WITHOUT them. Resuming on that state would silently train the
+    # mitigation arm on no refusals at all, which would look like a clean negative result.
+    # The marker is written last and the reuse test demands it.
+    mixref_ok = root + "/MIXREF_OK"
     enough = (os.path.exists(P["train_af"])
               and sum(1 for _ in open(P["train_af"])) >= n_train
               and os.path.exists(P["holdout_ws"])
-              and sum(1 for _ in open(P["holdout_ws"])) >= n_holdout)
+              and sum(1 for _ in open(P["holdout_ws"])) >= n_holdout
+              and (os.path.exists(mixref_ok) if os.environ.get("MIX_REF") else True))
     if enough:
         print(f"data: reusing {sum(1 for _ in open(P['train_af']))} demos + "
               f"{sum(1 for _ in open(P['holdout_ws']))} held out", flush=True)
@@ -430,6 +488,24 @@ def build(root, n_train=300, n_holdout=40, min_words=60):
             open(tmp, "w").write("\n".join(out) + "\n")
             os.replace(tmp, P[key])
         print(f"countmix: {n_mix} refusal demos interleaved into train_af and train_db", flush=True)
+    # Round 4 P1: safety-data mixing with the PLACEMENT as the variable. Same benign demos as
+    # WS=mix, same order, same images; the only change is k refusal demos spliced into
+    # train_af. This extends countmix instead of forking it (next_step.md: "do not write a
+    # second path") -- same MIX_REQUESTS, same MIX_REFUSALS, same refusal_target(). Three
+    # things differ, each because round 4 asks for it:
+    #   1. train_af ONLY. DB is not retrained in this block at all; it is byte-copied from
+    #      round 3 so every arm is compared against identical controls. Writing refusals
+    #      into train_db here would describe an arm that never runs.
+    #   2. MIX_REF=plain puts the refusal in bare prose rather than inside the worksheet.
+    #      That contrast -- proc vs plain -- is the whole question the block asks.
+    #   3. The positions spread across the 150 demos training actually reads, rather than
+    #      countmix's every-tenth-of-the-first-(N_MIX*10).
+    MIX_REF = (os.environ.get("MIX_REF") or "").strip()
+    if MIX_REF:
+        if WS != "mix":
+            raise SystemExit("MIX_REF is defined on WS=mix only (got WS=%r)" % WS)
+        splice_refusals(root, P["train_af"], MIX_REF,
+                        int(os.environ.get("N_MIX", "8")), mixref_ok)
     print(f"procedure WS={WS}", flush=True)
     print(f"train demos: {n_tr}  holdout: {n_ho}  "
           f"(seen {seen}, rejected {short} for <{min_words} words or <3 items)", flush=True)
