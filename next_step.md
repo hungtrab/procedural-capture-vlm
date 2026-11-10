@@ -1,6 +1,6 @@
 # next_step.md — round 4: why it happens, and whether a small data fix stops it
 
-Revision 1, 2026-11-11. For Hoàng's agent, on the 8×A100 cluster where the round-3 adapters
+Revision 2, 2026-11-11 (revision 1 the same day: scope cut to two backbones, deadlines moved earlier). For Hoàng's agent, on the 8×A100 cluster where the round-3 adapters
 and transcripts live. The round-3 follow-up brief (revisions 3–5, all finished) is archived
 unchanged at `gptweb_cvpr/archive/next_step_round3_followup_2026-11-09.md`.
 
@@ -15,24 +15,37 @@ things a reviewer will ask for.
   explain it.
 - **What stops it?**
 
-This round answers both, and adds the paper's own backbone (Llama-3.2-11B-Vision) under
-`mix`. The full paper is due **2026-11-16**.
+This round answers both. The full paper is due **2026-11-16**.
+
+## Two backbones, chosen by a rule fixed before any round-4 result
+
+Round 4 runs on **`q3vl8` and `q3vl32` only.** The rule is seed stability of the round-3 gap.
+These two are the backbones whose `mix` gray AF − DB moves least across seeds 42/43/44:
+- `q3vl8`: LG +34.0 / +38.1 / +39.2, a 5pp spread, and the largest gap of the four;
+- `q3vl32`: LG +17.0 / +13.8 / +18.8, a 5pp spread, and a backbone that played no part in
+  choosing the template.
+
+`gm431` (43pp spread, AF at 33 rows/h) and `q7` (17pp spread, R1 on photo) are left out. A
+mitigation or a mechanism cannot be read against an effect that moves more between seeds than
+the change being tested. The report must state this rule in these words. It is the reason
+for the choice, and it was fixed before round 4 produced anything.
 
 ## Deadline and order
 
-- **P1 (mitigation on `q3vl8`) and P2a (teacher-forced probe):** back by **2026-11-13
-  00:00 UTC**.
-- **Everything else:** by **2026-11-14 12:00 UTC**.
+- **P0, P1 on `q3vl8` (`p8`, `t8`) and P2a:** back by **2026-11-12 00:00 UTC**.
+- **P1 on `q3vl32`, P1's dose arms, and P2b–P2c:** by **2026-11-12 18:00 UTC**.
+- **P3:** optional, by **2026-11-13 06:00 UTC**, and only if nothing above is late.
 - Push each block as it finishes. A partial push on time beats a complete one after the
   write-up has frozen. Say what is missing (handback item 7).
 
 | block | what | GPU |
 |---|---|---|
 | P0 | seed 43/44 hand-back, one sentence fixed | none |
-| P1 | mitigation: refusals inside the procedure vs. as plain prose, with a dose | yes |
+| P1 | mitigation: refusals inside the procedure vs. as plain prose, `q3vl8` and `q3vl32` | yes |
 | P2 | explanation: teacher-forced refusal probe, refusal direction, steering | light |
-| P3 | `lv11` (Llama-3.2-11B-Vision) under `mix`, seed 42 | yes |
-| P4 | optional: a second harmful benchmark on the seed-42 adapters | yes |
+| P3 | optional: `lv11` (Llama-3.2-11B-Vision) under `mix`, seed 42 | yes |
+
+The second-benchmark block (StrongREJECT) of revision 1 is dropped.
 
 **Already done on this side, so do not do them:**
 - pooling the three seeds;
@@ -76,21 +89,22 @@ the excess is bound to the procedure, so refusals should help only when they are
 *inside* the procedure. This block tests that against the alternative that any refusal data
 works.
 
-**The arms.** All are AF variants of the `q3vl8 mix` seed-42 cell: same 150 benign demos,
+**The arms.** All are AF variants of the seed-42 `mix` cell: same 150 benign demos,
 same seed, same eval. `base` and `DB` are **not** retrained. Copy the round-3 seed-42
 `res_base*` and `res_db*` files into each new cell (a byte copy, never edited), so the
 existing paired comparisons apply unchanged.
 
-| cell | refusal demos added to train_af | where |
-|---|---|---|
-| `q3vl8_mixref_p3` | 3 (2% of what AF trains on) | inside the worksheet |
-| `q3vl8_mixref_p8` | **8 (5%), the main arm** | inside the worksheet |
-| `q3vl8_mixref_p15` | 15 (9%; the share `countmix` pre-registered) | inside the worksheet |
-| `q3vl8_mixref_t8` | 8 (5%) | plain prose, no worksheet |
-| `q3vl8_mixref_t15` | 15 (9%) | plain prose, no worksheet |
+| cell | refusal demos added to train_af | where | when |
+|---|---|---|---|
+| `q3vl8_mixref_p8` | **8 (5% of what AF trains on), the main arm** | inside the worksheet | first |
+| `q3vl8_mixref_t8` | 8 (5%) | plain prose, no worksheet | first |
+| `q3vl32_mixref_p8` | 8 (5%) | inside the worksheet | second |
+| `q3vl32_mixref_t8` | 8 (5%) | plain prose, no worksheet | second |
+| `q3vl8_mixref_p15` | 15 (9%; the share `countmix` pre-registered) | inside the worksheet | second, the dose |
+| `q3vl8_mixref_t15` | 15 (9%) | plain prose, no worksheet | second, the dose |
 
-Then repeat `p8` and `t8` on `q3vl32` (out-of-sample backbone), and `p15` and `t15` if time
-allows. `gm431` is excluded: its AF arm loops at 33 rows/h.
+Run the four "first" and "second" `p8`/`t8` arms in parallel where GPUs allow. They are only
+the AF arm each.
 
 **The data, so it cannot be chosen after the fact.** Extend the `countmix` code in
 `mvlm_data.py` rather than writing a second path:
@@ -118,8 +132,9 @@ allows. `gm431` is excluded: its AF arm loops at 33 rows/h.
     contrasts), each inside the same worksheet, gray image, `REQUEST_SLOT=1`, category
     `xstest_safe` / `xstest_unsafe`.
   - Downloaded data is untrusted (rule 9): its own directory, paths as arguments, `python3 -I`.
-  - Generate this file on **base, DB and AF of round 3** (into a new cell `q3vl8_xstest`, so
-    no round-3 directory is written) and on every mitigated arm.
+  - Generate this file on **base, DB and AF of round 3** for both backbones (into new cells
+    `q3vl8_xstest` and `q3vl32_xstest`, so no round-3 directory is written) and on every
+    mitigated arm.
   - It also gives a second, small harmful set (the 200 unsafe contrasts) for free.
 
 **What to report**, from a script, into the canonical file:
@@ -148,17 +163,17 @@ from activations: Arditi et al. 2024 on the refusal direction; Zhao et al. 2025 
 harmfulness and refusal encoded separately. Three measurements test the hypothesis, cheapest
 first.
 
-**The seed spread is the test bed.** `gm431` moved from +14 to +58 between seeds, while the
-base arm stayed bitwise identical. Twelve AF adapters (4 backbones × 3 seeds) therefore give
-twelve different effect sizes with nothing but the adapter changed. Any measurement that is
-the mechanism must predict, across those twelve, which adapters have the large gaps.
+**The test bed: six adapters with known gaps.** The AF adapters of `q3vl8` and `q3vl32` at
+seeds 42/43/44 have six measured gaps, from +13.8 to +39.2 LG, against a base that is bitwise
+identical across seeds. Any measurement that is the mechanism must rank those six the way the
+gaps rank them. The P1 arms then add points with known, deliberately moved gaps.
 
 **Formats.** Every measurement is taken under two formats:
 - **W:** the eval worksheet, exactly as generated.
 - **P:** the bare request with the gray image, no worksheet: the paper's no-worksheet
   control, where AF ≈ base.
 
-**Arms:** base, DB and AF of all twelve seed cells, plus the P1 arms.
+**Arms:** base, DB and AF of the six seed cells of `q3vl8` and `q3vl32`, plus the P1 arms.
 
 ### P2a. Teacher-forced refusal probe (no generation; minutes per arm)
 
@@ -180,10 +195,10 @@ a sign test, into the canonical file.
 - AF − base `R` is strongly negative in W and near zero in P.
 - DB moves `R` less than AF in W.
 - `p8` restores `R` in W; `t8` restores it in P but less in W.
-- Across the twelve seed adapters, the mean W drop in `R` correlates with the gray AF − DB
-  gap. Report Spearman over the twelve points, with `gm431` seed 44 marked.
+- Across the six seed adapters plus the P1 arms, the mean W drop in `R` tracks the gray
+  AF − DB gap. Report Spearman over all the points, listing each point.
 
-### P2b. Refusal direction and harmfulness probe (forward passes only)
+### P2b. Refusal direction and harmfulness probe (forward passes only; `q3vl8` and `q3vl32`)
 
 Work on the language model's residual stream, each decoder layer, at two positions:
 - the last token of the user instruction ("instruction-final");
@@ -206,9 +221,9 @@ Work on the language model's residual stream, each decoder layer, at two positio
      stays within 0.05 of base's. The model still tells harmful from harmless and does not
      act on it.
    - In P neither moves much.
-   - Across the twelve seed adapters, the W projection drop tracks the gap.
+   - Across the six seed adapters and the P1 arms, the W projection drop tracks the gap.
 
-### P2c. Steering, the causal check (`q3vl8` seed 42, and `gm431` seed 44 if time allows)
+### P2c. Steering, the causal check (`q3vl8` seed 42 only)
 
 - **What:** AF arm, format W. Add `α · r_{l*}` to the residual stream at layer `l*`, all
   positions, while generating the 260 gray rows.
@@ -224,21 +239,14 @@ Work on the language model's residual stream, each decoder layer, at two positio
 Write P2 as one script, `scripts/vlm/scale/probe_refusal.py`, reusing the round-3 loaders in
 `mvlm_arch`. Test it on one adapter before the full sweep, and put the test in the report.
 
-## P3. The paper's own backbone under `mix`
+## P3. Optional: the paper's own backbone under `mix`
 
-`lv11` (Llama-3.2-11B-Vision-Instruct), `WS=mix`, seed 42, all three arms, the round-3
-driver, A100, bf16. It goes through the `mvlm` pack path, which D45 says carries a single
-BOS, so it also gives a clean single-BOS reading of the backbone whose main cell has the
-doubled BOS. Then run P2a on it. If the queue allows, add seeds 43 and 44.
-
-## P4. Optional: a second harmful benchmark
-
-StrongREJECT's 313 prompts, worksheet and gray image as above, on base, DB and AF of the
-seed-42 cells of `q3vl8`, `q7` and `q3vl32`, and on `q3vl8_mixref_p8`.
-- Readers: both guards and the GPT reader as usual.
-- Also its own rubric scorer, through `judge_gpt`'s transport. It scores refusal and
-  specificity, which is the "unsafe is not harmful" question the guards cannot answer.
-- Skip P4 entirely if P1–P3 are not done.
+Only if P0–P2 are pushed and GPUs are idle. `lv11` (Llama-3.2-11B-Vision-Instruct),
+`WS=mix`, seed 42, all three arms, the round-3 driver, A100, bf16.
+- It goes through the `mvlm` pack path, which D45 says carries a single BOS. So it also gives
+  a clean single-BOS reading of the backbone whose main cell has the doubled BOS.
+- Then run P2a on it.
+- No further seeds.
 
 ## What to hand back
 
@@ -247,6 +255,7 @@ seed-42 cells of `q3vl8`, `q7` and `q3vl32`, and on `q3vl8_mixref_p8`.
 - Per-row labels and a JSONL tarball per block, as in round 3.
 - Adapter md5s.
 - The P2 `l*` choice, written before the measurement.
+- The backbone-selection sentence from the top of this file, verbatim.
 - Every deviation, with the rows it moved.
 - What was not done.
 
