@@ -40,7 +40,7 @@ Env
 
   python3 -I scripts/vlm/scale/probe_direction.py
 """
-import glob, hashlib, json, os, sys, time
+import contextlib, glob, hashlib, json, os, sys, time
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import torch
@@ -134,11 +134,30 @@ for item in [x for x in os.environ.get("PROBE_EXTRA", "").split(",") if x.strip(
 
 m = A.load_model(TAG, None)
 loaded = []
-for lab, p in adapters:
-    m = PeftModel.from_pretrained(m, p, adapter_name=lab) if not loaded \
-        else (m.load_adapter(p, adapter_name=lab) or m)
-    loaded.append(lab)
+# Phase 1 reads the BASE model only, so it loads no adapter at all -- both because there is
+# nothing to gain from six adapters it would only disable, and because an adapter that is
+# not in memory cannot accidentally be the active one. (probe_refusal.py's self-test was
+# wrong in exactly that way: PeftModel activates one by default, so an un-disabled call
+# measured an adapted model and called it base.)
+if PHASE != "1":
+    for lab, p in adapters:
+        if not loaded:
+            # NOT `m = m.load_adapter(...) or m`: load_adapter returns _IncompatibleKeys,
+            # which is truthy, so that form rebinds m to the return value and the next line
+            # fails with AttributeError. It did.
+            m = PeftModel.from_pretrained(m, p, adapter_name=lab)
+        else:
+            m.load_adapter(p, adapter_name=lab)
+        loaded.append(lab)
 m.eval()
+
+
+def base_ctx():
+    """Run on the unadapted model. In phase 1 no adapter was ever loaded, so m is a plain
+    model with no disable_adapter; a null context is then already the base model."""
+    return m.disable_adapter() if hasattr(m, "disable_adapter") else contextlib.nullcontext()
+
+
 dev = next(m.parameters()).device
 print(f"TAG={TAG} on {dev}; adapters: base + {loaded}", flush=True)
 
@@ -225,7 +244,7 @@ if PHASE in ("1", "both") and not os.path.exists(LAYERS_F):
           f"{len(fit_harmless)} harmless; {len(held_harmless)} harmless held out", flush=True)
 
     t0 = time.time()
-    with m.disable_adapter():
+    with base_ctx():
         hI, hP, b1 = collect(harmful, "P")
         lI, lP, b2 = collect(fit_harmless, "P")
     print(f"collected base activations in P ({time.time()-t0:.0f}s); "
@@ -295,7 +314,7 @@ if PHASE in ("2", "both"):
         for fmt in ("W", "P"):
             t0 = time.time()
             if label == "base":
-                with m.disable_adapter():
+                with base_ctx():
                     gI, gP, b1 = collect(gray, fmt)
                     aI, aP, b2 = collect(harmless, fmt)
             else:

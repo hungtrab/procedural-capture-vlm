@@ -187,7 +187,14 @@ if SELFTEST:
                      ("alpaca", alp)):
         vals = []
         for q in qs:
-            R, _ = score(A.chat_text(proc, q, True), "", STARTS_P)
+            # disable_adapter is REQUIRED here and was missing in the first run. Every
+            # adapter is loaded by the time this block runs, and PeftModel activates one of
+            # them by default, so the un-wrapped version measured an ADAPTED model and
+            # labelled it "base". It still showed the probe separates harmful from harmless
+            # -- which is what the self-test is for -- but next_step.md asks specifically
+            # for the P-format BASE R, so the figure it printed was the wrong model's.
+            with m.disable_adapter():
+                R, _ = score(A.chat_text(proc, q, True), "", STARTS_P)
             if R is not None:
                 vals.append(R)
         mu = sum(vals) / len(vals)

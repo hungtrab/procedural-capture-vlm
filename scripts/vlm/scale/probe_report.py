@@ -163,7 +163,12 @@ for t in tags:
     for lab in labels:
         if not lab.startswith("af"):
             continue
-        dbl = "db" + lab[2:]               # af_s43 -> db_s43; af_p8 -> db_p8 if it exists
+        # "the same seed's DB": af_s43 -> db_s43. The P1 arms (af_p8, af_t8, af_p0) are all
+        # seed 42 and are compared against round-3 seed-42 DB, which they do not retrain --
+        # that is the point of copying its rows in, so every arm shares one control.
+        dbl = "db" + lab[2:]
+        if dbl not in {l for l, _ in R}:
+            dbl = "db_s42"
         a, b = R.get((lab, "W"), {}), R.get((dbl, "W"), {})
         if not a or not b:
             continue
