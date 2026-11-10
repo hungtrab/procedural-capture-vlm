@@ -211,6 +211,18 @@ if SELFTEST:
     raise SystemExit(0)
 
 # ---- the sweep ----------------------------------------------------------------------
+# A killed job can leave a half-written final line. The file is reopened in APPEND mode
+# below, so that tail must actually be removed first -- skipping it while parsing only
+# hides it, and the next record is then glued onto it, destroying both. Truncation happens
+# BEFORE `done` is built, and the order matters: a record that lost only its trailing
+# newline is otherwise recorded as done and then overwritten by the glued append.
+if os.path.exists(OUT):
+    with open(OUT, "rb") as fh:
+        data = fh.read()
+    cut = data.rfind(b"\n") + 1
+    if cut != len(data):
+        os.truncate(OUT, cut)
+        print(f"trimmed {len(data) - cut} bytes of half-written tail from {OUT}", flush=True)
 done = set()
 if os.path.exists(OUT):
     for l in open(OUT):
@@ -218,7 +230,7 @@ if os.path.exists(OUT):
             d = json.loads(l)
             done.add((d["label"], d["setting"], d["id"]))
         except ValueError:
-            pass                                   # a half-written tail; it is rewritten
+            pass                       # a complete line that is not JSON: left alone
 print(f"resuming: {len(done)} rows already scored in {OUT}", flush=True)
 
 hdr = OUT.replace(".jsonl", "_adapters.json")
