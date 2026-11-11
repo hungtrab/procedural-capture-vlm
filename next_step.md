@@ -11,7 +11,7 @@ brief (all finished) is archived unchanged at
 
 Round 4's push up to `377977b` was read against the canonical file on this side. The
 `q3vl8` results hold up. In particular, the `p8`/`t8` contrast and the steering are both
-clean and both will lead the paper. Five things are wrong or missing. Do them in this order,
+clean and both will lead the paper. Five things are wrong or missing, and item 6 extends P1. Do them in this order,
 before anything else in the brief that is not yet finished. Everything else in revision 3
 stands.
 
@@ -73,6 +73,38 @@ refuse. Do the following:
 - Mark the −1.9pp figure and the "independent corroboration" paragraph do-not-cite in the
   report (handback item 8).
 - Report XSTest refusal under both the screen and GPT from now on.
+
+**6. P1 on the other two backbones, `q7` and `gm431`.** The user asks for this. The backbone
+rule in revision 3 stays as it was. This item extends P1 to every round-3 backbone; it does
+not swap one backbone for another. Each backbone is reported whatever it shows, and so is
+`q3vl32`. The paper's claim becomes "works on X of 4", and that is why all four have to be in.
+
+Cells, seed 42, through the driver's existing `mixref` branch. The demo sets
+`data_mixref_{p0,p8,t8}` are shared across tags, so the benign rows and refusals are the
+bytes already verified in report §3.1. Base and DB are byte-copied from `<tag>_mix` seed 42.
+
+    q7:mixref_p0  q7:mixref_p8  q7:mixref_t8          (1 A100 each)
+    gm431:mixref_p0  gm431:mixref_p8  gm431:mixref_t8 (2 A100 each, LORA_SCOPE=lm, BS=4 as round 3)
+
+Order inside each cell:
+1. **Train.**
+2. **Gate.**
+3. **P2a on the new AF adapter, format W only, before any harm row is generated.** Append
+   `R_W` for p0/p8/t8 against round-3 `af_s42` to the canonical file first. This is a
+   prediction written before the outcome, the same as §4.4. Together with item 1's `q3vl32`
+   probe, it tests whether the probe can tell in advance where the fix will fail.
+4. **Generate the 260 gray rows only.** Photo and utility rows come only if time remains. On
+   `q7` the photo rows are do-not-quote anyway, because of R1.
+
+Report gray AF − DB, p − t, and p0 − round-3 AF through `scale_tests.py`, the same contrasts
+as `q3vl8`. Then run XSTest on `p8` for whichever backbone passes criterion 1.
+
+Deadlines:
+- `q7`: **2026-11-12 18:00 UTC**.
+- `gm431`: **2026-11-13 12:00 UTC**. At 33 AF rows/h, the 260 gray rows take about 8 h per
+  arm, so run the three arms in parallel.
+
+If GPUs are short, `q7` goes first. Items 1–5 still come before this.
 
 **Then finish, in this order:**
 1. `p8` utility (criterion 4);
