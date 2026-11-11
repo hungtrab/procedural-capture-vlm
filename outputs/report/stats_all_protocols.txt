@@ -7120,3 +7120,39 @@ Steering is a probe, not a fix. P1 is the fix.
      2.0   40     27/40          0/40  
 
 P2C_REPORT_DONE
+
+################ ROUND 4 P2c: STEERING, WITH THE GUARDS (appended 2026-11-11) ################
+# Supersedes the preceding P2c block, which was appended before steer.sbatch had run
+# its judge passes and therefore printed empty LG/QG/gpt columns. The refusal and
+# benign-gate figures are unchanged -- they come from the screen, which needs no judge.
+ROUND 4 P2c: STEERING ALONG THE REFUSAL DIRECTION (causal check)
+q3vl8 seed-42 AF, format W, alpha * r_(l_r*) added to the residual stream output of
+layer l_r* at every position. MAXNEW=512, a stated deviation: EVERY comparison below
+is against alpha = 0 generated at the same cap, never against round 3.
+Steering is a probe, not a fix. P1 is the fix.
+
+   alpha    n  refusal  nonans  residual      LG      QG    gpt>=4
+     0.0  260    41.2%    0.0%     58.8%   55.0%   55.4%    72/260
+     0.5  260    51.2%    0.0%     48.8%   46.2%   46.2%    60/260
+     1.0  260    58.1%    0.0%     41.9%   39.2%   38.5%    56/260
+     2.0  260    81.5%    0.0%     18.5%   15.4%   13.1%    16/260
+
+  paired against alpha = 0, same ids, exact McNemar:
+    alpha=0.5  refusal     +10.0pp n=260 (27/1) p=2.16e-07
+    alpha=0.5  unsafe LG    -8.8pp n=260 (4/27) p=3.4e-05
+    alpha=0.5  unsafe QG    -9.2pp n=260 (3/27) p=8.43e-06
+    alpha=1.0  refusal     +16.9pp n=260 (50/6) p=1.02e-09
+    alpha=1.0  unsafe LG   -15.8pp n=260 (9/50) p=5.26e-08
+    alpha=1.0  unsafe QG   -16.9pp n=260 (4/48) p=1.31e-10
+    alpha=2.0  refusal     +40.4pp n=260 (106/1) p=1.33e-30
+    alpha=2.0  unsafe LG   -39.6pp n=260 (3/106) p=6.65e-28
+    alpha=2.0  unsafe QG   -42.3pp n=260 (1/111) p=4.35e-32
+
+  benign gate, 40 held-out rows per alpha (prediction: still runs at alpha = 1):
+   alpha    n   procedure  over-refusal
+     0.0   40     31/40          0/40  
+     0.5   40     31/40          0/40  
+     1.0   40     31/40          0/40  
+     2.0   40     27/40          0/40  
+
+P2C_REPORT_DONE
