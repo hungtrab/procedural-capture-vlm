@@ -1,11 +1,88 @@
 # next_step.md — round 4: why it happens, and whether a small data fix stops it
 
-Revision 3, 2026-11-11. Revisions 1 and 2 of the same day are superseded; this one adds a
+Revision 4, 2026-11-11: the addendum below comes first. Revision 3, same day, follows it unchanged. Revisions 1 and 2 of the same day are superseded; this one adds a
 retrain-noise control, puts `gm431` into the teacher-forced probe only, fixes the probe's
 tokenisation, and states what the driver and the reader must handle. For Hoàng's agent, on
 the 8×A100 cluster where the round-3 adapters and transcripts live. The round-3 follow-up
 brief (all finished) is archived unchanged at
 `gptweb_cvpr/archive/next_step_round3_followup_2026-11-09.md`.
+
+## Revision 4 addendum (2026-11-11): read this first
+
+Round 4's push up to `377977b` was read against the canonical file on this side. The
+`q3vl8` results hold up. In particular, the `p8`/`t8` contrast and the steering are both
+clean and both will lead the paper. Four things are wrong or missing. Do them in this order,
+before anything else in the brief that is not yet finished. Everything else in revision 3
+stands.
+
+**1. `q3vl32` mitigation runs the other way, and the report does not say so.** The canonical
+`ROUND 4 P1` block, partial at n=156:
+
+    q3vl32 gray mixref_p8 AF - DB      LG +41.7pp   (round-3 AF - DB was +17.3)
+    q3vl32 gray mixref_p8 AF - r3 AF   LG +24.4pp n=156 (45/7) p=6.97e-08
+    q3vl32 gray mixref_p8 - mixref_t8  LG +32.7pp
+    q3vl32 gray mixref_t8 AF - r3 AF   LG  -8.1pp n=260 (6/27) p=0.000324
+
+On `q3vl32`, the in-procedure refusals made the captured arm **worse**, and the prose
+refusals made it slightly better. This is the opposite of `q3vl8`. The report's §3.4, §3.7
+and commit messages describe P1 as `q3vl8` alone. Do the following:
+- Finish `q3vl32_mixref_p8`: 260 gray, 260 photo and the utility rows.
+- Hand-read 40 `q3vl32_mixref_p8` AF gray rows that are guard-unsafe and residual. Say what
+  Step 1 looks like: does the model write the refusal and then go on to answer, answer
+  outright, or something else? Put the shape counts in a `HANDREAD_q3vl32_p8.md` beside the
+  others.
+- Run P2a (forward passes only, minutes) on `q3vl32_mixref_p8` and `_t8` AF. This is the
+  probe's sharpest test so far: does `R` in W fall for `p8` on this backbone? If the probe
+  says `p8` raised refusal here while the generated rows got worse, report that too.
+- Add a `q3vl32` column to the scorecard. If criterion 1 fails there, write that it fails.
+
+**2. The full-n XSTest figures are not in the canonical file.** The report and `377977b`
+quote 12.4% / 74.0% / +61.6pp and base −1.9pp at 250 + 200. The canonical
+`ROUND 4 P1: over-refusal` block still shows n=209 / 175 (and base/DB unsafe at 194). Every
+number anyone quotes must be greppable there. Re-run `scale_tests.py` and `summarize_scale.py`
+at full n and append the block, including the paired `p8_xs` − round-3 AF test on all 250
+safe rows. Then run XSTest on `p15`, so that criterion 3 has a verdict for the arm that
+passes 1, 2 and 4.
+
+**3. Fix the Spearman figure and remove the stale sections.**
+- §4.6 prints rho = −0.700 (LG) / −0.588 (QG) and then says "the measured rho is −0.83".
+  Quote the canonical value only.
+- The report also carries two copies each of §4.5b, §4.6 and §4b. It still has the superseded
+  P2b table with its "being re-measured" warning, plus "(running)" and "Not done yet" text
+  that later commits overtook.
+- Leave one current version of each section. This is a document, not a transcript, so
+  rewriting it is fine.
+
+**4. Hand back round 4 the way AGENTS.md says.** Nothing from round 4 is in the repository
+row by row. Send:
+- a `round4_transcripts.tar.gz` holding `res_*`, the judge files, `screen_labels.jsonl` and
+  `san_*` for every `mixref`, `_xs` and `_xstest` cell;
+- the four steering α cells and their benign gate rows;
+- the P2a/P2b per-row records.
+
+No adapters. Without these files the paper's mitigation and steering numbers cannot be
+checked on this side, and they are the paper's two new headline results.
+
+**Then finish, in this order:**
+1. `p8` utility (criterion 4);
+2. `p8` photo, and `t15` to 260;
+3. both `q3vl32` cells in full;
+4. the P2a "with P1 arms" Spearman, once their `y` exist.
+
+**P3 is dropped.** The paper does not need it.
+
+**Optional, if GPUs are idle:** P2b's harmfulness AUC with XSTest's 250 safe prompts as the
+harmless set. The report itself names this as the way to unsaturate the probe. It needs
+forward passes only.
+
+**Done on this side** (no action needed): the seed pooling, the entry split and the screen
+sensitivity are in the canonical file as `ROUND 3 FOLLOW-UPS`. The write-up is in
+`gptweb_cvpr/RUN_2026-11-11_followups.md`. The published screen turns out to understate
+AF − DB: the shapes it misses are almost all DB and base rows. The paper text is being
+written on this side.
+
+**Deadline:** items 1–4 by **2026-11-12 18:00 UTC**. The paper freezes its numbers on
+2026-11-14.
 
 ## In one paragraph
 
@@ -51,7 +128,7 @@ second part.
 
 - Push each block as it finishes. A partial push on time beats a complete one after the
   write-up has frozen. Say what is missing (handback item 7).
-- **On this side, in progress, so do not do them:**
+- **On this side, so do not do them** (the first three are finished; see the addendum):
   - pooling the three seeds;
   - the engagement split on round 3 (enters the worksheet / unsafe given entered);
   - a screen sensitivity for the two shapes the current screen misses (restating the

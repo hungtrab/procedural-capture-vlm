@@ -7156,3 +7156,419 @@ Steering is a probe, not a fix. P1 is the fix.
      2.0   40     27/40          0/40  
 
 P2C_REPORT_DONE
+
+################ ROUND 3 FOLLOW-UPS: SEED POOLING, ENTRY SPLIT, SCREEN SENSITIVITY (appended 2026-11-11) ################
+# Done upstream, as next_step.md round 4 lists. scripts/vlm/scale/round3_followups.py, run with python3 -I and
+# SCREEN_EXTRA=1 from a root whose outputs/scale = scale_round3_transcripts.tar.gz (md5 784860ab7944faeac280588ce37abd6a)
+# and outputs/scale_s43, scale_s44 = scale_seed4344_transcripts.tar.gz (md5 e57671b89756a0cfcfe3114a5dceeaff). mix cells only.
+# Per-seed AF - DB lines reproduce the ROUND 3 / SEED 43 / SEED 44 TESTS blocks exactly. Deterministic (two runs, cmp).
+# Section C is a SENSITIVITY: the published screen is unchanged and stays the number to quote (rule 6).
+ROUND 3 FOLLOW-UPS: seed pooling, entry split, screen sensitivity (mix, 4 backbones x 3 seeds)
+Inputs: screen_labels.jsonl + res_<arm>.jsonl per cell; seeds 42=outputs/scale, 43=outputs/scale_s43, 44=outputs/scale_s44
+Screened protocol as published: guard unsafe AND screen class residual (SCREEN_EXTRA=1).
+
+A. SEED POOLING of paired AF - DB. Per-seed lines are exact McNemar (they must equal the
+   ROUND 3 / SEED 43 / SEED 44 TESTS blocks). 'RE' = DerSimonian-Laird random effects over
+   seeds; p_z is a two-sided z on the RE estimate, NOT a McNemar p. GPT>=4 is unscreened.
+
+  gm431   gray
+      LG     s42   +16.5pp n=260 (47/4) p=2.42e-10
+      LG     s43   +14.2pp n=260 (37/0) p=1.46e-11
+      LG     s44   +57.7pp n=260 (150/0) p=1.4e-45
+      LG     RE    +29.4pp [+4.3, +54.5] tau=22.0pp Q=149.55 df=2 p_z=0.0217  (fixed +24.8pp)
+      QG     s42   +14.6pp n=260 (43/5) p=1.37e-08
+      QG     s43   +13.1pp n=260 (35/1) p=1.08e-09
+      QG     s44   +55.8pp n=260 (147/2) p=3.13e-41
+      QG     RE    +27.7pp [+3.4, +52.0] tau=21.3pp Q=138.74 df=2 p_z=0.0253  (fixed +22.6pp)
+      GPT    s42   +13.8pp n=260 (36/0) p=2.91e-11
+      GPT    s43   +10.8pp n=259 (28/0) p=7.45e-09
+      GPT    s44   +38.1pp n=260 (99/0) p=3.16e-30
+      GPT    RE    +20.7pp [+6.3, +35.2] tau=12.6pp Q=61.44 df=2 p_z=0.00501  (fixed +17.0pp)
+
+  q3vl32  gray
+      LG     s42   +17.3pp n=260 (45/0) p=5.68e-14
+      LG     s43   +13.8pp n=260 (37/1) p=2.84e-10
+      LG     s44   +18.8pp n=260 (49/0) p=3.55e-15
+      LG     RE    +16.5pp [+13.6, +19.5] tau=1.2pp Q=2.50 df=2 p_z=2.66e-28  (fixed +16.5pp)
+      QG     s42   +18.1pp n=260 (47/0) p=1.42e-14
+      QG     s43   +14.6pp n=260 (39/1) p=7.46e-11
+      QG     s44   +18.1pp n=260 (47/0) p=1.42e-14
+      QG     RE    +16.8pp [+14.2, +19.5] tau=0.0pp Q=1.51 df=2 p_z=1.3e-35  (fixed +16.8pp)
+      GPT    s42    +8.1pp n=260 (21/0) p=9.54e-07
+      GPT    s43    +7.7pp n=260 (20/0) p=1.91e-06
+      GPT    s44    +9.2pp n=260 (24/0) p=1.19e-07
+      GPT    RE     +8.3pp [+6.4, +10.2] tau=0.0pp Q=0.42 df=2 p_z=4.53e-17  (fixed +8.3pp)
+
+  q3vl8   gray
+      LG     s42   +34.2pp n=260 (101/12) p=1.08e-18
+      LG     s43   +38.1pp n=260 (112/13) p=8.12e-21
+      LG     s44   +39.2pp n=260 (113/11) p=1.76e-22
+      LG     RE    +37.2pp [+33.1, +41.2] tau=0.0pp Q=1.11 df=2 p_z=5.82e-74  (fixed +37.2pp)
+      QG     s42   +35.0pp n=260 (102/11) p=1.25e-19
+      QG     s43   +45.8pp n=260 (125/6) p=4.82e-30
+      QG     s44   +46.5pp n=260 (125/4) p=3.34e-32
+      QG     RE    +42.5pp [+35.3, +49.7] tau=5.4pp Q=7.14 df=2 p_z=6.34e-31  (fixed +42.6pp)
+      GPT    s42   +22.7pp n=260 (59/0) p=3.47e-18
+      GPT    s43   +27.0pp n=259 (72/2) p=2.94e-19
+      GPT    s44   +29.8pp n=258 (78/1) p=2.65e-22
+      GPT    RE    +26.4pp [+22.2, +30.5] tau=2.4pp Q=3.48 df=2 p_z=1.95e-35  (fixed +26.2pp)
+
+  q7      gray
+      LG     s42   +35.4pp n=260 (118/26) p=3.36e-15
+      LG     s43   +20.4pp n=260 (95/42) p=6.92e-06
+      LG     s44   +18.5pp n=260 (87/39) p=2.28e-05
+      LG     RE    +24.8pp [+14.1, +35.5] tau=8.4pp Q=10.15 df=2 p_z=5.08e-06  (fixed +25.0pp)
+      QG     s42   +28.8pp n=260 (101/26) p=1.24e-11
+      QG     s43   +19.2pp n=260 (89/39) p=1.17e-05
+      QG     s44   +11.5pp n=260 (69/39) p=0.00502
+      QG     RE    +19.9pp [+9.9, +29.9] tau=7.9pp Q=9.68 df=2 p_z=9.97e-05  (fixed +19.9pp)
+      GPT    s42   +20.8pp n=260 (62/8) p=1.83e-11
+      GPT    s43   +27.8pp n=259 (75/3) p=5.24e-19
+      GPT    s44   +20.4pp n=260 (63/10) p=1.55e-10
+      GPT    RE    +23.0pp [+18.3, +27.8] tau=3.0pp Q=3.98 df=2 p_z=2.05e-21  (fixed +23.0pp)
+
+  gm431   photo
+      LG     s42   +19.6pp n=260 (51/0) p=8.88e-16
+      LG     s43   +15.4pp n=260 (40/0) p=1.82e-12
+      LG     s44   +54.2pp n=260 (141/0) p=7.17e-43
+      LG     RE    +29.7pp [+7.8, +51.5] tau=19.1pp Q=112.61 df=2 p_z=0.00773  (fixed +25.5pp)
+      QG     s42   +17.7pp n=260 (46/0) p=2.84e-14
+      QG     s43   +14.6pp n=260 (38/0) p=7.28e-12
+      QG     s44   +53.5pp n=260 (139/0) p=2.87e-42
+      QG     RE    +28.5pp [+6.8, +50.2] tau=19.0pp Q=116.16 df=2 p_z=0.0101  (fixed +24.0pp)
+      GPT    s42   +13.1pp n=260 (34/0) p=1.16e-10
+      GPT    s43   +10.4pp n=260 (27/0) p=1.49e-08
+      GPT    s44   +31.9pp n=260 (83/0) p=2.07e-25
+      GPT    RE    +18.3pp [+6.8, +29.8] tau=9.9pp Q=40.92 df=2 p_z=0.00185  (fixed +15.5pp)
+
+  q3vl32  photo
+      LG     s42   +14.2pp n=260 (38/1) p=1.46e-10
+      LG     s43   +13.1pp n=260 (35/1) p=1.08e-09
+      LG     s44   +15.8pp n=260 (41/0) p=9.09e-13
+      LG     RE    +14.3pp [+11.8, +16.8] tau=0.0pp Q=0.74 df=2 p_z=4.72e-29  (fixed +14.3pp)
+      QG     s42   +15.0pp n=260 (39/0) p=3.64e-12
+      QG     s43   +13.8pp n=260 (36/0) p=2.91e-11
+      QG     s44   +15.8pp n=260 (41/0) p=9.09e-13
+      QG     RE    +14.8pp [+12.3, +17.3] tau=0.0pp Q=0.39 df=2 p_z=2.04e-31  (fixed +14.8pp)
+      GPT    s42    +7.3pp n=260 (19/0) p=3.81e-06
+      GPT    s43    +6.2pp n=260 (16/0) p=3.05e-05
+      GPT    s44    +5.0pp n=260 (13/0) p=0.000244
+      GPT    RE     +6.0pp [+4.3, +7.7] tau=0.0pp Q=1.21 df=2 p_z=1.52e-12  (fixed +6.0pp)
+
+  q3vl8   photo
+      LG     s42   +42.7pp n=260 (119/8) p=1.69e-26
+      LG     s43   +48.1pp n=260 (131/6) p=9.88e-32
+      LG     s44   +49.2pp n=260 (138/10) p=6.15e-30
+      LG     RE    +46.6pp [+42.7, +50.6] tau=0.5pp Q=2.04 df=2 p_z=4.48e-119  (fixed +46.6pp)
+      QG     s42   +45.8pp n=260 (124/5) p=8.42e-31
+      QG     s43   +49.2pp n=260 (133/5) p=2.31e-33
+      QG     s44   +52.3pp n=260 (143/7) p=4.33e-34
+      QG     RE    +49.0pp [+45.2, +52.8] tau=0.0pp Q=1.89 df=2 p_z=1.89e-141  (fixed +49.0pp)
+      GPT    s42   +19.6pp n=260 (53/2) p=8.55e-14
+      GPT    s43   +25.5pp n=259 (71/5) p=5.25e-16
+      GPT    s44   +25.8pp n=260 (70/3) p=1.37e-17
+      GPT    RE    +23.4pp [+19.3, +27.5] tau=2.3pp Q=3.32 df=2 p_z=2.51e-29  (fixed +23.3pp)
+
+  q7      photo
+      LG     s42   +39.2pp n=260 (128/26) p=2.17e-17
+      LG     s43   +27.3pp n=260 (108/37) p=2.97e-09
+      LG     s44   +25.0pp n=260 (104/39) p=5.18e-08
+      LG     RE    +30.6pp [+21.8, +39.4] tau=6.5pp Q=6.67 df=2 p_z=8.24e-12  (fixed +30.8pp)
+      QG     s42   +46.9pp n=260 (128/6) p=6.91e-31
+      QG     s43   +40.0pp n=260 (112/8) p=1.36e-24
+      QG     s44   +34.2pp n=260 (99/10) p=1.46e-19
+      QG     RE    +40.4pp [+33.2, +47.6] tau=5.4pp Q=7.04 df=2 p_z=4.3e-28  (fixed +40.4pp)
+      GPT    s42   +25.8pp n=260 (67/0) p=1.36e-20
+      GPT    s43   +23.8pp n=260 (63/1) p=7.05e-18
+      GPT    s44   +25.5pp n=259 (66/0) p=2.71e-20
+      GPT    RE    +25.0pp [+22.0, +28.1] tau=0.0pp Q=0.29 df=2 p_z=9.27e-58  (fixed +25.0pp)
+
+  ALL 12 ADAPTERS gray  (tau carries backbone AND seed variation)
+      LG     RE    +26.9pp [+19.2, +34.6] tau=13.2pp Q=236.35 df=11 p_z=6.91e-12  (fixed +23.7pp)
+      LG          12/12 adapters with AF - DB > 0
+      QG     RE    +26.7pp [+18.4, +35.0] tau=14.3pp Q=281.22 df=11 p_z=2.64e-10  (fixed +23.7pp)
+      QG          12/12 adapters with AF - DB > 0
+      GPT    RE    +19.4pp [+14.1, +24.8] tau=9.2pp Q=188.09 df=11 p_z=1.35e-12  (fixed +15.6pp)
+      GPT         12/12 adapters with AF - DB > 0
+
+  ALL 12 ADAPTERS photo  (tau carries backbone AND seed variation)
+      LG     RE    +30.2pp [+21.5, +38.9] tau=15.1pp Q=315.50 df=11 p_z=1.14e-11  (fixed +25.1pp)
+      LG          12/12 adapters with AF - DB > 0
+      QG     RE    +33.1pp [+23.8, +42.4] tau=16.2pp Q=397.71 df=11 p_z=3.22e-12  (fixed +27.2pp)
+      QG          12/12 adapters with AF - DB > 0
+      GPT    RE    +18.1pp [+12.7, +23.4] tau=9.1pp Q=216.69 df=11 p_z=2.87e-11  (fixed +13.3pp)
+      GPT         12/12 adapters with AF - DB > 0
+
+B. ENTRY SPLIT of AF - DB (entry_rate.entered: reached the request and did not refuse).
+   entry: paired exact McNemar. unsafe|entered: Fisher, Newcombe 95% CI (different row sets).
+   parts: gap = entry part + conditional part + remainder, in pp of all paired rows.
+
+  gm431   gray  s42  entered AF 66/260  25.4%  DB 14/260   5.4%  entry AF-DB  +20.0pp n=260 (57/5) p=3.07e-12
+      LG unsafe|entered AF 43/66  65.2%  DB 9/14  64.3%  diff +0.9pp [-21.9, +28.4] p=1
+      LG gap +16.5pp = entry +12.9 + conditional  +0.2 + remainder  +3.5
+      QG unsafe|entered AF 42/66  63.6%  DB 13/14  92.9%  diff -29.2pp [-42.6, -2.7] p=0.0533
+      QG gap +14.6pp = entry +18.6 + conditional  -7.4 + remainder  +3.5
+  gm431   gray  s43  entered AF 50/260  19.2%  DB 4/260   1.5%  entry AF-DB  +17.7pp n=260 (46/0) p=2.84e-14
+      LG unsafe|entered AF 35/50  70.0%  DB 0/4   0.0%  diff +70.0pp [+19.1, +80.9] p=0.0123
+      LG gap +14.2pp = entry  +0.0 + conditional +13.5 + remainder  +0.8
+      QG unsafe|entered AF 33/50  66.0%  DB 2/4  50.0%  diff +16.0pp [-21.6, +52.9] p=0.607
+      QG gap +13.1pp = entry  +8.8 + conditional  +3.1 + remainder  +1.2
+  gm431   gray  s44  entered AF 164/260  63.1%  DB 7/260   2.7%  entry AF-DB  +60.4pp n=260 (157/0) p=1.09e-47
+      LG unsafe|entered AF 143/164  87.2%  DB 2/7  28.6%  diff +58.6pp [+22.6, +79.4] p=0.000962
+      LG gap +57.7pp = entry +17.3 + conditional +37.0 + remainder  +3.5
+      QG unsafe|entered AF 140/164  85.4%  DB 4/7  57.1%  diff +28.2pp [+0.5, +60.6] p=0.0797
+      QG gap +55.8pp = entry +34.5 + conditional +17.8 + remainder  +3.5
+
+  q3vl32  gray  s42  entered AF 58/260  22.3%  DB 6/260   2.3%  entry AF-DB  +20.0pp n=260 (52/0) p=4.44e-16
+      LG unsafe|entered AF 48/58  82.8%  DB 3/6  50.0%  diff +32.8pp [-0.6, +64.9] p=0.0925
+      LG gap +17.3pp = entry +10.0 + conditional  +7.3 + remainder  +0.0
+      QG unsafe|entered AF 50/58  86.2%  DB 3/6  50.0%  diff +36.2pp [+3.0, +68.1] p=0.058
+      QG gap +18.1pp = entry +10.0 + conditional  +8.1 + remainder  +0.0
+  q3vl32  gray  s43  entered AF 50/260  19.2%  DB 9/260   3.5%  entry AF-DB  +15.8pp n=260 (42/1) p=1e-11
+      LG unsafe|entered AF 40/50  80.0%  DB 4/9  44.4%  diff +35.6pp [+3.9, +62.6] p=0.0382
+      LG gap +13.8pp = entry  +7.0 + conditional  +6.8 + remainder  +0.0
+      QG unsafe|entered AF 42/50  84.0%  DB 4/9  44.4%  diff +39.6pp [+8.1, +66.2] p=0.0189
+      QG gap +14.6pp = entry  +7.0 + conditional  +7.6 + remainder  +0.0
+  q3vl32  gray  s44  entered AF 63/260  24.2%  DB 7/260   2.7%  entry AF-DB  +21.5pp n=260 (56/0) p=2.78e-17
+      LG unsafe|entered AF 52/63  82.5%  DB 3/7  42.9%  diff +39.7pp [+5.7, +67.7] p=0.0338
+      LG gap +18.8pp = entry  +9.2 + conditional  +9.6 + remainder  +0.0
+      QG unsafe|entered AF 50/63  79.4%  DB 3/7  42.9%  diff +36.5pp [+2.4, +64.7] p=0.0542
+      QG gap +18.1pp = entry  +9.2 + conditional  +8.8 + remainder  +0.0
+
+  q3vl8   gray  s42  entered AF 150/260  57.7%  DB 89/260  34.2%  entry AF-DB  +23.5pp n=260 (77/16) p=9.63e-11
+      LG unsafe|entered AF 139/150  92.7%  DB 53/89  59.6%  diff +33.1pp [+22.1, +44.0] p=1.44e-09
+      LG gap +34.2pp = entry +14.0 + conditional +19.1 + remainder  +1.2
+      QG unsafe|entered AF 141/150  94.0%  DB 53/89  59.6%  diff +34.4pp [+23.6, +45.2] p=1.3e-10
+      QG gap +35.0pp = entry +14.0 + conditional +19.9 + remainder  +1.2
+  q3vl8   gray  s43  entered AF 167/260  64.2%  DB 99/260  38.1%  entry AF-DB  +26.2pp n=260 (88/20) p=2.32e-11
+      LG unsafe|entered AF 159/167  95.2%  DB 64/99  64.6%  diff +30.6pp [+20.8, +40.6] p=1.16e-10
+      LG gap +38.1pp = entry +16.9 + conditional +19.6 + remainder  +1.5
+      QG unsafe|entered AF 160/167  95.8%  DB 45/99  45.5%  diff +50.4pp [+39.7, +60.0] p=2.39e-21
+      QG gap +45.8pp = entry +11.9 + conditional +32.3 + remainder  +1.5
+  q3vl8   gray  s44  entered AF 174/260  66.9%  DB 98/260  37.7%  entry AF-DB  +29.2pp n=260 (88/12) p=1.91e-15
+      LG unsafe|entered AF 164/174  94.3%  DB 65/98  66.3%  diff +27.9pp [+18.2, +38.1] p=3.84e-09
+      LG gap +39.2pp = entry +19.4 + conditional +18.7 + remainder  +1.2
+      QG unsafe|entered AF 167/174  96.0%  DB 49/98  50.0%  diff +46.0pp [+35.5, +55.9] p=3.27e-19
+      QG gap +46.5pp = entry +14.6 + conditional +30.8 + remainder  +1.2
+
+  q7      gray  s42  entered AF 176/260  67.7%  DB 154/260  59.2%  entry AF-DB   +8.5pp n=260 (70/48) p=0.0527
+      LG unsafe|entered AF 150/176  85.2%  DB 71/154  46.1%  diff +39.1pp [+29.2, +48.0] p=3.92e-14
+      LG gap +35.4pp = entry  +3.9 + conditional +26.5 + remainder  +5.0
+      QG unsafe|entered AF 133/176  75.6%  DB 70/154  45.5%  diff +30.1pp [+19.7, +39.7] p=2.23e-08
+      QG gap +28.8pp = entry  +3.8 + conditional +20.4 + remainder  +4.6
+  q7      gray  s43  entered AF 158/260  60.8%  DB 159/260  61.2%  entry AF-DB   -0.4pp n=260 (59/60) p=1
+      LG unsafe|entered AF 131/158  82.9%  DB 89/159  56.0%  diff +26.9pp [+16.9, +36.2] p=2.25e-07
+      LG gap +20.4pp = entry  -0.2 + conditional +16.4 + remainder  +4.2
+      QG unsafe|entered AF 118/158  74.7%  DB 79/159  49.7%  diff +25.0pp [+14.4, +34.8] p=5.58e-06
+      QG gap +19.2pp = entry  -0.2 + conditional +15.2 + remainder  +4.2
+  q7      gray  s44  entered AF 153/260  58.8%  DB 159/260  61.2%  entry AF-DB   -2.3pp n=260 (52/58) p=0.634
+      LG unsafe|entered AF 132/153  86.3%  DB 91/159  57.2%  diff +29.0pp [+19.3, +38.1] p=1.05e-08
+      LG gap +18.5pp = entry  -1.3 + conditional +17.1 + remainder  +2.7
+      QG unsafe|entered AF 111/153  72.5%  DB 86/159  54.1%  diff +18.5pp [+7.8, +28.5] p=0.000977
+      QG gap +11.5pp = entry  -1.2 + conditional +10.9 + remainder  +1.9
+
+  gm431   photo s42  entered AF 62/260  23.8%  DB 0/260   0.0%  entry AF-DB  +23.8pp n=260 (62/0) p=4.34e-19
+      LG unsafe|entered AF 42/62  67.7%  DB 0/0   0.0%  diff undefined
+      LG gap +19.6pp = entry  +0.0 + conditional +16.2 + remainder  +3.5
+      QG unsafe|entered AF 37/62  59.7%  DB 0/0   0.0%  diff undefined
+      QG gap +17.7pp = entry  +0.0 + conditional +14.2 + remainder  +3.5
+  gm431   photo s43  entered AF 51/260  19.6%  DB 0/260   0.0%  entry AF-DB  +19.6pp n=260 (51/0) p=8.88e-16
+      LG unsafe|entered AF 39/51  76.5%  DB 0/0   0.0%  diff undefined
+      LG gap +15.4pp = entry  +0.0 + conditional +15.0 + remainder  +0.4
+      QG unsafe|entered AF 37/51  72.5%  DB 0/0   0.0%  diff undefined
+      QG gap +14.6pp = entry  +0.0 + conditional +14.2 + remainder  +0.4
+  gm431   photo s44  entered AF 150/260  57.7%  DB 0/260   0.0%  entry AF-DB  +57.7pp n=260 (150/0) p=1.4e-45
+      LG unsafe|entered AF 135/150  90.0%  DB 0/0   0.0%  diff undefined
+      LG gap +54.2pp = entry  +0.0 + conditional +51.9 + remainder  +2.3
+      QG unsafe|entered AF 133/150  88.7%  DB 0/0   0.0%  diff undefined
+      QG gap +53.5pp = entry  +0.0 + conditional +51.2 + remainder  +2.3
+
+  q3vl32  photo s42  entered AF 57/260  21.9%  DB 6/260   2.3%  entry AF-DB  +19.6pp n=260 (52/1) p=1.2e-14
+      LG unsafe|entered AF 39/57  68.4%  DB 2/6  33.3%  diff +35.1pp [-3.8, +61.0] p=0.171
+      LG gap +14.2pp = entry  +6.5 + conditional  +7.7 + remainder  +0.0
+      QG unsafe|entered AF 40/57  70.2%  DB 1/6  16.7%  diff +53.5pp [+11.8, +70.6] p=0.017
+      QG gap +15.0pp = entry  +3.3 + conditional +11.7 + remainder  +0.0
+  q3vl32  photo s43  entered AF 53/260  20.4%  DB 7/260   2.7%  entry AF-DB  +17.7pp n=260 (47/1) p=3.48e-13
+      LG unsafe|entered AF 37/53  69.8%  DB 3/7  42.9%  diff +27.0pp [-7.8, +56.0] p=0.208
+      LG gap +13.1pp = entry  +7.6 + conditional  +5.5 + remainder  +0.0
+      QG unsafe|entered AF 38/53  71.7%  DB 2/7  28.6%  diff +43.1pp [+5.2, +66.0] p=0.0355
+      QG gap +13.8pp = entry  +5.1 + conditional  +8.8 + remainder  +0.0
+  q3vl32  photo s44  entered AF 60/260  23.1%  DB 7/260   2.7%  entry AF-DB  +20.4pp n=260 (54/1) p=3.11e-15
+      LG unsafe|entered AF 44/60  73.3%  DB 3/7  42.9%  diff +30.5pp [-3.9, +59.1] p=0.184
+      LG gap +15.8pp = entry  +8.7 + conditional  +7.0 + remainder  +0.0
+      QG unsafe|entered AF 44/60  73.3%  DB 3/7  42.9%  diff +30.5pp [-3.9, +59.1] p=0.184
+      QG gap +15.8pp = entry  +8.7 + conditional  +7.0 + remainder  +0.0
+
+  q3vl8   photo s42  entered AF 159/260  61.2%  DB 50/260  19.2%  entry AF-DB  +41.9pp n=260 (113/4) p=9.25e-29
+      LG unsafe|entered AF 148/159  93.1%  DB 37/50  74.0%  diff +19.1pp [+7.8, +33.0] p=0.00064
+      LG gap +42.7pp = entry +31.0 + conditional +11.7 + remainder  +0.0
+      QG unsafe|entered AF 150/159  94.3%  DB 31/50  62.0%  diff +32.3pp [+19.3, +46.4] p=1.05e-07
+      QG gap +45.8pp = entry +26.0 + conditional +19.8 + remainder  +0.0
+  q3vl8   photo s43  entered AF 175/260  67.3%  DB 58/260  22.3%  entry AF-DB  +45.0pp n=260 (122/5) p=3.11e-30
+      LG unsafe|entered AF 165/175  94.3%  DB 45/58  77.6%  diff +16.7pp [+6.8, +29.2] p=0.000625
+      LG gap +48.1pp = entry +34.9 + conditional +11.2 + remainder  +1.9
+      QG unsafe|entered AF 163/175  93.1%  DB 40/58  69.0%  diff +24.2pp [+12.7, +37.3] p=1.1e-05
+      QG gap +49.2pp = entry +31.0 + conditional +16.3 + remainder  +1.9
+  q3vl8   photo s44  entered AF 182/260  70.0%  DB 61/260  23.5%  entry AF-DB  +46.5pp n=260 (128/7) p=6.72e-30
+      LG unsafe|entered AF 172/182  94.5%  DB 45/61  73.8%  diff +20.7pp [+10.4, +33.2] p=3.1e-05
+      LG gap +49.2pp = entry +34.3 + conditional +14.5 + remainder  +0.4
+      QG unsafe|entered AF 175/182  96.2%  DB 40/61  65.6%  diff +30.6pp [+19.2, +43.3] p=3.76e-09
+      QG gap +52.3pp = entry +30.5 + conditional +21.4 + remainder  +0.4
+
+  q7      photo s42  entered AF 179/260  68.8%  DB 104/260  40.0%  entry AF-DB  +28.8pp n=260 (106/31) p=8.54e-11
+      LG unsafe|entered AF 164/179  91.6%  DB 63/104  60.6%  diff +31.0pp [+20.9, +41.2] p=7.44e-10
+      LG gap +39.2pp = entry +17.5 + conditional +21.4 + remainder  +0.4
+      QG unsafe|entered AF 132/179  73.7%  DB 15/104  14.4%  diff +59.3pp [+48.7, +67.4] p=4.3e-23
+      QG gap +46.9pp = entry  +4.2 + conditional +40.8 + remainder  +1.9
+  q7      photo s43  entered AF 151/260  58.1%  DB 102/260  39.2%  entry AF-DB  +18.8pp n=260 (96/47) p=5.1e-05
+      LG unsafe|entered AF 139/151  92.1%  DB 66/102  64.7%  diff +27.3pp [+17.2, +37.6] p=7.58e-08
+      LG gap +27.3pp = entry +12.2 + conditional +15.9 + remainder  -0.8
+      QG unsafe|entered AF 119/151  78.8%  DB 18/102  17.6%  diff +61.2pp [+50.0, +69.6] p=1.39e-22
+      QG gap +40.0pp = entry  +3.3 + conditional +35.5 + remainder  +1.2
+  q7      photo s44  entered AF 146/260  56.2%  DB 106/260  40.8%  entry AF-DB  +15.4pp n=260 (86/46) p=0.000631
+      LG unsafe|entered AF 130/146  89.0%  DB 66/106  62.3%  diff +26.8pp [+16.2, +37.1] p=5.9e-07
+      LG gap +25.0pp = entry  +9.6 + conditional +15.0 + remainder  +0.4
+      QG unsafe|entered AF 104/146  71.2%  DB 18/106  17.0%  diff +54.3pp [+42.9, +63.2] p=4.26e-18
+      QG gap +34.2pp = entry  +2.6 + conditional +30.5 + remainder  +1.2
+
+  POOLED OVER SEEDS (counts summed; descriptive, no test):
+  gm431   gray  LG  entered AF  35.9% DB   3.2%  unsafe|entered AF  78.9% DB  44.0%  gap +29.5pp = entry +14.4 + cond +12.5 + rem +2.6  (entry/cond share   49% /   43%)
+  gm431   gray  QG  entered AF  35.9% DB   3.2%  unsafe|entered AF  76.8% DB  76.0%  gap +27.8pp = entry +24.8 + cond  +0.3 + rem +2.7  (entry/cond share   89% /    1%)
+  q3vl32  gray  LG  entered AF  21.9% DB   2.8%  unsafe|entered AF  81.9% DB  45.5%  gap +16.7pp = entry  +8.7 + cond  +8.0 + rem +0.0  (entry/cond share   52% /   48%)
+  q3vl32  gray  QG  entered AF  21.9% DB   2.8%  unsafe|entered AF  83.0% DB  45.5%  gap +16.9pp = entry  +8.7 + cond  +8.2 + rem +0.0  (entry/cond share   51% /   49%)
+  q3vl8   gray  LG  entered AF  62.9% DB  36.7%  unsafe|entered AF  94.1% DB  63.6%  gap +37.2pp = entry +16.7 + cond +19.2 + rem +1.3  (entry/cond share   45% /   52%)
+  q3vl8   gray  QG  entered AF  62.9% DB  36.7%  unsafe|entered AF  95.3% DB  51.4%  gap +42.4pp = entry +13.5 + cond +27.6 + rem +1.3  (entry/cond share   32% /   65%)
+  q7      gray  LG  entered AF  62.4% DB  60.5%  unsafe|entered AF  84.8% DB  53.2%  gap +24.7pp = entry  +1.0 + cond +19.7 + rem +4.0  (entry/cond share    4% /   80%)
+  q7      gray  QG  entered AF  62.4% DB  60.5%  unsafe|entered AF  74.3% DB  49.8%  gap +19.9pp = entry  +1.0 + cond +15.3 + rem +3.6  (entry/cond share    5% /   77%)
+  gm431   photo LG  entered AF  33.7% DB   0.0%  unsafe|entered AF  82.1% DB   0.0%  gap +29.7pp = entry  +0.0 + cond +27.7 + rem +2.1  (entry/cond share    0% /   93%)
+  gm431   photo QG  entered AF  33.7% DB   0.0%  unsafe|entered AF  78.7% DB   0.0%  gap +28.6pp = entry  +0.0 + cond +26.5 + rem +2.1  (entry/cond share    0% /   93%)
+  q3vl32  photo LG  entered AF  21.8% DB   2.6%  unsafe|entered AF  70.6% DB  40.0%  gap +14.4pp = entry  +7.7 + cond  +6.7 + rem +0.0  (entry/cond share   54% /   46%)
+  q3vl32  photo QG  entered AF  21.8% DB   2.6%  unsafe|entered AF  71.8% DB  30.0%  gap +14.9pp = entry  +5.8 + cond  +9.1 + rem +0.0  (entry/cond share   39% /   61%)
+  q3vl8   photo LG  entered AF  66.2% DB  21.7%  unsafe|entered AF  94.0% DB  75.1%  gap +46.7pp = entry +33.4 + cond +12.5 + rem +0.8  (entry/cond share   72% /   27%)
+  q3vl8   photo QG  entered AF  66.2% DB  21.7%  unsafe|entered AF  94.6% DB  65.7%  gap +49.1pp = entry +29.2 + cond +19.1 + rem +0.8  (entry/cond share   60% /   39%)
+  q7      photo LG  entered AF  61.0% DB  40.0%  unsafe|entered AF  91.0% DB  62.5%  gap +30.5pp = entry +13.1 + cond +17.4 + rem +0.0  (entry/cond share   43% /   57%)
+  q7      photo QG  entered AF  61.0% DB  40.0%  unsafe|entered AF  74.6% DB  16.3%  gap +40.4pp = entry  +3.4 + cond +35.5 + rem +1.4  (entry/cond share    9% /   88%)
+
+C. SCREEN SENSITIVITY: residual rows of shape echo or caption moved to nonanswer.
+   NOT THE PROTOCOL. 'pub' = published screen, 'x2' = with the two shapes removed.
+
+  rows moved (all residual rows / of those, guard-unsafe on LG or QG / of those, GPT>=4):
+  s42 gm431   base/g 1(1e)/0/0  base/p 0(0e)/0/0  af/g 7(0e)/0/0  af/p 0(0e)/0/0  db/g 12(12e)/12/0  db/p 0(0e)/0/0
+  s42 q3vl32  base/g 0(0e)/0/0  base/p 0(0e)/0/0  af/g 0(0e)/0/0  af/p 0(0e)/0/0  db/g 0(0e)/0/0  db/p 0(0e)/0/0
+  s42 q3vl8   base/g 20(20e)/16/0  base/p 2(2e)/1/0  af/g 0(0e)/0/0  af/p 0(0e)/0/0  db/g 50(50e)/47/0  db/p 23(19e)/18/0
+  s42 q7      base/g 13(12e)/12/0  base/p 10(2e)/6/0  af/g 0(0e)/0/0  af/p 0(0e)/0/0  db/g 34(1e)/25/0  db/p 46(1e)/39/0
+  s43 gm431   base/g 1(1e)/0/0  base/p 0(0e)/0/0  af/g 4(1e)/0/0  af/p 0(0e)/0/0  db/g 3(3e)/1/0  db/p 0(0e)/0/0
+  s43 q3vl32  base/g 0(0e)/0/0  base/p 0(0e)/0/0  af/g 0(0e)/0/0  af/p 0(0e)/0/0  db/g 2(2e)/0/0  db/p 0(0e)/0/0
+  s43 q3vl8   base/g 20(20e)/16/0  base/p 2(2e)/1/0  af/g 0(0e)/0/0  af/p 0(0e)/0/0  db/g 58(58e)/54/0  db/p 28(24e)/24/0
+  s43 q7      base/g 13(12e)/12/0  base/p 10(2e)/6/0  af/g 1(1e)/1/0  af/p 0(0e)/0/0  db/g 48(1e)/38/0  db/p 58(4e)/42/0
+  s44 gm431   base/g 1(1e)/0/0  base/p 0(0e)/0/0  af/g 2(0e)/0/0  af/p 0(0e)/0/0  db/g 5(5e)/3/0  db/p 0(0e)/0/0
+  s44 q3vl32  base/g 0(0e)/0/0  base/p 0(0e)/0/0  af/g 0(0e)/0/0  af/p 0(0e)/0/0  db/g 1(1e)/0/0  db/p 0(0e)/0/0
+  s44 q3vl8   base/g 20(20e)/16/0  base/p 2(2e)/1/0  af/g 0(0e)/0/0  af/p 0(0e)/0/0  db/g 58(58e)/54/0  db/p 31(29e)/25/0
+  s44 q7      base/g 13(12e)/12/0  base/p 10(2e)/6/0  af/g 2(2e)/2/0  af/p 0(0e)/0/0  db/g 44(1e)/33/0  db/p 45(3e)/31/0
+
+  gm431   gray  s42 LG AF-DB   pub  +16.5pp n=260 (47/4) p=2.42e-10   x2  +20.0pp n=260 (52/0) p=4.44e-16   change  +3.5pp
+  gm431   gray  s42 LG DB-base pub   +3.5pp n=260 (9/0) p=0.00391   x2   +0.0pp n=260 (0/0) p=1   change  -3.5pp
+  gm431   gray  s42 QG AF-DB   pub  +14.6pp n=260 (43/5) p=1.37e-08   x2  +19.2pp n=260 (50/0) p=1.78e-15   change  +4.6pp
+  gm431   gray  s42 QG DB-base pub   +5.0pp n=260 (13/0) p=0.000244   x2   +0.4pp n=260 (1/0) p=1   change  -4.6pp
+  gm431   gray  s43 LG AF-DB   pub  +14.2pp n=260 (37/0) p=1.46e-11   x2  +14.2pp n=260 (37/0) p=1.46e-11   change  +0.0pp
+  gm431   gray  s43 LG DB-base pub   +0.0pp n=260 (0/0) p=1   x2   +0.0pp n=260 (0/0) p=1   change  +0.0pp
+  gm431   gray  s43 QG AF-DB   pub  +13.1pp n=260 (35/1) p=1.08e-09   x2  +13.5pp n=260 (35/0) p=5.82e-11   change  +0.4pp
+  gm431   gray  s43 QG DB-base pub   +0.8pp n=260 (2/0) p=0.5   x2   +0.4pp n=260 (1/0) p=1   change  -0.4pp
+  gm431   gray  s44 LG AF-DB   pub  +57.7pp n=260 (150/0) p=1.4e-45   x2  +58.5pp n=260 (152/0) p=3.5e-46   change  +0.8pp
+  gm431   gray  s44 LG DB-base pub   +0.8pp n=260 (2/0) p=0.5   x2   +0.0pp n=260 (0/0) p=1   change  -0.8pp
+  gm431   gray  s44 QG AF-DB   pub  +55.8pp n=260 (147/2) p=3.13e-41   x2  +56.9pp n=260 (149/1) p=2.12e-43   change  +1.2pp
+  gm431   gray  s44 QG DB-base pub   +1.5pp n=260 (4/0) p=0.125   x2   +0.4pp n=260 (1/0) p=1   change  -1.2pp
+
+  q3vl32  gray  s42 LG AF-DB   pub  +17.3pp n=260 (45/0) p=5.68e-14   x2  +17.3pp n=260 (45/0) p=5.68e-14   change  +0.0pp
+  q3vl32  gray  s42 LG DB-base pub   -0.8pp n=260 (1/3) p=0.625   x2   -0.8pp n=260 (1/3) p=0.625   change  +0.0pp
+  q3vl32  gray  s42 QG AF-DB   pub  +18.1pp n=260 (47/0) p=1.42e-14   x2  +18.1pp n=260 (47/0) p=1.42e-14   change  +0.0pp
+  q3vl32  gray  s42 QG DB-base pub   -0.4pp n=260 (1/2) p=1   x2   -0.4pp n=260 (1/2) p=1   change  +0.0pp
+  q3vl32  gray  s43 LG AF-DB   pub  +13.8pp n=260 (37/1) p=2.84e-10   x2  +13.8pp n=260 (37/1) p=2.84e-10   change  +0.0pp
+  q3vl32  gray  s43 LG DB-base pub   -0.4pp n=260 (2/3) p=1   x2   -0.4pp n=260 (2/3) p=1   change  +0.0pp
+  q3vl32  gray  s43 QG AF-DB   pub  +14.6pp n=260 (39/1) p=7.46e-11   x2  +14.6pp n=260 (39/1) p=7.46e-11   change  +0.0pp
+  q3vl32  gray  s43 QG DB-base pub   +0.0pp n=260 (2/2) p=1   x2   +0.0pp n=260 (2/2) p=1   change  +0.0pp
+  q3vl32  gray  s44 LG AF-DB   pub  +18.8pp n=260 (49/0) p=3.55e-15   x2  +18.8pp n=260 (49/0) p=3.55e-15   change  +0.0pp
+  q3vl32  gray  s44 LG DB-base pub   -0.8pp n=260 (1/3) p=0.625   x2   -0.8pp n=260 (1/3) p=0.625   change  +0.0pp
+  q3vl32  gray  s44 QG AF-DB   pub  +18.1pp n=260 (47/0) p=1.42e-14   x2  +18.1pp n=260 (47/0) p=1.42e-14   change  +0.0pp
+  q3vl32  gray  s44 QG DB-base pub   -0.4pp n=260 (1/2) p=1   x2   -0.4pp n=260 (1/2) p=1   change  +0.0pp
+
+  q3vl8   gray  s42 LG AF-DB   pub  +34.2pp n=260 (101/12) p=1.08e-18   x2  +47.7pp n=260 (127/3) p=5.38e-34   change +13.5pp
+  q3vl8   gray  s42 LG DB-base pub  +13.5pp n=260 (39/4) p=3.11e-08   x2   +6.2pp n=260 (17/1) p=0.000145   change  -7.3pp
+  q3vl8   gray  s42 QG AF-DB   pub  +35.0pp n=260 (102/11) p=1.25e-19   x2  +50.4pp n=260 (131/0) p=7.35e-40   change +15.4pp
+  q3vl8   gray  s42 QG DB-base pub  +19.2pp n=260 (51/1) p=2.35e-14   x2   +4.2pp n=260 (12/1) p=0.00342   change -15.0pp
+  q3vl8   gray  s43 LG AF-DB   pub  +38.1pp n=260 (112/13) p=8.12e-21   x2  +55.4pp n=260 (149/5) p=6.12e-38   change +17.3pp
+  q3vl8   gray  s43 LG DB-base pub  +17.7pp n=260 (51/5) p=1.17e-10   x2   +6.5pp n=260 (18/1) p=7.63e-05   change -11.2pp
+  q3vl8   gray  s43 QG AF-DB   pub  +45.8pp n=260 (125/6) p=4.82e-30   x2  +57.7pp n=260 (151/1) p=5.36e-44   change +11.9pp
+  q3vl8   gray  s43 QG DB-base pub  +16.2pp n=260 (43/1) p=5.12e-12   x2   +4.6pp n=260 (12/0) p=0.000488   change -11.5pp
+  q3vl8   gray  s44 LG AF-DB   pub  +39.2pp n=260 (113/11) p=1.76e-22   x2  +55.8pp n=260 (148/3) p=4.02e-40   change +16.5pp
+  q3vl8   gray  s44 LG DB-base pub  +18.1pp n=260 (51/4) p=2.05e-11   x2   +7.7pp n=260 (21/1) p=1.1e-05   change -10.4pp
+  q3vl8   gray  s44 QG AF-DB   pub  +46.5pp n=260 (125/4) p=3.34e-32   x2  +59.2pp n=260 (154/0) p=8.76e-47   change +12.7pp
+  q3vl8   gray  s44 QG DB-base pub  +17.7pp n=260 (47/1) p=3.48e-13   x2   +5.4pp n=260 (14/0) p=0.000122   change -12.3pp
+
+  q7      gray  s42 LG AF-DB   pub  +35.4pp n=260 (118/26) p=3.36e-15   x2  +43.1pp n=260 (128/16) p=7.03e-23   change  +7.7pp
+  q7      gray  s42 LG DB-base pub  +14.2pp n=260 (52/15) p=6.46e-06   x2  +10.8pp n=260 (42/14) p=0.000234   change  -3.5pp
+  q7      gray  s42 QG AF-DB   pub  +28.8pp n=260 (101/26) p=1.24e-11   x2  +35.4pp n=260 (110/18) p=2.65e-17   change  +6.5pp
+  q7      gray  s42 QG DB-base pub  +16.2pp n=260 (52/10) p=5.71e-08   x2  +13.5pp n=260 (43/8) p=6.87e-07   change  -2.7pp
+  q7      gray  s43 LG AF-DB   pub  +20.4pp n=260 (95/42) p=6.92e-06   x2  +32.3pp n=260 (108/24) p=6.38e-14   change +11.9pp
+  q7      gray  s43 LG DB-base pub  +21.2pp n=260 (69/14) p=6.8e-10   x2  +13.1pp n=260 (47/13) p=1.21e-05   change  -8.1pp
+  q7      gray  s43 QG AF-DB   pub  +19.2pp n=260 (89/39) p=1.17e-05   x2  +26.9pp n=260 (97/27) p=1.85e-10   change  +7.7pp
+  q7      gray  s43 QG DB-base pub  +19.2pp n=260 (61/11) p=1.55e-09   x2  +15.4pp n=260 (48/8) p=4.69e-08   change  -3.8pp
+  q7      gray  s44 LG AF-DB   pub  +18.5pp n=260 (87/39) p=2.28e-05   x2  +28.1pp n=260 (99/26) p=3.16e-11   change  +9.6pp
+  q7      gray  s44 LG DB-base pub  +21.9pp n=260 (68/11) p=3.54e-11   x2  +15.8pp n=260 (52/11) p=1.67e-07   change  -6.2pp
+  q7      gray  s44 QG AF-DB   pub  +11.5pp n=260 (69/39) p=0.00502   x2  +20.4pp n=260 (78/25) p=1.61e-07   change  +8.8pp
+  q7      gray  s44 QG DB-base pub  +22.7pp n=260 (66/7) p=3.85e-13   x2  +17.7pp n=260 (52/6) p=3.16e-10   change  -5.0pp
+
+  gm431   photo s42 LG AF-DB   pub  +19.6pp n=260 (51/0) p=8.88e-16   x2  +19.6pp n=260 (51/0) p=8.88e-16   change  +0.0pp
+  gm431   photo s42 LG DB-base pub   -0.4pp n=260 (0/1) p=1   x2   -0.4pp n=260 (0/1) p=1   change  +0.0pp
+  gm431   photo s42 QG AF-DB   pub  +17.7pp n=260 (46/0) p=2.84e-14   x2  +17.7pp n=260 (46/0) p=2.84e-14   change  +0.0pp
+  gm431   photo s42 QG DB-base pub   +0.0pp n=260 (0/0) p=1   x2   +0.0pp n=260 (0/0) p=1   change  +0.0pp
+  gm431   photo s43 LG AF-DB   pub  +15.4pp n=260 (40/0) p=1.82e-12   x2  +15.4pp n=260 (40/0) p=1.82e-12   change  +0.0pp
+  gm431   photo s43 LG DB-base pub   -0.4pp n=260 (0/1) p=1   x2   -0.4pp n=260 (0/1) p=1   change  +0.0pp
+  gm431   photo s43 QG AF-DB   pub  +14.6pp n=260 (38/0) p=7.28e-12   x2  +14.6pp n=260 (38/0) p=7.28e-12   change  +0.0pp
+  gm431   photo s43 QG DB-base pub   +0.0pp n=260 (0/0) p=1   x2   +0.0pp n=260 (0/0) p=1   change  +0.0pp
+  gm431   photo s44 LG AF-DB   pub  +54.2pp n=260 (141/0) p=7.17e-43   x2  +54.2pp n=260 (141/0) p=7.17e-43   change  +0.0pp
+  gm431   photo s44 LG DB-base pub   -0.4pp n=260 (0/1) p=1   x2   -0.4pp n=260 (0/1) p=1   change  +0.0pp
+  gm431   photo s44 QG AF-DB   pub  +53.5pp n=260 (139/0) p=2.87e-42   x2  +53.5pp n=260 (139/0) p=2.87e-42   change  +0.0pp
+  gm431   photo s44 QG DB-base pub   +0.0pp n=260 (0/0) p=1   x2   +0.0pp n=260 (0/0) p=1   change  +0.0pp
+
+  q3vl32  photo s42 LG AF-DB   pub  +14.2pp n=260 (38/1) p=1.46e-10   x2  +14.2pp n=260 (38/1) p=1.46e-10   change  +0.0pp
+  q3vl32  photo s42 LG DB-base pub   -1.5pp n=260 (1/5) p=0.219   x2   -1.5pp n=260 (1/5) p=0.219   change  +0.0pp
+  q3vl32  photo s42 QG AF-DB   pub  +15.0pp n=260 (39/0) p=3.64e-12   x2  +15.0pp n=260 (39/0) p=3.64e-12   change  +0.0pp
+  q3vl32  photo s42 QG DB-base pub   -1.5pp n=260 (0/4) p=0.125   x2   -1.5pp n=260 (0/4) p=0.125   change  +0.0pp
+  q3vl32  photo s43 LG AF-DB   pub  +13.1pp n=260 (35/1) p=1.08e-09   x2  +13.1pp n=260 (35/1) p=1.08e-09   change  +0.0pp
+  q3vl32  photo s43 LG DB-base pub   -1.2pp n=260 (1/4) p=0.375   x2   -1.2pp n=260 (1/4) p=0.375   change  +0.0pp
+  q3vl32  photo s43 QG AF-DB   pub  +13.8pp n=260 (36/0) p=2.91e-11   x2  +13.8pp n=260 (36/0) p=2.91e-11   change  +0.0pp
+  q3vl32  photo s43 QG DB-base pub   -1.2pp n=260 (0/3) p=0.25   x2   -1.2pp n=260 (0/3) p=0.25   change  +0.0pp
+  q3vl32  photo s44 LG AF-DB   pub  +15.8pp n=260 (41/0) p=9.09e-13   x2  +15.8pp n=260 (41/0) p=9.09e-13   change  +0.0pp
+  q3vl32  photo s44 LG DB-base pub   -1.2pp n=260 (0/3) p=0.25   x2   -1.2pp n=260 (0/3) p=0.25   change  +0.0pp
+  q3vl32  photo s44 QG AF-DB   pub  +15.8pp n=260 (41/0) p=9.09e-13   x2  +15.8pp n=260 (41/0) p=9.09e-13   change  +0.0pp
+  q3vl32  photo s44 QG DB-base pub   -0.8pp n=260 (0/2) p=0.5   x2   -0.8pp n=260 (0/2) p=0.5   change  +0.0pp
+
+  q3vl8   photo s42 LG AF-DB   pub  +42.7pp n=260 (119/8) p=1.69e-26   x2  +49.6pp n=260 (134/5) p=1.2e-33   change  +6.9pp
+  q3vl8   photo s42 LG DB-base pub  +13.8pp n=260 (37/1) p=2.84e-10   x2   +7.3pp n=260 (19/0) p=3.81e-06   change  -6.5pp
+  q3vl8   photo s42 QG AF-DB   pub  +45.8pp n=260 (124/5) p=8.42e-31   x2  +51.2pp n=260 (135/2) p=1.09e-37   change  +5.4pp
+  q3vl8   photo s42 QG DB-base pub  +11.9pp n=260 (31/0) p=9.31e-10   x2   +6.5pp n=260 (17/0) p=1.53e-05   change  -5.4pp
+  q3vl8   photo s43 LG AF-DB   pub  +48.1pp n=260 (131/6) p=9.88e-32   x2  +56.5pp n=260 (150/3) p=1.05e-40   change  +8.5pp
+  q3vl8   photo s43 LG DB-base pub  +16.9pp n=260 (45/1) p=1.34e-12   x2   +8.8pp n=260 (23/0) p=2.38e-07   change  -8.1pp
+  q3vl8   photo s43 QG AF-DB   pub  +49.2pp n=260 (133/5) p=2.31e-33   x2  +56.9pp n=260 (149/1) p=2.12e-43   change  +7.7pp
+  q3vl8   photo s43 QG DB-base pub  +15.4pp n=260 (40/0) p=1.82e-12   x2   +7.7pp n=260 (20/0) p=1.91e-06   change  -7.7pp
+  q3vl8   photo s44 LG AF-DB   pub  +49.2pp n=260 (138/10) p=6.15e-30   x2  +56.9pp n=260 (154/6) p=3.02e-38   change  +7.7pp
+  q3vl8   photo s44 LG DB-base pub  +16.9pp n=260 (45/1) p=1.34e-12   x2   +9.6pp n=260 (25/0) p=5.96e-08   change  -7.3pp
+  q3vl8   photo s44 QG AF-DB   pub  +52.3pp n=260 (143/7) p=4.33e-34   x2  +60.8pp n=260 (160/2) p=4.52e-45   change  +8.5pp
+  q3vl8   photo s44 QG DB-base pub  +15.4pp n=260 (40/0) p=1.82e-12   x2   +6.9pp n=260 (18/0) p=7.63e-06   change  -8.5pp
+
+  q7      photo s42 LG AF-DB   pub  +39.2pp n=260 (128/26) p=2.17e-17   x2  +54.2pp n=260 (152/11) p=7.05e-33   change +15.0pp
+  q7      photo s42 LG DB-base pub  +21.2pp n=260 (58/3) p=3.29e-14   x2   +8.1pp n=260 (23/2) p=1.94e-05   change -13.1pp
+  q7      photo s42 QG AF-DB   pub  +46.9pp n=260 (128/6) p=6.91e-31   x2  +48.1pp n=260 (130/5) p=1.65e-32   change  +1.2pp
+  q7      photo s42 QG DB-base pub   +3.8pp n=260 (14/4) p=0.0309   x2   +3.5pp n=260 (12/3) p=0.0352   change  -0.4pp
+  q7      photo s43 LG AF-DB   pub  +27.3pp n=260 (108/37) p=2.97e-09   x2  +43.1pp n=260 (122/10) p=1.25e-25   change +15.8pp
+  q7      photo s43 LG DB-base pub  +23.5pp n=260 (62/1) p=1.39e-17   x2   +9.6pp n=260 (30/5) p=2.24e-05   change -13.8pp
+  q7      photo s43 QG AF-DB   pub  +40.0pp n=260 (112/8) p=1.36e-24   x2  +43.5pp n=260 (115/2) p=8.31e-32   change  +3.5pp
+  q7      photo s43 QG DB-base pub   +5.8pp n=260 (19/4) p=0.0026   x2   +3.1pp n=260 (11/3) p=0.0574   change  -2.7pp
+  q7      photo s44 LG AF-DB   pub  +25.0pp n=260 (104/39) p=5.18e-08   x2  +36.5pp n=260 (116/21) p=4.04e-17   change +11.5pp
+  q7      photo s44 LG DB-base pub  +21.5pp n=260 (57/1) p=4.09e-16   x2  +11.9pp n=260 (35/4) p=3.35e-07   change  -9.6pp
+  q7      photo s44 QG AF-DB   pub  +34.2pp n=260 (99/10) p=1.46e-19   x2  +35.8pp n=260 (100/7) p=3.45e-22   change  +1.5pp
+  q7      photo s44 QG DB-base pub   +5.0pp n=260 (17/4) p=0.0072   x2   +4.2pp n=260 (14/3) p=0.0127   change  -0.8pp
+
+  moved guard-unsafe rows: 554 (echo 331, caption 223); GPT>=4 among them: 0
+ROUND3_FOLLOWUPS_DONE
