@@ -42,3 +42,15 @@ data/utility/
 data/scale/
 meeting/
 server_a100/
+
+# round 4 (2026-11-11): the s43/s44 seed replicates are raw generations + venvs +
+# worker logs, same policy as outputs/scale/ above -- 2.7G each, not published.
+outputs/scale_s4*/
+
+# adapter bundles staged for transfer to FSx (1.4G); the adapters themselves are
+# offloaded to /genai/fsx-llm and symlinked back in, see adapters_store above.
+adapters_round2.tar
+adapters_round2.tar.md5
+
+# editor-local
+.vscode/
