@@ -11,7 +11,7 @@ brief (all finished) is archived unchanged at
 
 Round 4's push up to `377977b` was read against the canonical file on this side. The
 `q3vl8` results hold up. In particular, the `p8`/`t8` contrast and the steering are both
-clean and both will lead the paper. Four things are wrong or missing. Do them in this order,
+clean and both will lead the paper. Five things are wrong or missing. Do them in this order,
 before anything else in the brief that is not yet finished. Everything else in revision 3
 stands.
 
@@ -63,6 +63,17 @@ row by row. Send:
 No adapters. Without these files the paper's mitigation and steering numbers cannot be
 checked on this side, and they are the paper's two new headline results.
 
+**5. Retract "the base model inside the worksheet has no discrimination".** That sentence rests
+on the screen's refusal regex. On the 194 unsafe XSTest prompts it gives base 4.1% refusal,
+while GPT-5.5's refusal class gives 80.9% on the same rows (canonical `ROUND 4 P1:
+over-refusal` block). DB (62.9 against 70.6) and AF (55.7 against 70.5) do not show a gap of
+that size. So base refuses in a form the regex does not catch. It is not that base fails to
+refuse. Do the following:
+- Hand-read 20 base `xstest_unsafe` rows and name the refusal form.
+- Mark the −1.9pp figure and the "independent corroboration" paragraph do-not-cite in the
+  report (handback item 8).
+- Report XSTest refusal under both the screen and GPT from now on.
+
 **Then finish, in this order:**
 1. `p8` utility (criterion 4);
 2. `p8` photo, and `t15` to 260;
@@ -81,7 +92,7 @@ sensitivity are in the canonical file as `ROUND 3 FOLLOW-UPS`. The write-up is i
 AF − DB: the shapes it misses are almost all DB and base rows. The paper text is being
 written on this side.
 
-**Deadline:** items 1–4 by **2026-11-12 18:00 UTC**. The paper freezes its numbers on
+**Deadline:** items 1–5 by **2026-11-12 18:00 UTC**. The paper freezes its numbers on
 2026-11-14.
 
 ## In one paragraph
