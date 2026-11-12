@@ -99,6 +99,40 @@ P1 suggests the two arms may diverge, and M2 tests that with real data.
 less well than VLGuard. Run it only if GPUs are idle after M2, as a single `star_prose` arm on
 `q3vl8`. Use the published response including its reasoning, and say so in the report.
 
+### M3. Run these when nodes are free (added 2026-11-12 16:40 UTC)
+
+Hoàng has free nodes. Everything below supports M1 and M2, which stay first, and it can run
+beside them. If M1 is to be the paper's mitigation, reviewers will ask four questions about it:
+are the refusals real text, does it hold at the paper's 4096 cap, what does it cost on benign
+tasks, and does it hold beyond one adapter. E1 to E4 answer those. Run them in this order.
+Every prediction goes into the canonical file before its first row.
+
+- **E1. Are the steered rows real refusals?** No GPU. Per α and per backbone, give the screen
+  class counts: refusal, non-answer and residual. A falling unsafe rate means nothing if the
+  rows turn into broken text. Hand-read 20 gray rows at α=2 on each backbone, and at α=4 too
+  if `q3vl32` needs it. Record whether each is a fluent refusal, broken or repeated text, or
+  something else. Put the counts in `HANDREAD_steer.md`.
+- **E2. The paper's cap.** P2c ran at MAXNEW=512, while every other number in the paper is at
+  4096. Re-run α=0 and α=2 at **MAXNEW=4096** on 260 gray rows, on both backbones, with the same
+  adapters and the same direction. It is a new transcript directory, not a resume of the 512
+  rows. Report α=2 against α=0 at 4096. The question is whether harmful content comes back
+  after token 512.
+- **E3. The cost on benign tasks.** The 1000 utility rows, strict and tolerant scorers, at α=0
+  and α=2 on both backbones. Also run the 260 photo rows at α=0 and α=2, because the paper
+  reports photo beside gray.
+- **E4. Beyond one adapter.** Steering at α=0 and α=2 on the round-3 **seed 43 and seed 44** AF
+  adapters, both backbones, 260 gray rows each. Use the same `l_r*` and the same direction as
+  seed 42; do not refit them. Report each seed against its own α=0, then pool the three seeds
+  the same way `round3_followups.py` pools them.
+- **E5.** STAR-1 `star_prose` on `q3vl8`, as written above. Run it as soon as M2's `q3vl8`
+  cells are done training, instead of waiting for GPUs to go idle.
+- **E6. Optional.** M2 at seed 43, both arms, `q3vl8` only. Then P2b's harmfulness AUC with
+  the 250 XSTest safe prompts as the harmless set (revision 4's optional item).
+
+Deadline for E1 to E5: **2026-11-14 00:00 UTC**. Whatever is unfinished then is handed back
+with its `n`. Each new cell needs everything handback items 2 to 5 list: transcripts, screen
+labels, the gate table, and the md5s and library pins.
+
 ## Revision 5 addendum (2026-11-12): read this first
 
 **Where to work.** Your push went to `round-4-results` because it conflicted with three commits
