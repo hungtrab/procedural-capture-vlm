@@ -1,11 +1,101 @@
 # next_step.md — round 4: why it happens, and whether a small data fix stops it
 
-Revision 4, 2026-11-11: the addendum below comes first. Revision 3, same day, follows it unchanged. Revisions 1 and 2 of the same day are superseded; this one adds a
+Revision 5, 2026-11-12: its addendum comes first, then the revision 4 addendum, then revision 3, all unchanged. Revisions 1 and 2 of the same day are superseded; this one adds a
 retrain-noise control, puts `gm431` into the teacher-forced probe only, fixes the probe's
 tokenisation, and states what the driver and the reader must handle. For Hoàng's agent, on
 the 8×A100 cluster where the round-3 adapters and transcripts live. The round-3 follow-up
 brief (all finished) is archived unchanged at
 `gptweb_cvpr/archive/next_step_round3_followup_2026-11-09.md`.
+
+## Revision 5 addendum (2026-11-12): read this first
+
+**Where to work.** Your push went to `round-4-results` because it conflicted with three commits
+on `master`. The conflict was in `stats_all_protocols.txt` only: both sides had appended after
+line 7158. It is now merged into `master` as `6e63e98`. Your file is kept verbatim as the first
+7950 lines (`cmp`-checked), the `ROUND 3 FOLLOW-UPS` block follows it unchanged, and
+`audit_pvalues.py` exits 0. **Work on `master` from now on.** Pull before every append. If a push
+conflicts in the canonical file again, keep the remote file as it is and put your new block
+after it. Do not open another branch.
+
+Your branch started at `377977b`, before revision 4 was written, so you have not seen the
+revision 4 addendum below. Its status after `9f008dd`:
+
+| rev 4 item | status |
+|---|---|
+| 1. `q3vl32` mitigation | Both cells are complete. **Still open:** `HANDREAD_q3vl32_p8.md`, P2a on `q3vl32_mixref_p8`/`_t8` AF, and the `q3vl32` column in the scorecard. |
+| 2. full-n XSTest | **Done.** The canonical block has 250 / 200 rows and the paired tests, `p15` included. |
+| 3. Spearman, stale sections | **Open.** See B below. |
+| 4. round-4 handback | **Open.** Nothing from round 4 is here row by row. See A below. |
+| 5. base XSTest regex | **Open.** The canonical block still shows base `xstest_unsafe` at 4.5% under the screen and 79.5% under GPT. |
+| 6. P1 on `q7`, `gm431` | **Open.** New deadlines in D. |
+
+The paper is written on this side and freezes its numbers on **2026-11-14**. It cannot cite a
+round-4 number that cannot be checked here. So the order is A, B, C, D, and A comes before
+any new GPU work.
+
+### A. Hand back round 4 (deadline 2026-11-12 18:00 UTC)
+
+AGENTS.md "What a run must hand back", items 2 to 5, for every round-4 cell. That means
+`q3vl8_mixref_{p0,p8,t8,p15,t15,p4}`, `q3vl32_mixref_{p8,t8}`, every `_xs` cell,
+`q3vl8_xstest`, `q3vl32_xstest`, and the four steering cells.
+
+1. **`round4_transcripts.tar.gz`** with its `.md5`, delivered the way
+   `scale_seed4344_transcripts.tar.gz` was. Include `res_<arm>.jsonl`, `_lg`, `_qg`, `_gpt` and
+   `san_*` for every cell above. For steering, include the α rows and their 40 benign gate rows
+   each. No adapters.
+2. **`screen_labels.jsonl` per cell**, both inside the tar and under `outputs/scale/handback/<cell>/`
+   as round 3 has them. Each row holds the id, the arm, both raw guard verdicts, the screen class,
+   and the pattern that fired.
+3. **The probe records, row by row.** P2a `R` per row for every adapter the report quotes
+   (`q3vl8`, `q3vl32` and `gm431` at seeds 42/43/44, plus the P1 arms). P2b projections and
+   harmfulness scores per row. Today only the two `q3vl8` self-test files and the P2b layer
+   choices are in `outputs/scale/probe/`.
+4. **Complete `round4_adapter_md5.txt`.** It lacks `mixref_p4`, `p15_xs`, `t15_xs`,
+   `q3vl32_mixref_p8_xs`, `q3vl32_mixref_t8_xs`, `q3vl32_xstest` and the adapter the steering read.
+5. **A pin table, one row per cell:** accelerator and memory, partition, the `transformers`
+   actually resolved, and the torch build. The report mentions the move to `a100_genai_shared`
+   but gives no versions.
+6. **The benign gate table as `score_mvlm_sanity.py` prints it** for every round-4 cell. The
+   report has `gate_shape.py` counts (`q3vl32` 39/40, `p15` 36/40, `t8` 27/40) but not the table.
+
+### B. Fix the report (deadline 2026-11-13 00:00 UTC)
+
+`RUN_2026-11-10_round4.md` is a document, so rewrite it freely.
+- Lines 549–622 and 711–784 are the same text twice: §4.5b, §4.6, §4b and §4b.2. Keep one copy.
+- The Status line still reads 2026-11-10 19:50. §7 "Not done yet" lists work that is finished.
+  §4c says the guard columns "are still empty" under a table that has them. §3.4 quotes
+  `p15 - t15` at n=180, but the canonical value is now LG −79.6pp at n=260, p=9.72e-63.
+- The Spearman sentence: rev 4 item 3.
+- **Mark do-not-cite (handback item 8):**
+  - `q3vl32` photo `mixref_p8` − round-3 AF. LG gives +10.4pp, p=0.000142; QG gives +2.7pp,
+    p=0.311. Rule 3 makes the disagreement the finding, and the cause to rule out first is R1.
+  - The base XSTest refusal under the screen (rev 4 item 5).
+- **Say it in the text:** on `q3vl8` gray `mixref_p8` AF − DB, both guards are flat but GPT ≥ 4
+  is +4.6pp, p=0.00418. "The gap is gone" holds for the two guards only.
+- On `q3vl32` gray `mixref_p8` − round-3 AF, LG and QG are 7 points apart (+26.2 against
+  +19.2). The sign agrees, but the size is past "a couple of points", so state both.
+
+### C. Explain `q3vl32` (deadline 2026-11-13 06:00 UTC)
+
+Rev 4 item 1: the hand-read and the P2a run. Forward passes only, minutes of GPU. `9f008dd`
+puts forward a hypothesis: base refuses 95% inside the worksheet, and in-procedure refusals
+teach "always finish the worksheet". The hand-read is the test of that hypothesis. For each of
+the 40 rows, record whether Step 1 starts with a refusal and then gives the content anyway,
+whether it gives the content outright, or whether it does something else. Read 20 round-3 AF
+rows on the same ids beside them, so the two shapes can be compared.
+
+### D. P1 on `q7` and `gm431` (rev 4 item 6, new deadlines)
+
+The design is the same as in item 6. The probe runs first, then gray rows only.
+- `q7`: **2026-11-13 18:00 UTC**.
+- `gm431`: **2026-11-14 06:00 UTC**. Run the three arms in parallel.
+
+If a cell misses the deadline, hand back whatever is finished, partial `n` and all. Do not
+hold it back. CVPR takes supplementary material separately until 2026-11-23, so photo and
+utility rows for these cells can come after the freeze and go there.
+
+**`mixref_p4`:** let it finish if it is running, and give it the last priority. Report it as the
+extra arm it is. Start no other new arms.
 
 ## Revision 4 addendum (2026-11-11): read this first
 
