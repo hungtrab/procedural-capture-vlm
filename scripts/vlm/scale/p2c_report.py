@@ -75,7 +75,10 @@ def load(a):
     return rows
 
 
-ALPHAS = [("a0", 0.0), ("a0p5", 0.5), ("a1", 1.0), ("a2", 2.0)]
+# a4 is in the list because next_step.md rev 6 M1 puts alpha=4 in the q3vl32 grid
+# "before any result". A tag with no a4 transcript simply skips it (the loop tests
+# os.path.exists), so adding it changes nothing for q3vl8 and is byte-identical there.
+ALPHAS = [("a0", 0.0), ("a0p5", 0.5), ("a1", 1.0), ("a2", 2.0), ("a4", 4.0)]
 have = [(t, v) for t, v in ALPHAS if os.path.exists(f"{R}/res_af_{t}.jsonl")]
 if not have:
     raise SystemExit(f"ABORT: no steer transcripts under {R}")

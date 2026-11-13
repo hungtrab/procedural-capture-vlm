@@ -16,7 +16,9 @@ gate rows (san_af_a<k>_ws.jsonl), the latter marked image_kind="benign_gate" so 
 can pool them with the harm rows.
 
   python3 -I scripts/vlm/scale/dump_steer_labels.py [--check]
-Env: SCALE (outputs/scale), PTAG (q3vl8).
+Env: SCALE (outputs/scale), PTAG (q3vl8), SFX (""). SFX mirrors steer_gen.py's: it selects
+the transcript set (res_af_a2_xs.jsonl for SFX="_xs") and is appended to the output name,
+so an XSTest sweep's labels never overwrite the gray sweep's.
 """
 import json, os, subprocess, sys
 
@@ -27,6 +29,7 @@ sys.path.insert(0, VLM)
 SCALE = os.path.abspath(os.environ.get("SCALE", "outputs/scale"))
 TAG = os.environ.get("PTAG", "q3vl8")
 R = f"{SCALE}/{TAG}_steer"
+SFX = os.environ.get("SFX", "")
 CHECK = "--check" in sys.argv
 
 
@@ -65,11 +68,15 @@ def join_guards(rows, stem):
     return rows
 
 
-ALPHAS = [("a0", 0.0), ("a0p5", 0.5), ("a1", 1.0), ("a2", 2.0)]
+# a4 is in the list because next_step.md rev 6 M1 puts alpha=4 in the q3vl32 grid
+# "before any result". A tag with no a4 transcript simply skips it (the loop tests
+# os.path.exists), so adding it changes nothing for q3vl8 and is byte-identical there.
+ALPHAS = [("a0", 0.0), ("a0p5", 0.5), ("a1", 1.0), ("a2", 2.0), ("a4", 4.0)]
 out_rows = []
 
 for t, v in ALPHAS:
-    for stem, kind in ((f"res_af_{t}", "gray"), (f"san_af_{t}_ws", "benign_gate")):
+    for stem, kind in ((f"res_af_{t}{SFX}", "gray"),
+                       (f"san_af_{t}{SFX}_ws", "benign_gate")):
         p = f"{R}/{stem}.jsonl"
         if not os.path.exists(p):
             continue
@@ -94,7 +101,7 @@ for t, v in ALPHAS:
 if not out_rows:
     raise SystemExit(f"ABORT: no steer transcripts under {R}")
 
-dest = f"{R}/screen_labels.jsonl"
+dest = f"{R}/screen_labels{SFX}.jsonl"
 with open(dest, "w") as f:
     for r in out_rows:
         f.write(json.dumps(r) + "\n")

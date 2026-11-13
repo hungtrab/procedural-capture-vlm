@@ -30,6 +30,23 @@ Output, per alpha, in $SCALE/<TAG>_steer/:
 Resumes by row count, like everything else in the round.
 
 Env: TAG, SCALE, AF (adapter dir), ALPHAS (default 0,0.5,1,2), MAXNEW (512), BS (8).
+
+EVAL SELECTION (added 2026-11-13 for next_step.md rev 6 M1, which asks for the 250 XSTest
+safe prompts at alpha 0 and 2 so over-refusal can be read beside the unsafe drop):
+  EVALF       eval file         default data/scale/eval_scale_mix.jsonl
+  EVAL_KIND   image_kind kept    default "gray"
+  SFX         output suffix      default ""   -> res_af_a2.jsonl, san_af_a2_ws.jsonl
+                                 e.g. "_xs"   -> res_af_a2_xs.jsonl, san_af_a2_xs_ws.jsonl
+  NO_BENIGN=1 skip the benign gate rows entirely
+
+**SFX is not cosmetic and must be set for any non-default EVALF.** The output files are
+opened in APPEND mode and resumed by row count, so running a second eval set without a
+suffix would append XSTest rows onto the existing gray transcripts -- editing published
+evidence, which rule 4 forbids. EVAL_KIND must change too: every XSTest row carries
+image_kind="xstest", so EVALF alone selects zero rows and the run would silently do nothing.
+
+Defaults reproduce the 2026-11-10 run byte for byte; the check is recorded in
+outputs/scale/handback/steer_gen_defaults_check.txt.
 """
 import json, os, re, sys, time
 
@@ -61,10 +78,22 @@ def tag_of(a):
 
 
 # ---- rows ------------------------------------------------------------------------------
-ev = [json.loads(l) for l in open("data/scale/eval_scale_mix.jsonl")]
-gray = [r for r in ev if r.get("image_kind") == "gray"]
-ben = [json.loads(l) for l in open(f"{SCALE}/data_mix/holdout_ws.jsonl")]
-print(f"{len(gray)} gray AdvBench rows, {len(ben)} held-out benign rows", flush=True)
+EVALF = os.environ.get("EVALF", "data/scale/eval_scale_mix.jsonl")
+EVAL_KIND = os.environ.get("EVAL_KIND", "gray")
+SFX = os.environ.get("SFX", "")
+NO_BENIGN = os.environ.get("NO_BENIGN", "") == "1"
+if EVALF != "data/scale/eval_scale_mix.jsonl" and not SFX:
+    raise SystemExit("ABORT: a non-default EVALF needs SFX, or this appends a second eval "
+                     "set onto the existing transcripts (rule 4). See the docstring.")
+ev = [json.loads(l) for l in open(EVALF)]
+gray = [r for r in ev if r.get("image_kind") == EVAL_KIND]
+if not gray:
+    kinds = sorted({r.get("image_kind") for r in ev})
+    raise SystemExit(f"ABORT: EVAL_KIND={EVAL_KIND!r} selected 0 of {len(ev)} rows in "
+                     f"{EVALF}; it holds {kinds}")
+ben = [] if NO_BENIGN else [json.loads(l) for l in open(f"{SCALE}/data_mix/holdout_ws.jsonl")]
+print(f"{len(gray)} {EVAL_KIND} rows from {EVALF}, {len(ben)} held-out benign rows"
+      f"{' (SFX=' + SFX + ')' if SFX else ''}", flush=True)
 
 GRAY_IMG = f"{SCALE}/{TAG}_mix/gray.png"
 if not os.path.exists(GRAY_IMG):
@@ -160,8 +189,10 @@ for a in ALPHAS:
     ALPHA["v"] = a
     at = tag_of(a)
     for name, rows, outf, is_ben in (
-            ("gray", gray, f"{R}/res_af_{at}.jsonl", False),
-            ("benign", ben, f"{R}/san_af_{at}_ws.jsonl", True)):
+            (EVAL_KIND, gray, f"{R}/res_af_{at}{SFX}.jsonl", False),
+            ("benign", ben, f"{R}/san_af_{at}{SFX}_ws.jsonl", True)):
+        if not rows:
+            continue
         done = sum(1 for _ in open(outf)) if os.path.exists(outf) else 0
         if done >= len(rows):
             print(f"  alpha={a} {name}: complete ({done})", flush=True)
