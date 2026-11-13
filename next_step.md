@@ -1,6 +1,6 @@
 # next_step.md — round 4: why it happens, and whether a small data fix stops it
 
-Revision 6, 2026-11-12: its addendum comes first and overrides anything below it. Then come the revision 5 and revision 4 addenda and revision 3, all unchanged. Revisions 1 and 2 of the same day are superseded; this one adds a
+Revision 6, 2026-11-12 (M5 added 2026-11-13: check that the training data is benign, due 2026-11-14 00:00 UTC): its addendum comes first and overrides anything below it. Then come the revision 5 and revision 4 addenda and revision 3, all unchanged. Revisions 1 and 2 of the same day are superseded; this one adds a
 retrain-noise control, puts `gm431` into the teacher-forced probe only, fixes the probe's
 tokenisation, and states what the driver and the reader must handle. For Hoàng's agent, on
 the 8×A100 cluster where the round-3 adapters and transcripts live. The round-3 follow-up
@@ -160,6 +160,43 @@ need no training. Put M4 ahead of M3's E2 to E6.
   with its `n`.
 - **Deadline:** 2026-11-14 06:00 UTC for the three Qwen backbones. `gm431` goes in as far as it
   has got.
+
+### M5. Check that the training data is benign (added 2026-11-13; small, do it first)
+
+The paper says the 300 training demonstrations contain no harmful request and no harmful
+answer. Today that rests on how the data was built, not on a measurement. The paper's authors
+want it measured with the same judges the paper uses on the outputs. This is judging only: no
+training, no generation, about 600 rows per judge.
+
+- **Which rows.** The exact `train_af.jsonl` and `train_db.jsonl` that the round-3 seed-42
+  adapters were trained on: the varied demonstrations (captions and Alpaca, rotating
+  openings), not the earlier caption-only set. `mvlm_data.py` builds the same 300 for every
+  backbone. Confirm that, by md5 of the two files across the four backbones' training
+  directories, and say so in the handback. If the md5s differ, check all the distinct files.
+  Leave out the refusal demonstrations of the P1 `mixref` cells. They carry AdvBench requests
+  by design, and the paper says so.
+- **How to judge.** Score each row as a conversation: the user turn is the training prompt
+  (worksheet or plain), and the assistant turn is the training target.
+  - Llama-Guard-3-8B and Qwen3Guard-Gen-8B: run each one twice, once on the user turn alone
+    (prompt classification) and once on the full exchange (response classification). Record
+    the raw label. For QG, record all three of safe, controversial and unsafe.
+  - GPT-5.5: score with the 1-to-5 harm rubric used for the outputs, and report the share at 4
+    or above.
+  - Do **not** apply the screen. The question here is whether the data itself is harmful, and
+    the screen exists for model outputs.
+- **What to hand back.**
+  - Per-row labels in `outputs/data_check/train_{af,db}_{lg,qg,gpt}.jsonl`, keyed by row index.
+  - A block appended to `stats_all_protocols.txt` headed `DATA CHECK`, giving for each file and
+    each judge the count flagged out of 300.
+  - Every flagged row quoted in full in the RUN report, with one line saying what it is about.
+    The images are CC3M photographs. The text judges see only the caption, so say so in the
+    report, and do not claim that the images were checked.
+- **Prediction, written before any rows:** GPT-5.5 scores no row 4 or higher. Each guard flags
+  at most 3 of 300 rows in each file, and any it flags are Alpaca items, not captions.
+- **If the prediction fails:** report the rows as they are. Do not drop rows or retrain. The
+  paper will then say how many rows a judge flagged and what they contain.
+- **Deadline:** 2026-11-14 00:00 UTC, ahead of M3 and beside M4. Judging only takes minutes on
+  one node.
 
 ## Revision 5 addendum (2026-11-12): read this first
 
