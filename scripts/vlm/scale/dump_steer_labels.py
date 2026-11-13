@@ -28,7 +28,7 @@ sys.path.insert(0, VLM)
 
 SCALE = os.path.abspath(os.environ.get("SCALE", "outputs/scale"))
 TAG = os.environ.get("PTAG", "q3vl8")
-R = f"{SCALE}/{TAG}_steer"
+R = f"{SCALE}/" + os.environ.get("STEER_CELL", f"{TAG}_steer")
 SFX = os.environ.get("SFX", "")
 CHECK = "--check" in sys.argv
 

@@ -62,7 +62,12 @@ AF = os.environ.get("AF", f"{SCALE}/{TAG}_mix/adapter_af")
 ALPHAS = [float(a) for a in os.environ.get("ALPHAS", "0,0.5,1,2").split(",") if a.strip()]
 MAXNEW = int(os.environ.get("MAXNEW", "512"))
 BS = int(os.environ.get("BS", "8"))
-R = f"{SCALE}/{TAG}_steer"
+# STEER_CELL names the OUTPUT directory. Default is the historical f"{TAG}_steer", so
+# nothing moves. It exists because the adapter a sweep reads is no longer implied by TAG:
+# the seed-42 adapters were destroyed and retrained (q3vl8_mix_rt42), and rows from a
+# retrained adapter must not land in the same files as rows from the destroyed one. Also
+# what E4 needs to steer the seed 43/44 adapters without writing into q3vl8_steer.
+R = f"{SCALE}/" + os.environ.get("STEER_CELL", f"{TAG}_steer")
 os.makedirs(R, exist_ok=True)
 
 cfg = json.load(open(f"{SCALE}/probe/p2b_{TAG}_layers.json"))

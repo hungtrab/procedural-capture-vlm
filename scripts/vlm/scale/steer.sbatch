@@ -36,7 +36,7 @@ export MAXNEW=${MAXNEW:-512}
 # exported-but-empty case. Without this the two disagree exactly then -- steer_gen would
 # generate nothing and the judge loop would judge nothing, both silently.
 export ALPHAS=${ALPHAS:-0,0.5,1,2}
-R=$SCALE/${TAG}_steer
+R=$SCALE/${STEER_CELL:-${TAG}_steer}
 say(){ echo "[steer] $(date -u +%F' '%T) $TAG $*" | tee -a "$SCALE/progress.log"; }
 
 PIN=$(python3 -I -c "import sys; sys.path.insert(0,'scripts/vlm'); import mvlm_arch as A; print(A.tf_pin('$TAG'))")
