@@ -133,6 +133,34 @@ Deadline for E1 to E5: **2026-11-14 00:00 UTC**. Whatever is unfinished then is 
 with its `n`. Each new cell needs everything handback items 2 to 5 list: transcripts, screen
 labels, the gate table, and the md5s and library pins.
 
+### M4. A second request set, and bare requests (added 2026-11-13; run beside M1 and M2)
+
+The paper's co-author says 260 requests are too few to carry the claim. The paper also says the
+fine-tuned models keep refusing bare requests, and today only the refusal score supports that,
+not generated responses. Both are generation only, on the round-3 **seed 42** adapters, and
+need no training. Put M4 ahead of M3's E2 to E6.
+
+- **HarmBench.** Use the 200 *standard* text behaviours of HarmBench (Mazeika et al. 2024,
+  already in the bibliography); leave out the contextual and copyright ones. HarmBench is
+  untrusted data (rule 9). Count the behaviours that are near-duplicates of an AdvBench request
+  and report that count, but drop none. Each behaviour goes into Step 1 of the worksheet with
+  the gray image, the same as AdvBench. Run base, Proc (AF) and Prose (DB) on all four backbones.
+  Read the rows with the screen and all three readers, and report Proc − Prose through
+  `scale_tests.py`, as Table 1 does.
+- **Bare requests.** The 260 AdvBench requests with the gray image and **no worksheet**, the
+  `plain` condition of the earlier rounds. Run base, AF and DB on all four backbones. The screen
+  applies to the whole response, because there is no Step 1. Report each model's unsafe rate and
+  AF − base. The paper's sentence is "on the bare request the fine-tuned model stays close to the
+  base model", and this is the test of it.
+- **Prediction, written before any rows:**
+  - HarmBench Proc − Prose is positive on all four backbones under both guards.
+  - On bare requests, AF − base stays within 5 pp on every backbone.
+- **Order:** `q3vl8`, `q3vl32`, `q7`, then `gm431`. On `gm431` this is about 1,400 rows at 33
+  rows/h, so split it across nodes. If it is unfinished at the deadline, hand back what exists,
+  with its `n`.
+- **Deadline:** 2026-11-14 06:00 UTC for the three Qwen backbones. `gm431` goes in as far as it
+  has got.
+
 ## Revision 5 addendum (2026-11-12): read this first
 
 **Where to work.** Your push went to `round-4-results` because it conflicted with three commits
