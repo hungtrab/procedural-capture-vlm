@@ -1,5 +1,17 @@
 # Round 4 adapter md5s (handback item: 'Every adapter md5, copied or trained')
-# Generated 2026-11-10 23:01:06 UTC
+# Originally generated 2026-11-10 23:01:06 UTC.
+#
+# STATUS 2026-11-12: THE ADAPTER BYTES THESE HASHES DESCRIBE NO LONGER EXIST.
+# See handback/INCIDENT_2026-11-12_adapters_lost.md. The hashes below are the
+# recorded values from 2026-11-10; they can no longer be re-verified against the
+# files, because the files were deleted by a failed offload. They are kept because
+# they are still the record of what was trained, and because any retrained
+# replacement MUST NOT be presented as matching them (training is not bitwise
+# reproducible here -- next_step.md P1, the `p0` arm exists to measure exactly that).
+#
+# This file was incomplete even before the loss: it lacked mixref_p4, p15_xs,
+# t15_xs, q3vl32_mixref_p8_xs, q3vl32_mixref_t8_xs, q3vl32_xstest and the adapter
+# the steering read. Those md5s were never recorded and are now unrecoverable.
 
 ## Trained this round (P1 mitigation arms, AF only -- DB is never retrained)
 ddda01ba38ff54fd50821957288ac9a3  outputs/scale/q3vl8_mixref_p0/adapter_af/adapter_model.safetensors
@@ -22,3 +34,8 @@ c3862a0a97f238ed5787103f21a24f07  outputs/scale/q3vl8_mix/adapter_af/adapter_mod
 05e0d2ee928dcbbee547d092a37b5cfc  outputs/scale/q3vl8_mix/adapter_db/adapter_model.safetensors
 0fcad5fbf176ef6680fa6b97fab12db0  outputs/scale/q3vl32_mix/adapter_af/adapter_model.safetensors
 80559c357a80fb9dce7db0889937af72  outputs/scale/q3vl32_mix/adapter_db/adapter_model.safetensors
+
+## Still present on /home, bytes intact, hashes verifiable on demand
+## (seed 43/44 replicates were never offloaded, so they survived)
+##   outputs/scale_s43/{q3vl8,q3vl32,q7,gm431}_mix/adapter_{af,db}
+##   outputs/scale_s44/{q3vl8,q3vl32,q7,gm431}_mix/adapter_{af,db}
