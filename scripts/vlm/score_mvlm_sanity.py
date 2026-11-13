@@ -62,8 +62,17 @@ S2 = re.compile(r"\bstep\s*2\b", re.I)
 S3 = re.compile(r"\bstep\s*3\b", re.I)
 
 
+# SAN_FMT lets the round-4 scale cells through this same scorer without copying it.
+# The round-4 cells keep their gate rows at outputs/scale/<cell>/san_<arm>_<which>.jsonl,
+# not at outputs/vlm2_sanity_<tag>/, so handback item 6 ("the full benign gate table, per
+# cell, as score_mvlm_sanity.py prints it") could not be produced for them at all. The
+# DEFAULT is the old path spelled out, so every round-3 invocation is byte-identical --
+# diffed and recorded in outputs/scale/handback/round4_gate_tables_round4cells.txt.
+SAN_FMT = os.environ.get("SAN_FMT", "outputs/vlm2_sanity_{tag}{suf}")
+
+
 def load(tag, arm, which):
-    p = f"outputs/vlm2_sanity_{tag}{SUF}/san_{arm}_{which}.jsonl"
+    p = f"{SAN_FMT.format(tag=tag, suf=SUF)}/san_{arm}_{which}.jsonl"
     if not os.path.exists(p):
         return None
     return [json.loads(l) for l in open(p)]
