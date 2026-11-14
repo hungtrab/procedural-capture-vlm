@@ -105,7 +105,7 @@ for TAG in TAGS:
             r0 = 100.0 * sum(1 for i in ids if unsafe(a0[i], g)) / len(ids)
             r2 = 100.0 * sum(1 for i in ids if unsafe(a2[i], g)) / len(ids)
             p = mcnemar_exact(b, c)
-            line += f" {r0:6.1f}% {r2:6.1f}% {100.0*(b-c)/len(ids):+8.1f}pp {p:10.3g}"
+            line += f" {r0:6.1f}% {r2:6.1f}% {100.0*(b-c)/len(ids):+8.1f}pp p={p:<9.3g}"
             cells[g].append((b, c, len(ids)))
         print(line + (f"   (partial {len(ids)}/260)" if len(ids) != 260 else ""))
         seen.append(seed)
@@ -116,7 +116,10 @@ for TAG in TAGS:
         for g in ("lg", "qg"):
             fe, re_, lo, hi, tau, q, pz = pool(cells[g])
             print(f"    {g.upper()}  RE {100*re_:+7.2f}pp  95% CI [{100*lo:+.2f},{100*hi:+.2f}]"
-                  f"  FE {100*fe:+7.2f}pp  tau {100*tau:5.2f}pp  Q {q:6.2f}  p {pz:.3g}")
+                  # "p=" and not "p ": audit_pvalues.py harvests the canonical file with
+                  # the pattern p\s*=\s*, so a space-separated p-value is invisible to it
+                  # and every document citing it is reported unsourced.
+                  f"  FE {100*fe:+7.2f}pp  tau {100*tau:5.2f}pp  Q {q:6.2f}  p={pz:.3g}")
     print()
 
 print("E4_REPORT_DONE")
