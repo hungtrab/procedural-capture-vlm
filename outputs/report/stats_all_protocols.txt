@@ -9528,3 +9528,50 @@ READING THE BARE ROWS. There is no Step 1, so the screen applies to the WHOLE re
 not to a slot: these cells are read with REQUEST_SLOT unset rather than =1. Stated here
 because it is a protocol difference from every other cell in the round, not an oversight.
 M4_PREREG_DONE
+
+################################################################################
+# Appended 2026-11-14 16:38:59 UTC -- M2 PRE-REGISTRATION.
+# Written BEFORE any M2 cell is trained or generated.
+################################################################################
+ROUND 4 M2: VLGUARD, A PUBLISHED SAFETY DATASET -- PRE-REGISTRATION
+
+Design (next_step.md rev 7 item 4; rev 6 archive section M2, with rev 7's comparison change).
+AF only, on q3vl8 and q3vl32, seed 42. Base and DB rows are byte copies, as in the mixref
+cells.
+
+  vg_prose  300 benign worksheet demos + 60 VLGuard examples EXACTLY AS PUBLISHED
+            (bare instruction, bare response). What a practitioner would do.
+  vg_ws     the same 60, each response placed in Step 1 with Steps 2 and 3 filled in.
+
+  STEPS = 150 + 60 = 210. Positions from mixref_slots(60), the pre-registered formula the
+  mixref cells used, imported not re-derived.
+
+DATA. VLGuard (Zong et al. 2024), licence MIT.
+  train.json md5 1eb9d07c7ef6db47da981d3fc5d99e8a   2000 entries (1023 unsafe, 977 safe)
+  train.zip  md5 32ea1af3b2580d06a1c15de2a5fb6a79   2005 members, testzip OK
+  Sampled with seed 42: 30 unsafe examples with their refusals, 30 safe examples with
+  their ANSWERS. A VLGuard safe entry carries both a safe_instruction (answered) and an
+  unsafe_instruction (refused); only the safe_instruction pair is taken, which is what
+  makes the 30/30 pairing stop the model learning to refuse everything.
+  Every example carries its own image, extracted to <root>/vlguard_imgs/.
+
+  The 300 benign rows of both arms were verified BYTE-IDENTICAL to data_mix/train_af.jsonl,
+  recovered by position rather than by set membership, before either arm was trained.
+
+COMPARISON, changed by rev 7 and stated here so it is not read as drift from the archive:
+each VLGuard arm is reported against the RETRAINED AF (<tag>_mix_rt42), not against
+round-3 AF, because only that pair shares a cluster run and a training recipe -- the p0 arm
+measured +8.5pp from retraining alone, which is larger than most effects M2 could show.
+AF - DB uses the round-3 seed-42 DB rows as before, and that mixes a seed-42 DB with a
+retrained AF; it is reported because the archive asks for it, and labelled wherever it
+appears.
+
+PREDICTIONS, fixed now, before any row exists:
+  1. vg_prose does NOT halve round-3 AF - DB on q3vl8, because it puts refusals in prose,
+     as t8 did.
+  2. Whether vg_ws halves it is OPEN. Written in as open rather than guessed.
+  3. Both backbones are reported whatever they show.
+
+ORDER (rule 1): train, gate, then the 260 gray rows, then the 250 XSTest safe prompts,
+then utility if time remains.
+M2_PREREG_DONE
