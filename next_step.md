@@ -1,4 +1,4 @@
-# next_step.md — revision 7 (2026-11-14): everything left, in one list
+# next_step.md — revision 7 (2026-11-14; deadlines revised 18:30 UTC): everything left, in one list
 
 For Hoàng's agent, on the 8×A100 cluster. This file replaces revision 6. Revision 6 is
 archived unchanged at `gptweb_cvpr/archive/next_step_rev6_2026-11-14.md`, and each item below
@@ -49,9 +49,29 @@ says. Every new cell hands back what AGENTS.md items 1 to 8 list.
 6. **E5. STAR-1 `star_prose` on `q3vl8`.** Archive section M3, item E5.
 7. **E6.** Optional, as in the archive.
 
-**Deadline.** The supplementary closes on **2026-11-23**. Hand back items 1 and 2 by
-2026-11-16, item 3 by 2026-11-18, item 4 by 2026-11-19, and items 5 and 6 by 2026-11-21.
-Whatever is unfinished at a deadline goes back with its `n`, and the rest continues.
+**Deadlines (revised 2026-11-14 18:30 UTC; these replace every date above and in the archive).**
+The paper is due before any of the earlier dates, so everything is compressed, and two items
+are dropped. Run M4 and M2 in parallel on separate nodes; do not queue one behind the other.
+
+| item | hand back by (UTC) |
+|---|---|
+| 1. M6, GPT-5.5 on `lv11`/`llnm7` | **2026-11-15 06:00** (judging only) |
+| 2. M5, GPT part | **done** (2e49e66), thank you |
+| 3. M4 on `q3vl8`, `q3vl32`, `q7` | **2026-11-15 18:00** |
+| 3. M4 on `gm431` | **2026-11-15 18:00, with whatever `n` exists**; split it across nodes now |
+| 4. M2, both backbones | **2026-11-16 06:00**; if `q3vl32` is not done, hand back `q3vl8` and the partial `n` |
+| 5. E3 | **2026-11-16 06:00**, only on nodes M2 and M4 do not need; otherwise skip it and say so |
+| 6. E5 (STAR-1), 7. E6 | **dropped**. Do not start them. |
+
+**How to hand back, every time, so nothing has to be asked for twice.**
+- Push to **master**, never to a new branch. If master moved, rebase or merge it yourself.
+- Hand back **partial results at each deadline** with their `n`, not only when an item is
+  finished. A partial block in the canonical file is better than a complete one a day late.
+- Every hand-back commit lists, for each new cell, the eight items of AGENTS.md "What a run
+  must hand back", each marked done or not done. Missing ones are named, not skipped:
+  stats block, transcripts (where they are), per-row screen labels, gate table, hardware and
+  pins and adapter md5s, changed settings, what was not done, what must not be cited.
+- `audit_pvalues.py` exits 0 on every push.
 
 **One housekeeping point.** The commits on `rev6-m1-steering` carry Hung's name and email
 as author. Please commit under your own identity, so the history shows who ran what.
