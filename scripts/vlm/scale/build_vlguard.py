@@ -38,6 +38,8 @@ Writes outputs/scale/data_vg_prose and outputs/scale/data_vg_ws.
 """
 import hashlib, json, os, random, shutil, sys, zipfile
 
+from PIL import Image
+
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from mvlm_data import PROC_COUNT, mixref_slots
 
@@ -47,6 +49,7 @@ SCALE = sys.argv[3] if len(sys.argv) > 3 else "outputs/scale"
 MIX = f"{SCALE}/data_mix"
 K = 60
 SEED = 42
+MAX_PIXELS = 768 * 768          # mvlm_arch.py's max_pixels for the Qwen backbones
 
 
 def md5(p):
@@ -105,7 +108,7 @@ for arm in ("vg_prose", "vg_ws"):
     os.makedirs(f"{root}/vlguard_imgs", exist_ok=True)
     os.makedirs(f"{root}/train_imgs", exist_ok=True)
     os.makedirs(f"{root}/holdout_imgs", exist_ok=True)
-    out, used = [], 0
+    out, used, resized = [], 0, []
     for i, line in enumerate(benign):
         out.append(line)                       # verbatim, never rewritten
         for j in at.get(i + 1, ()):
@@ -116,8 +119,22 @@ for arm in ("vg_prose", "vg_ws"):
                 raise SystemExit("image %r not in the zip" % mem)
             dst = f"{root}/vlguard_imgs/vg{j:03d}_" + os.path.basename(rel)
             if not os.path.exists(dst):
-                with zf.open(mem) as fh, open(dst, "wb") as g:
-                    shutil.copyfileobj(fh, g)
+                # Capped at the backbone's own max_pixels budget (768*768), preserving
+                # aspect. The CC3M demo images are ~0.3 MP by accident of the source and so
+                # never hit this; VLGuard ships originals, one of them 6000x3375 = 20 MP,
+                # which expands to 16320 image tokens and blows through MAXLEN=1536. The
+                # processor would downscale to the same budget at inference anyway, so this
+                # changes nothing the model sees -- it only stops the training packer
+                # truncating input_ids out of step with the text template, which fails as
+                # "Mismatch in `image` token count between text and `input_ids`".
+                with zf.open(mem) as fh:
+                    im = Image.open(fh).convert("RGB")
+                if im.width * im.height > MAX_PIXELS:
+                    sc = (MAX_PIXELS / (im.width * im.height)) ** 0.5
+                    im = im.resize((max(1, int(im.width * sc)), max(1, int(im.height * sc))),
+                                   Image.LANCZOS)
+                    resized.append((os.path.basename(rel), im.size))
+                im.save(dst)
             if arm == "vg_prose":
                 d = {"image": os.path.abspath(dst), "user": instr, "assistant": resp}
             else:
@@ -153,6 +170,9 @@ for arm in ("vg_prose", "vg_ws"):
         raise SystemExit("%s: the 300 benign rows are NOT byte-identical to data_mix" % arm)
     print("  %s: %d rows = 300 benign (byte-identical to data_mix) + %d VLGuard; "
           "images in vlguard_imgs/" % (arm, len(got), K))
+    if resized:
+        print("    downscaled to the %d-pixel cap: %s"
+              % (MAX_PIXELS, ", ".join("%s->%dx%d" % (n, w, h) for n, (w, h) in resized)))
 
 kinds = {}
 for j, (x, instr, resp, kind) in enumerate(picked):
