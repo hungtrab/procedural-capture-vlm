@@ -1,6 +1,6 @@
 # next_step.md — round 4: why it happens, and whether a small data fix stops it
 
-Revision 6, 2026-11-12 (M5 added 2026-11-13: check that the training data is benign, due 2026-11-14 00:00 UTC): its addendum comes first and overrides anything below it. Then come the revision 5 and revision 4 addenda and revision 3, all unchanged. Revisions 1 and 2 of the same day are superseded; this one adds a
+Revision 6, 2026-11-12 (M5 added 2026-11-13: check that the training data is benign, due 2026-11-14 00:00 UTC; M6 added 2026-11-14: GPT-5.5 on the two new backbones): its addendum comes first and overrides anything below it. Then come the revision 5 and revision 4 addenda and revision 3, all unchanged. Revisions 1 and 2 of the same day are superseded; this one adds a
 retrain-noise control, puts `gm431` into the teacher-forced probe only, fixes the probe's
 tokenisation, and states what the driver and the reader must handle. For Hoàng's agent, on
 the 8×A100 cluster where the round-3 adapters and transcripts live. The round-3 follow-up
@@ -197,6 +197,31 @@ training, no generation, about 600 rows per judge.
   paper will then say how many rows a judge flagged and what they contain.
 - **Deadline:** 2026-11-14 00:00 UTC, ahead of M3 and beside M4. Judging only takes minutes on
   one node.
+- **Update 2026-11-14: the two guards are done on our side.** LG and QG judged all 600
+  demonstrations, both ways, plus the CC3M caption of every training image. With the answer
+  included neither flags any row; the seven items flagged on the request or caption alone are
+  quoted in the paper's supplementary Sec. G and are harmless. What remains for you is the
+  **GPT-5.5 part only**, on the same rows, reported as above.
+
+### M6. GPT-5.5 on the two new backbones (added 2026-11-14)
+
+`lv11` (Llama-3.2-11B-Vision) and `llnm7` (LLaVA-NeXT-Mistral-7B) were run on our side with the
+round-3 recipe at seed 42: gate, generation and both guards are finished, and the readout is
+in `stats_all_protocols.txt` under "TWO MORE BACKBONES" with the report in
+`gptweb_cvpr/RUN_2026-11-14_gpuserver.md`. Table 1 of the paper has `--` in their
+Delta_GPT column.
+
+- **Input.** The bundle `new_cells.tgz` (md5 `5eb1b2e1132f061c701f4a24501e687b`), which Hung
+  sends you out of band. Unpack it at the repo root; it creates `outputs/scale/lv11_mix` and
+  `outputs/scale/llnm7_mix`. Check the md5 first.
+- **What to run.** GPT-5.5 on every row of `res_{base,af,db}_qg.jsonl` of both cells, with the
+  rubric and script used for round 3, writing `res_<arm>_gpt.jsonl` beside them. Do not
+  re-judge LG or QG (rule 2) and do not touch the transcripts (rule 4).
+- **What to hand back.** Re-run `summarize_scale.py` and `scale_tests.py` with
+  `SCALE=outputs/scale MAXNEW=1280` over the two cells, append the output as a new block, and
+  send the `_gpt` files. Expect the GPT>=4 column and the GPT lines to change and nothing
+  else; say if anything else moves.
+- **Deadline:** before the paper freeze if you can; otherwise as soon as possible after it.
 
 ## Revision 5 addendum (2026-11-12): read this first
 

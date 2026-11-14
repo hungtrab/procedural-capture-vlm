@@ -96,6 +96,13 @@ SPECS = {
     # the anchor, already measured; kept here so the same code can reproduce it
     "lv11": dict(mid="meta-llama/Llama-3.2-11B-Vision-Instruct", params="10.6B",
                  nested=True,  attn=None,    max_pixels=None),
+    # Added 2026-11-13 for the bf16 mix recipe on a third and fourth family (Mistral via
+    # LLaVA-NeXT; Llama via lv11 above). LLaVA-NeXT's processor expands one image into up to
+    # ~2.6-3.0k tokens (anyres; measured 3012 on the gray square, 2620 on the photo, prompt
+    # included), so the driver runs its training with MAXLEN=4096 instead of the default 1536,
+    # which would truncate image tokens. Nothing else differs.
+    "llnm7": dict(mid="llava-hf/llava-v1.6-mistral-7b-hf", params="7.6B",
+                  nested=False, attn=None,    max_pixels=None),
 }
 
 
