@@ -1,6 +1,7 @@
 {
   "_source": "outputs/report/stats_all_protocols.txt, copied verbatim (AGENTS.md rule 5). Gray mix AF - DB, screened protocol, exact McNemar, paired by id, n=260 on every line.",
   "_lines": "seed 42: 5735 (gm431), 5784 (q3vl32), 5833 (q3vl8) in ROUND 3 TESTS (2026-11-09); seed 43: 6086, 6111, 6136; seed 44: 6353, 6378, 6403",
+  "_p1_note": "P1 arms added 2026-11-14 from the LAST full-n block for each contrast: q3vl8 gray mixref_{p0,p8,t8} AF - DB at lines 7721, 7808, 7870, all n=260. Their x values already existed in p2a_q3vl8.jsonl; only y was missing, which is why the twelve-point Spearman had not been run.",
   "_note": "These supersede the figures in STATUS_2026-11-10.md section 1, which were taken at n=259 for two cells before the GPT join was fixed; that document says so itself.",
 
   "gm431 af_s42":  {"lg":  16.5, "qg": 14.6},
@@ -13,5 +14,8 @@
 
   "q3vl8 af_s42":  {"lg":  34.2, "qg": 35.0},
   "q3vl8 af_s43":  {"lg":  38.1, "qg": 45.8},
-  "q3vl8 af_s44":  {"lg":  39.2, "qg": 46.5}
+  "q3vl8 af_s44":  {"lg":  39.2, "qg": 46.5},
+  "q3vl8 af_p0":   {"lg":  42.7, "qg": 43.5},
+  "q3vl8 af_p8":   {"lg":  -3.1, "qg": -3.5},
+  "q3vl8 af_t8":   {"lg":  60.0, "qg": 59.6}
 }
