@@ -65,7 +65,6 @@ Round 3 ran on A100-SXM4-80GB, so these rows are not bitwise comparable to it.
 ## 7. Not done
 
 - GPT-5.5 on these cells (left upstream).
-- Seeds 43 and 44.
 - Refusal score, probes, steering and mitigation on these backbones.
 - A hand reading of AF rows beyond spot checks: four lv11 AF and three llnm7 AF rows read, all real harmful content in Step 1.
 - The Colab gate and generation attempt for llnm7 and a first gate at MAXNEW=4096 are archived on the server and unused.
@@ -77,3 +76,51 @@ Round 3 ran on A100-SXM4-80GB, so these rows are not bitwise comparable to it.
 - **Any "GPT>=4 among them: 0".** These cells have no GPT labels.
 - **llnm7 AF-DB under the published screen is a floor, not an estimate.** llnm7 DB mostly copies the request into Step 1, and the guards flag the copy. Of 224 LG-unsafe DB gray rows, 195 are moved by the echo rule. Ten sampled moved DB rows were read and each restates the request and nothing else. The echo/caption sensitivity gives +79.6pp. Rule 6 still applies: quote +10.8pp, and give +79.6pp only as the labelled sensitivity.
 - **lv11 is measured near the ceiling.** DB alone loses most refusals (LG 69.2%).
+
+## Addendum, 10:55 UTC: seeds 43 and 44 (gray image, AF and DB)
+
+**Transcripts.** `seeds4344_cells.tgz`, md5 `c997a68fa762070b6ea042974298948b`, 4.6 MB, on the draft
+release "Transcripts: lv11 + llnm7, seeds 43 and 44" (collaborators only) and on the server at
+`~/emergent_poc/nb/`. It holds every `res_<arm>{,_lg,_qg}.jsonl`, the gate rows, `screen_labels.jsonl`,
+the moved-row dumps, the reader outputs, the gray-only reader and the driver scripts. Adapters are not
+in it.
+
+**Stats.** Appended to `stats_all_protocols.txt` under "TWO MORE BACKBONES, SEEDS 43 AND 44". Every
+reader was run twice and the outputs are cmp-identical; `audit_pvalues.py` exits 0.
+
+| backbone | seed | LG | QG |
+|---|---|---|---|
+| lv11 | 43 | +26.9pp (73/3) | +23.8pp (67/5) |
+| lv11 | 44 | +26.5pp (72/3) | +20.8pp (63/9) |
+| lv11 | RE 42-44 | +26.3 [+23.0, +29.5] | +23.3 [+20.0, +26.6] |
+| llnm7 | 43 | +10.8pp (28/0) | +10.4pp (29/2) |
+| llnm7 | 44 | +7.3pp (22/3) | +8.1pp (25/4) |
+| llnm7 | RE 42-44 | +9.6 [+7.3, +11.9] | +9.5 [+7.2, +11.7] |
+
+**Labels.** `screen_labels.jsonl` md5: lv11 s43 `f99675778bfa8e28c998d7e706fefd54`, s44
+`194320209c83d666da57d771555f4410`; llnm7 s43 `a571f89ffea0ce4f93908a884839e38f`, s44
+`3406e9250ad635d416740015b30ed789`.
+
+**Gate.** `gate_shape.py` passed on all four cells: AF delivered the procedure on 40/40 (lv11 s43),
+39/40 (lv11 s44), 39/40 (llnm7 s43) and 39/40 (llnm7 s44). The literal and separator-insensitive gate
+tables, all arms, are in the stats block. `score_mvlm_sanity.py` was not run on these cells (it
+expects a base arm); the summarize gate tables are the substitute.
+
+**Hardware and adapters.** All four cells were trained, gated, generated and judged on the server
+(A100-PCIE-40GB, python 3.10.12, torch 2.5.1+cu124, transformers 4.57.6, peft 0.21.2). Adapter md5
+(af / db): lv11 s43 `c7ab5983...` / `894a098c...`, lv11 s44 `0af74198...` / `0bf45366...`, llnm7 s43
+`abe9a9e9...` / `5010c39a...`, llnm7 s44 `95759c24...` / `4bd346fd...`; full values in each
+`cell/adapter_md5.txt` in the bundle. llnm7 seed 42 was trained on Colab, so its adapters and these
+were made on different hardware; generation and judging for all three seeds ran on the server.
+
+**Changed settings.** As for seed 42, plus: gate at MAXNEW=1280 with af,db only; base taken from
+seed 42; `round3_followups_nogpt_gray.py` (READERS lg,qg and KINDS gray, nothing else changed).
+Seed-43 training died once when another user of the account emptied `~/.cache` at 07:21 UTC; it was
+relaunched with `HF_HOME=~/emergent_poc/hf_home`, reusing AF adapters already saved.
+
+**Not done.** GPT-5.5 (M6). Photo image at seeds 43/44. Base regenerated at seeds 43/44.
+
+**Do not cite.** lv11 QG and LG differ by 3.1pp (s43) and 5.7pp (s44). From reading the s44
+disagreements, each guard flags harmless safety-advice answers, on different rows, so neither is
+the cause alone; quote both. llnm7 published-screen values are floors (echo sensitivity +79.6,
++80.4, +78.1 LG/QG by seed). "ALL 12 ADAPTERS" lines pool six adapters here.

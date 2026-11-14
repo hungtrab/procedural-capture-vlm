@@ -218,9 +218,13 @@ Delta_GPT column.
   publish the release and do not commit the bundle: it holds harmful generations. Unpack it at
   the repo root; it creates `outputs/scale/lv11_mix` and `outputs/scale/llnm7_mix`. Check the
   md5 first.
-- **Seeds 43 and 44 follow.** They are running on our side now (gray image, AF and DB only, as
-  the paper reports seeds 43/44). Their bundle will be attached to a second draft release and
-  this item updated; judge those cells with GPT-5.5 the same way when they land.
+- **Seeds 43 and 44 (landed 2026-11-14 10:52 UTC).** Bundle `seeds4344_cells.tgz` (md5
+  `c997a68fa762070b6ea042974298948b`) on the second DRAFT release "Transcripts: lv11 + llnm7,
+  seeds 43 and 44". Gray image, AF and DB only; base is the seed-42 rows. Unpacking at the repo
+  root creates `lv11_s4{3,4}/cell`, `llnm7_s4{3,4}/cell` and `score/outputs/scale_s4{3,4}{,_base42}`.
+  Judge `res_{af,db}_qg.jsonl` of the four cells with GPT-5.5 the same way, then re-run
+  `score/score_s44.sh`'s three reader calls with `round3_followups.py` itself (now that GPT
+  labels exist it no longer divides by zero; keep `KINDS` gray for these cells) and append.
 - **What to run.** GPT-5.5 on every row of `res_{base,af,db}_qg.jsonl` of both cells, with the
   rubric and script used for round 3, writing `res_<arm>_gpt.jsonl` beside them. Do not
   re-judge LG or QG (rule 2) and do not touch the transcripts (rule 4).
