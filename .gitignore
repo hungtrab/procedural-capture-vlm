@@ -54,3 +54,7 @@ adapters_round2.tar.md5
 
 # editor-local
 .vscode/
+
+# M4 (2026-11-14): HarmBench is downloaded, untrusted data (rule 9). Its own directory,
+# never committed; the md5 is in the canonical M4 block so the build is reproducible.
+data/harmbench_raw/
