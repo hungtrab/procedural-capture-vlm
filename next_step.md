@@ -1,4 +1,4 @@
-# next_step.md — revision 7 (2026-11-14; deadlines revised 18:30 UTC): everything left, in one list
+# next_step.md — revision 7 (2026-11-14; deadlines revised 19:00 UTC, paper due 2026-11-16 12:00 UTC): everything left, in one list
 
 For Hoàng's agent, on the 8×A100 cluster. This file replaces revision 6. Revision 6 is
 archived unchanged at `gptweb_cvpr/archive/next_step_rev6_2026-11-14.md`, and each item below
@@ -49,19 +49,25 @@ says. Every new cell hands back what AGENTS.md items 1 to 8 list.
 6. **E5. STAR-1 `star_prose` on `q3vl8`.** Archive section M3, item E5.
 7. **E6.** Optional, as in the archive.
 
-**Deadlines (revised 2026-11-14 18:30 UTC; these replace every date above and in the archive).**
-The paper is due before any of the earlier dates, so everything is compressed, and two items
-are dropped. Run M4 and M2 in parallel on separate nodes; do not queue one behind the other.
+**Deadlines (revised 2026-11-14 19:00 UTC; these replace every date above and in the archive).**
+**The paper is submitted at 2026-11-16 12:00 UTC.** Numbers freeze at **2026-11-16 03:00 UTC**;
+anything that lands later does not get into the paper. Start everything below now, in
+parallel on separate nodes, and do not queue one item behind another.
 
-| item | hand back by (UTC) |
-|---|---|
-| 1. M6, GPT-5.5 on `lv11`/`llnm7` | **2026-11-15 06:00** (judging only) |
-| 2. M5, GPT part | **done** (2e49e66), thank you |
-| 3. M4 on `q3vl8`, `q3vl32`, `q7` | **2026-11-15 18:00** |
-| 3. M4 on `gm431` | **2026-11-15 18:00, with whatever `n` exists**; split it across nodes now |
-| 4. M2, both backbones | **2026-11-16 06:00**; if `q3vl32` is not done, hand back `q3vl8` and the partial `n` |
-| 5. E3 | **2026-11-16 06:00**, only on nodes M2 and M4 do not need; otherwise skip it and say so |
-| 6. E5 (STAR-1), 7. E6 | **dropped**. Do not start them. |
+| item | node plan | hand back by (UTC) |
+|---|---|---|
+| 1. M6, GPT-5.5 on `lv11`/`llnm7` | API only | **2026-11-15 06:00** |
+| 2. M5, GPT part | | **done** (2e49e66), thank you |
+| 3. M4 on `q3vl8`, `q3vl32`, `q7` | one node each | **2026-11-15 18:00** |
+| 3. M4 on `gm431` | split across every free node | **2026-11-15 18:00, with whatever `n` exists**; then keep filling and hand back again at 03:00 |
+| 4. M2 on `q3vl8` | one node | **2026-11-15 18:00** |
+| 4. M2 on `q3vl32` | one or two nodes | **2026-11-16 03:00**, partial `n` if unfinished |
+| 6. E5, STAR-1 `star_prose` on `q3vl8` | one node | **2026-11-16 03:00**. Archive section M2's STAR-1 paragraph and M3 E5: published responses with their reasoning, say so in the report. Same order: train, gate, 260 gray, 250 XSTest safe |
+| 5. E3 | only nodes nothing above needs | **2026-11-16 03:00**, or skip it and say so |
+| 7. E6 | | **dropped** |
+
+Priority if nodes run short, highest first: M6, M4 on the three Qwen backbones, M2 `q3vl8`,
+STAR-1, M2 `q3vl32`, M4 `gm431`, E3.
 
 **How to hand back, every time, so nothing has to be asked for twice.**
 - Push to **master**, never to a new branch. If master moved, rebase or merge it yourself.
