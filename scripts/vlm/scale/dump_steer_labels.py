@@ -71,10 +71,35 @@ def join_guards(rows, stem):
 # a4 is in the list because next_step.md rev 6 M1 puts alpha=4 in the q3vl32 grid
 # "before any result". A tag with no a4 transcript simply skips it (the loop tests
 # os.path.exists), so adding it changes nothing for q3vl8 and is byte-identical there.
+def kind_of(row, default):
+    """image_kind for a steered row, derived from `category`.
+
+    steer_gen.py does not write image_kind -- its rec carries id/arm/alpha/raw/response/
+    final/harmful_prompt/model_question/category and nothing else -- so it cannot simply be
+    copied off the row. category can carry it, and must: next_step.md requires the XSTest
+    rows to be image_kind "xstest" and NEVER "gray", "so no reader can count these rows as
+    AdvBench". Labelling 900 XSTest rows gray would invite exactly the pooling the eval was
+    built to prevent.
+    """
+    if default == "benign_gate":
+        return "benign_gate"
+    c = row.get("category") or ""
+    if c.startswith("xstest"):
+        return "xstest"
+    if c == "benign_holdout":
+        return "benign_gate"
+    return default
+
+
 ALPHAS = [("a0", 0.0), ("a0p5", 0.5), ("a1", 1.0), ("a2", 2.0), ("a4", 4.0)]
 out_rows = []
 
 for t, v in ALPHAS:
+    # "gray" here is only the DEFAULT for the harm file. Each row's own image_kind wins
+    # where it has one: with SFX=_xs these are XSTest rows carrying image_kind="xstest",
+    # and next_step.md is explicit that they must never be labelled gray, "so no reader can
+    # count these rows as AdvBench". category is carried through for the same reason -- the
+    # 250 safe and 200 unsafe contrasts are different sets and must stay separable.
     for stem, kind in ((f"res_af_{t}{SFX}", "gray"),
                        (f"san_af_{t}{SFX}_ws", "benign_gate")):
         p = f"{R}/{stem}.jsonl"
@@ -89,7 +114,8 @@ for t, v in ALPHAS:
                 "id": r["id"],
                 "arm": f"af_{t}",
                 "alpha": v,
-                "image_kind": kind,
+                "image_kind": kind_of(r, kind),
+                "category": r.get("category"),
                 "lg_verdict": r.get("lg_verdict"),
                 "qg_verdict": r.get("qg_verdict"),
                 "screen": c,
