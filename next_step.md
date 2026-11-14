@@ -211,9 +211,16 @@ in `stats_all_protocols.txt` under "TWO MORE BACKBONES" with the report in
 `gptweb_cvpr/RUN_2026-11-14_gpuserver.md`. Table 1 of the paper has `--` in their
 Delta_GPT column.
 
-- **Input.** The bundle `new_cells.tgz` (md5 `5eb1b2e1132f061c701f4a24501e687b`), which Hung
-  sends you out of band. Unpack it at the repo root; it creates `outputs/scale/lv11_mix` and
-  `outputs/scale/llnm7_mix`. Check the md5 first.
+- **Input.** The bundle `new_cells.tgz` (md5 `5eb1b2e1132f061c701f4a24501e687b`), attached to
+  the DRAFT release "Transcripts: lv11 + llnm7, seed 42" on this repo's Releases page. Drafts
+  are visible only to collaborators, so open the Releases page while logged in (or use
+  `gh release list -R hungtrab/procedural-capture-vlm` and download the draft's asset). Do not
+  publish the release and do not commit the bundle: it holds harmful generations. Unpack it at
+  the repo root; it creates `outputs/scale/lv11_mix` and `outputs/scale/llnm7_mix`. Check the
+  md5 first.
+- **Seeds 43 and 44 follow.** They are running on our side now (gray image, AF and DB only, as
+  the paper reports seeds 43/44). Their bundle will be attached to a second draft release and
+  this item updated; judge those cells with GPT-5.5 the same way when they land.
 - **What to run.** GPT-5.5 on every row of `res_{base,af,db}_qg.jsonl` of both cells, with the
   rubric and script used for round 3, writing `res_<arm>_gpt.jsonl` beside them. Do not
   re-judge LG or QG (rule 2) and do not touch the transcripts (rule 4).
