@@ -1,24 +1,88 @@
-# Round 4 adapter md5s (handback item: 'Every adapter md5, copied or trained')
-# Generated 2026-11-10 23:01:06 UTC
+# Round 4 adapter md5s (handback item 4: 'Every adapter md5, copied or trained')
+#
+# COMPLETE. Rebuilt 2026-11-13 from the records written at training/copy time:
+# each cell's own outputs/scale/<cell>/adapter_md5.txt, and the md5 line in each
+# trained cell's run.log. 19 adapters, every round-4 cell covered.
+#
+# CORRECTION. An earlier version of this file (2026-11-12) asserted that seven md5s
+# "were never recorded and are now unrecoverable". That was wrong: all of them were
+# recorded per-cell at the time, and are reproduced below. The error was mine -- I
+# checked only this file, not the per-cell records beside the adapters.
+#
+# STATUS OF THE BYTES. The adapter files these describe no longer exist; they were
+# destroyed on 2026-11-11 (see INCIDENT_2026-11-12_adapters_lost.md). So these hashes
+# are a RECORD OF WHAT WAS TRAINED, not a checksum anything can be verified against.
+# In particular: a retrained adapter MUST NOT be presented as matching one of them.
+# Training is not bitwise reproducible here, which is why the p0 arm exists, and p0
+# measures the size of it: LG +8.5pp, n=260, p=5.95e-05 against round-3 AF.
 
 ## Trained this round (P1 mitigation arms, AF only -- DB is never retrained)
+## source: <cell>/run.log
 ddda01ba38ff54fd50821957288ac9a3  outputs/scale/q3vl8_mixref_p0/adapter_af/adapter_model.safetensors
 cdec9fe06f45c5aadd02cb3811406a9b  outputs/scale/q3vl8_mixref_p8/adapter_af/adapter_model.safetensors
 e85c4f87db5f72eb8e29d9b518a7bd69  outputs/scale/q3vl8_mixref_t8/adapter_af/adapter_model.safetensors
 169e87365665654afc2deecb0b244117  outputs/scale/q3vl8_mixref_p15/adapter_af/adapter_model.safetensors
 c8bd8623e07202f4fb582ca62fb9b8b4  outputs/scale/q3vl8_mixref_t15/adapter_af/adapter_model.safetensors
+014876abfbdd777c371a5340ed8a3b5f  outputs/scale/q3vl8_mixref_p4/adapter_af/adapter_model.safetensors
 9bbcedc9ee198accbd55cbf22d1a7d34  outputs/scale/q3vl32_mixref_p8/adapter_af/adapter_model.safetensors
 89139dbde08f6c3cbb46e440b3a10917  outputs/scale/q3vl32_mixref_t8/adapter_af/adapter_model.safetensors
 
-## Copied in (xstest cells: byte copies of already-gated round-3 adapters)
+## Copied in (xstest cells: byte copies of already-gated adapters)
+## source: <cell>/adapter_md5.txt
 c3862a0a97f238ed5787103f21a24f07  outputs/scale/q3vl8_xstest/adapter_af/adapter_model.safetensors
 05e0d2ee928dcbbee547d092a37b5cfc  outputs/scale/q3vl8_xstest/adapter_db/adapter_model.safetensors
+0fcad5fbf176ef6680fa6b97fab12db0  outputs/scale/q3vl32_xstest/adapter_af/adapter_model.safetensors
+80559c357a80fb9dce7db0889937af72  outputs/scale/q3vl32_xstest/adapter_db/adapter_model.safetensors
 ddda01ba38ff54fd50821957288ac9a3  outputs/scale/q3vl8_mixref_p0_xs/adapter_af/adapter_model.safetensors
 cdec9fe06f45c5aadd02cb3811406a9b  outputs/scale/q3vl8_mixref_p8_xs/adapter_af/adapter_model.safetensors
 e85c4f87db5f72eb8e29d9b518a7bd69  outputs/scale/q3vl8_mixref_t8_xs/adapter_af/adapter_model.safetensors
+169e87365665654afc2deecb0b244117  outputs/scale/q3vl8_mixref_p15_xs/adapter_af/adapter_model.safetensors
+c8bd8623e07202f4fb582ca62fb9b8b4  outputs/scale/q3vl8_mixref_t15_xs/adapter_af/adapter_model.safetensors
+9bbcedc9ee198accbd55cbf22d1a7d34  outputs/scale/q3vl32_mixref_p8_xs/adapter_af/adapter_model.safetensors
+89139dbde08f6c3cbb46e440b3a10917  outputs/scale/q3vl32_mixref_t8_xs/adapter_af/adapter_model.safetensors
+
+## Read in place by the steering cells
+## q3vl8_steer loads the round-3 seed-42 q3vl8_mix AF adapter and trains nothing, so it
+## logs no md5 of its own. The adapter it read is the q3vl8_mix AF listed below.
+c3862a0a97f238ed5787103f21a24f07  outputs/scale/q3vl8_mix/adapter_af/adapter_model.safetensors
 
 ## Round-3 sources, for comparison (a copy must match its source)
 c3862a0a97f238ed5787103f21a24f07  outputs/scale/q3vl8_mix/adapter_af/adapter_model.safetensors
 05e0d2ee928dcbbee547d092a37b5cfc  outputs/scale/q3vl8_mix/adapter_db/adapter_model.safetensors
 0fcad5fbf176ef6680fa6b97fab12db0  outputs/scale/q3vl32_mix/adapter_af/adapter_model.safetensors
 80559c357a80fb9dce7db0889937af72  outputs/scale/q3vl32_mix/adapter_db/adapter_model.safetensors
+
+## COPY CHECK -- every _xs / xstest copy matches its source, as rule "Copying" requires:
+##   q3vl8_xstest        af == q3vl8_mix af        c3862a0a...  OK
+##   q3vl8_xstest        db == q3vl8_mix db        05e0d2ee...  OK
+##   q3vl32_xstest       af == q3vl32_mix af       0fcad5fb...  OK
+##   q3vl32_xstest       db == q3vl32_mix db       80559c35...  OK
+##   q3vl8_mixref_p0_xs  af == q3vl8_mixref_p0     ddda01ba...  OK
+##   q3vl8_mixref_p8_xs  af == q3vl8_mixref_p8     cdec9fe0...  OK
+##   q3vl8_mixref_t8_xs  af == q3vl8_mixref_t8     e85c4f87...  OK
+##   q3vl8_mixref_p15_xs af == q3vl8_mixref_p15    169e8736...  OK
+##   q3vl8_mixref_t15_xs af == q3vl8_mixref_t15    c8bd8623...  OK
+##   q3vl32_mixref_p8_xs af == q3vl32_mixref_p8    9bbcedc9...  OK
+##   q3vl32_mixref_t8_xs af == q3vl32_mixref_t8    89139dbd...  OK
+## 11 of 11 copies verified against their source from the recorded hashes.
+##
+## Also note: mixref_p0 AF (ddda01ba) differs from round-3 seed-42 AF (c3862a0a) on
+## byte-identical training data at the same seed -- the non-determinism p0 exists to
+## measure.
+
+## Still present on /home, bytes intact, hashes verifiable on demand
+## (the seed 43/44 replicates were never offloaded, so they survived)
+##   outputs/scale_s43/{q3vl8,q3vl32,q7,gm431}_mix/adapter_{af,db}
+##   outputs/scale_s44/{q3vl8,q3vl32,q7,gm431}_mix/adapter_{af,db}
+
+## Retrained 2026-11-14 to replace the destroyed seed-42 adapters (retrain42.sbatch)
+## These are NEW adapters. They do NOT match the originals above and must never be
+## presented as if they do. Every M1/E2/E4 seed-42 row comes from these.
+4a2782046bc69bd91c1cb34791f3e741  outputs/scale/q3vl8_mix_rt42/adapter_af/adapter_model.safetensors
+cea62ed18a029426cb991dc52ac608a5  outputs/scale/q3vl32_mix_rt42/adapter_af/adapter_model.safetensors
+##   originals, destroyed: q3vl8 c3862a0a97f238ed5787103f21a24f07
+##                         q3vl32 0fcad5fbf176ef6680fa6b97fab12db0
+##
+## E4 read these in place; they are the ORIGINAL round-3 seed 43/44 adapters, intact:
+##   outputs/scale_s43/{q3vl8,q3vl32}_mix/adapter_af
+##   outputs/scale_s44/{q3vl8,q3vl32}_mix/adapter_af
