@@ -10002,3 +10002,43 @@ C. SCREEN SENSITIVITY: residual rows of shape echo or caption moved to nonanswer
 
   moved guard-unsafe rows: 778 (echo 778, caption 0); GPT>=4 among them: 0
 ROUND3_FOLLOWUPS_DONE
+
+################################################################################
+# Appended 2026-11-15 03:30:09 UTC -- E5 PRE-REGISTRATION (STAR-1).
+# Written BEFORE the cell is trained or generated.
+################################################################################
+ROUND 4 E5: STAR-1 star_prose on q3vl8 -- PRE-REGISTRATION
+
+next_step.md rev 7 item 6 (rev 6 archive, the STAR-1 paragraph): "text-only and made for
+reasoning models, so it fits this setup less well than VLGuard. Run it only if GPUs are
+idle after M2, as a single star_prose arm on q3vl8. Use the published response including
+its reasoning, and say so in the report."
+
+DATA. STAR-1 (Wang et al. 2025), licence Apache-2.0, 1000 rows.
+  train.parquet md5 679b8fa16c01dc7de90bc8bc00cdd86a
+  60 sampled with seed 42 -- the same count and seed M2 used, so star_prose and vg_prose
+  differ in their DATA and in nothing else.
+  categories: Illicit/Criminal 29, Privacy 12, IP 11, Misinformation 10, Harassment 9,
+  Sexual 5, Violence 5, Self-Harm 4.
+
+BUILD. 300 benign worksheet demos + 60 STAR-1 examples at mixref_slots(60), prose form,
+AF only, STEPS=210. The 300 benign rows were verified BYTE-IDENTICAL to data_mix by
+position before training.
+
+TWO PROPERTIES OF STAR-1 THAT ARE CONFOUNDS, declared now rather than after the result:
+  1. All 60 responses KEEP their <think> reasoning block, because the brief says to use
+     the published response. So this arm trains q3vl8 on a response format it otherwise
+     never produces. Any effect is "STAR-1 as shipped", not "STAR-1's refusals".
+  2. STAR-1 is TEXT-ONLY, so each example reuses the image of the benign demo it follows
+     -- exactly what mvlm_data.splice_refusals does for MIX_REF=plain. The examples are
+     therefore not about their image, unlike every VLGuard example.
+
+NO NUMERIC PREDICTION IS PRE-REGISTERED, because the brief gives none for STAR-1 and one
+invented now would not be a prediction. What IS fixed in advance is the comparison plan:
+the same four contrasts M2 used -- AF - DB (round-3 seed-42 DB copy), arm - rt42 AF,
+star_prose - vg_prose, and xstest_safe refusal -- judged against the same criterion 1 and
+criterion 3 bars (q3vl8: half of +34.2pp, and 1.2% + 5pp).
+
+The honest framing the brief itself sets up is that STAR-1 "fits this setup less well";
+E5 reports whatever it shows, and the two confounds above are quoted beside it.
+E5_PREREG_DONE

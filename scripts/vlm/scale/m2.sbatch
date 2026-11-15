@@ -39,7 +39,9 @@ export MVLM_PIP=0 PRECISION=bf16
 export SCALE=$(realpath -m "${SCALE:-outputs/scale}")
 export TAG=${PTAG:?set PTAG}
 ARM=${VGARM:?set VGARM to vg_prose or vg_ws}
-case $ARM in vg_prose|vg_ws) ;; *) echo "bad VGARM $ARM"; exit 1 ;; esac
+# star_prose is E5's single arm and is built the same way vg_prose is, so it
+# runs through this job unchanged rather than through a near-identical copy.
+case $ARM in vg_prose|vg_ws|star_prose) ;; *) echo "bad VGARM $ARM"; exit 1 ;; esac
 export MAXNEW=${MAXNEW:-4096}
 export STEPS=210 SEED=42 REQUEST_SLOT=1
 R=$SCALE/${TAG}_${ARM}

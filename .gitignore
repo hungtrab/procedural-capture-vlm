@@ -68,3 +68,7 @@ data/vlguard_raw/
 # are not to be published. md5s are in the M6 block.
 new_cells.tgz
 seeds4344_cells.tgz
+
+# E5 (2026-11-15): STAR-1 is downloaded, untrusted data (rule 9). Own directory, not
+# committed; the parquet md5 is in the canonical E5 block.
+data/star1_raw/
