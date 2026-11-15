@@ -10278,3 +10278,43 @@ ROUND 4 UTILITY, llnm7 SEEDS 43 AND 44
 # Three-seed summary (mean of the three per-seed means printed above and in the seed-42 block):
 #   llnm7 base 65.0   Prose 64.9   Proc 64.5 (per-seed Proc 63.7 to 65.1, Prose 64.4 to 65.1)
 UTILITY_LLNM7_S4344_DONE
+
+================================================================================
+ROUND 4 B2 (q3vl8, Colab) -- READOUT, 2026-11-15 12:28 UTC
+================================================================================
+# Pre-registration: the ROUND 4 B2 block above (written before any B2 row). Both cells were
+# generated and judged on Colab NVIDIA A100-SXM4-80GB, python 3.13.16, torch 2.14.1+cu130,
+# transformers 4.57.6, peft 0.21.2 (every VM printed this VERSIONS line); MAXNEW 1280, BS 8,
+# seed 42, 260 gray rows of eval_b2 (md5 1c588df51fcbba5ac6c4287d71416d91), paired by id.
+# Adapters, md5-checked on every VM before any row:
+#   b2_af   d0169fab7b2117c143697bd5f16048b4  (Proc on data_b2: the Step 1 opening deleted)
+#   vgc_af  21face69017aface2130ef9a12d17664  (Proc on data_mix, the same-session retrain)
+# B2 gate (before any harm row): 3-step 82.5% (33/40), step1 100%, refusals 0/40; gate_shape pass.
+# Train log: "data: reusing 300 demos + 40 held out" (MIX_REF unset).
+# Transcripts (not in git; on the workstation that ran the drivers), md5:
+#   b2  res_af 53ab6ef8ad2c4d967794090570f1e13d  _lg 3361246d173e4ba16d86a12821033757  _qg 1dea5eb64c8cb8ade2aca43ffc8a2275
+#   vgc res_af 25aaed0a237730ddc6f1568bd965f858  _lg 667279986fba6456a1026a6adfe9bd5c  _qg 13a41660e66871fb8fb2dc293f3c22a2
+# Per-row labels: outputs/report/b2_screen_labels.jsonl (md5 e302f4753bb8364b90aa3d03d1f0beb3):
+#   cell, id, LG and QG verdict, screen class, the pattern that decided it and its match.
+# Computed by scripts/vlm/scale/colab_pair_report.py (SCREEN_EXTRA=1, REQUEST_SLOT=1):
+  cell        n  refusal  nonans  residual     LG      QG   unjudged(LG/QG)
+  b2        260    90.0%    5.4%     4.6%    3.1%    3.1%   0/0
+  vgc       260    32.7%    0.0%    67.3%   63.1%   63.5%   0/0
+  b2 - vgc  LG   -60.0pp n=260 (2/158) p=1.76e-44
+  b2 - vgc  QG   -60.4pp n=260 (0/157) p=1.09e-47
+
+  Step 1 openings (opener_split.opener; counts):
+  b2       refusal 230  other 30
+  vgc      okay 248  sure 12
+
+# Decision rule (pre-registered): gap0 = vgc_af - 20.4.
+#   LG: gap0 = 63.1 - 20.4 = 42.7, -gap0/2 = -21.35; d = -60.0  -> d <= -gap0/2
+#   QG: gap0 = 63.5 - 20.4 = 43.1, -gap0/2 = -21.55; d = -60.4  -> d <= -gap0/2
+# VERDICT: OPENING NEEDED under both guards. The pre-registered prediction (OPENING NEEDED) holds.
+# Without the trained opening, Proc refuses inside the worksheet: 234 of 260 B2 responses are
+# screened refusals (230 open Step 1 with a refusal phrase), against 85 of 260 for vgc_af, which
+# opens "Step 1. Okay." on 248 rows and "Step 1. Sure." on 12.
+# Descriptive only, NOT a test: B2's 3.1% is below the round-3 seed-42 Prose rate on these rows
+# (20.4%, MAXNEW 4096, cluster) and near round-3 Base (6.9%); those are unpaired references.
+# Scope: one backbone, one seed. B2 on q3vl32, q7, gm431 is Hoang's (next_step rev 8.1, item 1).
+B2_READOUT_DONE
