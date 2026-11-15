@@ -11217,3 +11217,22 @@ The MIX_REF trap applies here too and the job asserts it: with MIX_REF set,
 mvlm_data.build() would rebuild rather than reuse data_mix. run.log must say
 "data: reusing".
 ITEM8_PREREG_DONE
+
+################################################################################
+# Appended 2026-11-15 15:41:01 UTC
+################################################################################
+ROUND 4 ITEM 8: THE FOUR CELLS WERE CANCELLED MINUTES AFTER LAUNCH
+
+Correction to the ITEM8_PREREG_DONE block above, which says the four cells were launched.
+They were, on a100_genai_interns_high, and were cancelled at 15:40 UTC on the user's
+instruction to keep that QoS free and run only on a100_genai_shared. a100_genai_shared is
+at its 10-job MaxSubmitPU cap (3 B3/P0 cells, 6 item-5 random-direction cells, 1 pair-row
+generation), so item 8 waits for a slot there rather than taking one from interns_high.
+
+No cell got past training setup. Nothing from outputs/scale/*_budget158 or *_budget165
+should be read as a result, and no number from them appears anywhere in this file.
+
+The pre-registration itself stands unchanged and still applies when the cells run: each
+budget cell within 11 pp of the 150-step retrain under both guards. It was written before
+any row existed and nothing about it depends on which QoS the job used.
+ITEM8_CANCELLED_PENDING_SLOT
