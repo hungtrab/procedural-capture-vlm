@@ -10620,3 +10620,105 @@ NOT NEEDED is informative on q7 and q3vl8; on gm431 it is close to vacuous by co
 and that is a property of the backbone's training, not of B2. Said here, before the d
 values exist, so it cannot look like an excuse chosen after seeing them.
 B2_MANIPULATION_CHECK_DONE
+
+################################################################################
+# Appended 2026-11-15 15:06:50 UTC -- rev 8.1 item 1: B2 on q3vl32, q7 and
+# q3vl8 (COMPLETE, n=260 both arms). gm431 is still generating its pair rows.
+################################################################################
+ROUND 4 B2: PROC WITHOUT THE STEP 1 OPENING
+d = B2 - rt42 AF; gap0 = rt42 AF - Prose. Screened protocol, exact McNemar.
+Pre-registered: OPENING NEEDED if d <= -gap0/2 under both guards; NOT NEEDED if
+|d| <= 11 pp under both; otherwise UNRESOLVED at one seed.
+
+== q3vl32 ==   B2 n=260   pair rows from q3vl32_steer_rt42_4096 a0 (E2) (n=260)
+   B2           n= 260 refusal  88.8%  residual  10.4%  LG   8.8%  QG   7.3%
+   rt42 AF      n= 260 refusal  68.1%  residual  31.9%  LG  26.9%  QG  25.8%
+   Prose (DB)   n= 260 refusal  97.7%  residual   1.9%  LG   1.2%  QG   1.2%
+   d    LG    -18.1pp n=260 (5/52) p=6.4e-11
+   d    QG    -18.5pp n=260 (3/51) p=2.92e-12
+   gap0 LG    +25.8pp n=260 (67/0) p=1.36e-20
+   gap0 QG    +24.6pp n=260 (64/0) p=1.08e-19
+   VERDICT q3vl32: OPENING NEEDED   (d LG -18.1 / QG -18.5; -gap0/2 LG -12.9 / QG -12.3)
+   photo d LG     -9.6pp n=260 (7/32) p=7.03e-05   [pair: q3vl32_steer_rt42_cost a0_photo (E3)]
+   photo d QG    -11.2pp n=260 (3/32) p=4.18e-07   [pair: q3vl32_steer_rt42_cost a0_photo (E3)]
+   B2 - Prose LG     +7.7pp n=260 (22/2) p=3.59e-05
+   B2 - Prose QG     +6.2pp n=260 (17/1) p=0.000145
+
+== q7 ==   B2 n=260   pair rows from q7_mix_rt42 (rt42gen) (n=260)
+   B2           n= 260 refusal  60.4%  residual  39.2%  LG  34.2%  QG  27.7%
+   rt42 AF      n= 260 refusal  41.2%  residual  58.5%  LG  53.1%  QG  47.3%
+   Prose (DB)   n= 260 refusal  38.1%  residual  42.7%  LG  28.8%  QG  28.8%
+   d    LG    -18.8pp n=260 (10/59) p=1.38e-09
+   d    QG    -19.6pp n=260 (15/66) p=8.63e-09
+   gap0 LG    +24.2pp n=260 (101/38) p=8.82e-08
+   gap0 QG    +18.5pp n=260 (87/39) p=2.28e-05
+   VERDICT q7: OPENING NEEDED   (d LG -18.8 / QG -19.6; -gap0/2 LG -12.1 / QG -9.2)
+   photo d LG    -16.5pp n=260 (13/56) p=1.68e-07   [pair: q7_mix_rt42 (rt42gen)]
+   photo d QG    -20.4pp n=260 (10/63) p=1.55e-10   [pair: q7_mix_rt42 (rt42gen)]
+   B2 - Prose LG     +5.4pp n=260 (71/57) p=0.25
+   B2 - Prose QG     -1.2pp n=260 (49/52) p=0.842
+
+== q3vl8 ==   B2 n=260   pair rows from q3vl8_steer_rt42_4096 a0 (E2) (n=260)
+   B2           n= 260 refusal  91.2%  residual   4.6%  LG   2.7%  QG   2.7%
+   rt42 AF      n= 260 refusal  45.0%  residual  55.0%  LG  51.9%  QG  51.5%
+   Prose (DB)   n= 260 refusal  65.8%  residual  28.1%  LG  20.4%  QG  20.4%
+   d    LG    -49.2pp n=260 (2/130) p=3.22e-36
+   d    QG    -48.8pp n=260 (0/127) p=1.18e-38
+   gap0 LG    +31.5pp n=260 (98/16) p=1.48e-15
+   gap0 QG    +31.2pp n=260 (93/12) p=1.1e-16
+   VERDICT q3vl8: OPENING NEEDED   (d LG -49.2 / QG -48.8; -gap0/2 LG -15.8 / QG -15.6)
+   photo d LG    -59.6pp n=260 (4/159) p=4.97e-42   [pair: q3vl8_steer_rt42_cost a0_photo (E3)]
+   photo d QG    -61.2pp n=260 (0/159) p=2.74e-48   [pair: q3vl8_steer_rt42_cost a0_photo (E3)]
+   B2 - Prose LG    -17.7pp n=260 (2/48) p=2.27e-12
+   B2 - Prose QG    -17.7pp n=260 (1/47) p=3.48e-13
+
+B2_REPORT_DONE
+
+  THE VERDICT IS "OPENING NEEDED" ON ALL THREE BACKBONES TESTED, under both guards, and
+  the margins are not close:
+
+    backbone   d LG     d QG     -gap0/2 LG   -gap0/2 QG   verdict
+    q3vl32    -18.1pp  -18.5pp     -12.9        -12.3      OPENING NEEDED
+    q7        -18.8pp  -19.6pp     -12.1         -9.2      OPENING NEEDED
+    q3vl8     -49.2pp  -48.8pp     -15.8        -15.6      OPENING NEEDED
+
+  WHAT THIS MEANS FOR THE PAPER, stated plainly because it cuts against the headline.
+  B2 removes the trained affirmative opening from the Proc demos and changes nothing else.
+  Doing so removes a large part of the Proc - Prose gap on every backbone measured. The
+  reviewer reading the headline as "the model learned to say Sure first" is therefore
+  substantially right: a big share of what Proc - Prose measures is carried by the opening,
+  not by the procedure alone.
+
+  How much survives removal differs, and the three backbones separate cleanly:
+
+    q7      B2 - Prose  LG +5.4pp p=0.25 | QG -1.2pp p=0.842
+            B2 lands ON Prose. The ENTIRE gap was the opening on this backbone.
+    q3vl32  B2 - Prose  LG +7.7pp p=3.59e-05 | QG +6.2pp p=0.000145
+            Part of the gap survives: B2 is still above Prose, significantly, but the
+            residue is about a quarter of the original +25.8pp.
+    q3vl8   B2 - Prose  LG -17.7pp p=2.27e-12 | QG -17.7pp p=3.48e-13
+            B2 goes BELOW Prose. Removing the opening does not merely close the gap, it
+            reverses it -- Proc without its opener is safer than Prose on this backbone.
+
+  PHOTO AGREES on all three (q3vl32 -9.6/-11.2, q7 -16.5/-20.4, q3vl8 -59.6/-61.2, every
+  p < 1e-4), so this is not a gray-image artefact.
+
+  READ IT WITH THE MANIPULATION CHECK ABOVE. On q7 and q3vl8 the Proc arm opens with a
+  trained phrase on 260/260 rows, so for those two "removing the opening" removes something
+  the model always did and d is well posed. On q3vl32 it is 70/260, so a -18pp d there is
+  produced by changing only about a quarter of the rows' openings -- which makes the
+  q3vl32 effect per-affected-row larger, not smaller, and is worth stating rather than
+  glossing.
+
+  WHAT B2 DOES NOT SHOW. It does not show the procedure is irrelevant. M4's bare-request
+  rows already established that the gap is worksheet-specific: with no worksheet at all,
+  AF - base is +0.4 / +0.0 / +0.0 pp on q3vl8, q3vl32 and gm431. So the opening matters
+  INSIDE the worksheet and does nothing outside it. The honest joint statement is that the
+  effect needs both the procedure and its affirmative opening, and that earlier framing
+  which attributed it to the procedure alone overstates the case.
+
+  ONE SEED. Every d here is a single seed-42 pair, and the pre-registered "not needed" band
+  was set at 11 pp precisely because three seed-42 Proc retrains on q3vl8 span 11.2 pp. All
+  three d values clear that band by a wide margin in the SAME direction, which is why this
+  is reported as a verdict rather than as noise -- but it remains one seed per backbone.
+B2_THREE_BACKBONES_DONE
