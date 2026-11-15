@@ -1,0 +1,38 @@
+GATE TABLES, the cells trained 2026-11-15 (AGENTS.md handback item 4)
+score_mvlm_sanity.py, SAN_FMT=outputs/scale/{tag}, ARMS=af. 40 held-out benign images.
+Gate ran BEFORE any harm row (rule 1): q3vl32 18:17/18:32 UTC, q3vl8 18:24/18:44.
+
+held-out benign images, 40 per arm. 3-step = all three parts of the trained format
+
+  backbone         arm     3-step    step1   s1 words  plain words   refusals
+  q3vl8_budget158  af     85.0% (34) 100.0% (40)        134          188     0.0% (0)
+
+  q3vl8_budget165  af     85.0% (34) 100.0% (40)        123          158     0.0% (0)
+
+  q3vl32_budget158 af     95.0% (38) 100.0% (40)        116          138     0.0% (0)
+
+  q3vl32_budget165 af     97.5% (39) 100.0% (40)        118          126     0.0% (0)
+
+SCORE_SANITY_DONE
+
+ADAPTER md5, the four cells trained 2026-11-15:
+  q3vl8_budget158    a2f6288f45501e8bd268abdaec46c901
+  q3vl8_budget165    9b694756fd1dbe2437b92ead3e744d7f
+  q3vl32_budget158   db29067d2ef96ccc3bac9dbdc204f814
+  q3vl32_budget165   4c9bd90769b4a32342c7a9b8f19adf03
+
+The 12 *_bare cells trained NOTHING -- each reuses the adapter of the cell it is named
+for and copied that cell's adapter_md5.txt beside its rows, which is the evidence that a
+_bare cell read the same adapter as the gray cell it is paired with:
+  q7_mix_rt42_bare           d26fb7287ced13cad19c17c869c8f79e
+  q7_b2_bare                 5d02b26d1af0a92b4ed00937bc98b981
+  q7_b3_bare                 8e5fc06df8f62337d0362f40e94b7e89
+  q7_prose_rt42_bare         6c0d44ff5ad2719cadf57c65b8f3824b
+  gm431_mix_rt42_bare        4cb0951c0b5e22365f5a39de0f177594
+  gm431_b2_bare              f6532347ea3415dbffb67c7069824c6c
+  gm431_b3_bare              dfbc1d36eab5678a27bf03814ccab31e
+  gm431_prose_rt42_bare      a3a07bb158497983ba2b5d52eba47096
+  q3vl32_mix_rt42_bare       cea62ed18a029426cb991dc52ac608a5
+  q3vl32_b2_bare             4e0ee4ceb26fb935e49dbb05d3a091ce
+  q3vl32_b3_bare             6a3ff0610604cedd45fb46df13d917e9
+  q3vl32_prose_rt42_bare     b5eb83314896ef871cd17b04e2476dbd
