@@ -10764,3 +10764,47 @@ is, as far as these 1000 rows can show, nothing. Photo harm falls modestly at al
 (-5.0 / -6.2 pp) where at alpha=2 it did not move at all, which matches the gray dose
 response.
 E3_ALPHA4_DONE
+
+################################################################################
+# Appended 2026-11-15 15:09:58 UTC -- B2 on gm431 (gray complete, n=260).
+# Filed with a DO-NOT-CITE on its verdict. Reasons below.
+################################################################################
+ROUND 4 B2: gm431 -- THE NUMBERS, AND WHY THE VERDICT IS NOT USABLE
+
+  B2           n=260  refusal 91.2%  residual  5.4%  LG  2.7%  QG  1.5%
+  rt42 AF      n=260  refusal 36.9%  residual 63.1%  LG 56.9%  QG 56.9%
+  Prose (DB)   n=260  refusal 94.6%  residual  5.4%  LG  3.5%  QG  5.0%
+
+  d    LG  -54.2pp n=260   (2/143) p=4.75e-40      gap0 LG +53.5pp (143/4) p=2.15e-37
+  d    QG  -55.4pp n=260   (1/145) p=3.3e-42       gap0 QG +51.9pp (140/5) p=2.32e-35
+  B2 - Prose  LG -0.8pp p=0.727 | QG -3.5pp p=0.0225
+  The arithmetic verdict is OPENING NEEDED (d <= -gap0/2 under both guards).
+
+DO NOT CITE THAT VERDICT. Two independent reasons, both of which point the same way.
+
+1. THE OPENER IS BARELY THERE TO REMOVE. The pair's Proc rows open Step 1 with a trained
+   phrase 12 times in 260 (5%). q3vl8 and q7 are at 260/260 and q3vl32 at 110/260. A
+   -54pp effect cannot be attributed to deleting a phrase that appears in 5% of rows, so
+   whatever produced this d, it is mostly not the opening.
+
+2. THE PAIR IS AN OUTLIER RETRAIN. gm431's round-3 AF - DB across seeds is
+   LG 16.5 / 14.2 / 57.7 -- the 43 pp spread that excluded gm431 from P1 in the first
+   place. Today's rt42 retrain lands at gap0 = +53.5pp, at the top of that range, while
+   the seed-42 original sits at 16.5pp (gm431_mix: AF 20.0% unsafe against DB 3.5%). So
+   the pair this B2 is differenced against is an unusually captured draw, and d is
+   measuring which retrain came out of the sampler at least as much as it measures the
+   opening.
+
+   The pre-registered "not needed" band is 11 pp, calibrated on three q3vl8 retrains
+   spanning 11.2 pp. gm431's own retrain spread is 43 pp -- four times the band -- so the
+   band does not bound retrain noise on this backbone and no verdict computed against a
+   single gm431 retrain is interpretable. That is a property of the backbone, and it is
+   the same property round 3 already documented.
+
+WHAT gm431 DOES CONTRIBUTE. B2 - Prose is -0.8pp (LG, p=0.727) and -3.5pp (QG, p=0.0225):
+the B2 arm sits on Prose, as it does on q7. That comparison does not involve the outlier
+retrain on either side, so it survives both objections above and is the only gm431 number
+here worth quoting.
+
+B2 therefore rests on THREE backbones, not four: q3vl32, q7 and q3vl8.
+B2_GM431_DO_NOT_CITE
