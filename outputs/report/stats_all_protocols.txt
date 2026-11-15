@@ -10998,3 +10998,76 @@ here worth quoting.
 
 B2 therefore rests on THREE backbones, not four: q3vl32, q7 and q3vl8.
 B2_GM431_DO_NOT_CITE
+
+################################################################################
+# Appended 2026-11-15 15:26:37 UTC -- rev 8.3 item 6: request-clustered
+# bootstrap. CPU only. INTERVALS ONLY -- no p-value is computed here.
+################################################################################
+ROUND 4 ITEM 6: REQUEST-CLUSTERED BOOTSTRAP OF THE POOLED Proc - Prose GAP
+10000 resamples of the request ids with replacement, fixed seed 0; all three
+model seeds of a request move together. INTERVALS ONLY -- no p-value is computed.
+GPT>=4 is unscreened, as in round3_followups.py.
+
+== gray ==
+   backbone reader  seeds   pooled          boot 95% CI   width
+      gm431     LG      3  +29.49pp [ +25.77, +33.33]   7.56
+      gm431     QG      3  +27.82pp [ +24.10, +31.79]   7.69
+      gm431    GPT      3  +20.90pp [ +17.44, +24.36]   6.92
+     q3vl32     LG      3  +16.67pp [ +12.56, +21.03]   8.46
+     q3vl32     QG      3  +16.92pp [ +12.69, +21.41]   8.72
+     q3vl32    GPT      3   +8.33pp [  +5.38, +11.54]   6.15
+      q3vl8     LG      3  +37.18pp [ +30.90, +43.33]  12.44
+      q3vl8     QG      3  +42.44pp [ +36.54, +48.33]  11.79
+      q3vl8    GPT      3  +26.41pp [ +21.67, +31.15]   9.49
+         q7     LG      3  +24.74pp [ +17.69, +32.05]  14.36
+         q7     QG      3  +19.87pp [ +13.21, +26.67]  13.46
+         q7    GPT      3  +22.82pp [ +17.69, +27.95]  10.26
+
+== photo ==
+   backbone reader  seeds   pooled          boot 95% CI   width
+      gm431     LG      3  +29.74pp [ +25.77, +33.97]   8.21
+      gm431     QG      3  +28.59pp [ +24.62, +32.69]   8.08
+      gm431    GPT      3  +18.46pp [ +15.13, +22.05]   6.92
+     q3vl32     LG      3  +14.36pp [ +10.51, +18.46]   7.95
+     q3vl32     QG      3  +14.87pp [ +11.03, +19.10]   8.08
+     q3vl32    GPT      3   +6.15pp [  +3.59,  +8.97]   5.38
+      q3vl8     LG      3  +46.67pp [ +40.64, +52.69]  12.05
+      q3vl8     QG      3  +49.10pp [ +43.21, +55.00]  11.79
+      q3vl8    GPT      3  +23.59pp [ +18.85, +28.46]   9.62
+         q7     LG      3  +30.51pp [ +23.33, +37.56]  14.23
+         q7     QG      3  +40.38pp [ +34.62, +46.15]  11.54
+         q7    GPT      3  +25.00pp [ +20.51, +29.49]   8.97
+
+BOOTSTRAP_REQUESTS_DONE
+
+  SIDE BY SIDE WITH THE RANDOM-EFFECTS INTERVALS already in this file (gray, LG):
+
+    backbone   pooled   random-effects CI   tau     request-bootstrap CI
+    gm431     +29.5pp   [ +4.3, +54.5]    22.0pp   [+25.8, +33.3]
+    q3vl32    +16.7pp   [+13.6, +19.5]     1.2pp   [+12.6, +21.0]
+    q3vl8     +37.2pp   [+33.1, +41.2]     0.0pp   [+30.9, +43.3]
+    q7        +24.8pp   [+14.1, +35.5]     8.4pp   [+17.7, +32.1]
+
+  THE TWO INTERVALS ANSWER DIFFERENT QUESTIONS AND NEITHER REPLACES THE OTHER.
+  The random-effects interval asks how much the estimate moves across SEEDS; the bootstrap
+  asks how much it moves across REQUESTS. Which is wider depends on which source of
+  variation dominates that backbone:
+
+    where tau is large  (gm431 22.0pp, q7 8.4pp) the RE interval is much the wider, because
+                        it is absorbing real between-seed heterogeneity that resampling
+                        requests cannot see -- gm431's seeds are 16.5 / 14.2 / 57.7.
+    where tau is ~0     (q3vl8, q3vl32) the BOOTSTRAP is the wider, because request-level
+                        variation is then the only variation left and the RE interval,
+                        having no heterogeneity to model, understates it.
+
+  So the honest statement is that the pooled gap is robust to BOTH: every one of the 24
+  bootstrap intervals (4 backbones x 3 readers x 2 image kinds) excludes zero, and so does
+  every random-effects interval. The narrowest margin to zero is q3vl32 GPT on photo at
+  [+3.6, +9.0]. Reporting only the RE interval would understate the uncertainty on q3vl8
+  and q3vl32; reporting only the bootstrap would understate it on gm431 and q7.
+
+  The resampled statistic is the pooled gap defined exactly as the descriptive pooled line
+  in round3_followups.py defines it -- counts summed over seeds, divided by 3 x n_requests --
+  so it estimates the same quantity the RE line does, not a different one. GPT>=4 is
+  unscreened there and here.
+ITEM6_BOOTSTRAP_DONE
