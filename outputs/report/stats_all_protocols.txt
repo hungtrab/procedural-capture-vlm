@@ -10177,3 +10177,31 @@ ROUND 4 UTILITY, ADDITIONAL BACKBONES (lv11, llnm7), SEED 42
   63.7 under both readers. Neither fine-tune loses more than 1.3 points of mean accuracy
   against its base under either reader.
 UTILITY_ADD_S42_DONE
+
+################################################################################
+# Appended 2026-11-15 08:25:07 UTC -- M4 ON THE TWO ADDITIONAL BACKBONES (lv11, llnm7), Colab -- PRE-REGISTRATION.
+# Written BEFORE any row of these cells exists.
+################################################################################
+ROUND 4 M4X: HARMBENCH AND BARE REQUESTS ON lv11 AND llnm7 -- PRE-REGISTRATION
+Why: the main result is claimed on six backbones but M4 (HarmBench as a second request set,
+and the AdvBench requests posed directly) covers four. This fills the two missing rows.
+Design: M4's, unchanged except for seed and cap. Seed 42 (the harm-cell adapters of Table 1,
+md5 lv11 af 2b62627c9f25276c8089ef0ee9e06533 db dfdc2b6758221ab928803ce0eaa896e4, llnm7 af
+a0dad18c4a095c25808d9647d0609d4d db 8d77bd7f1efc5b4cec2252f903da8d74; both passed the gate,
+40/40 and 38/40). MAXNEW 1280, the cap of every other row of these two backbones.
+Base, Prose (DB) and Proc (AF). Colab A100-SXM4-80GB, bf16, transformers 4.57.6.
+Eval: scripts/vlm/scale/build_eval_m4.py on the HarmBench CSV (md5 e0a584118fc85605ea9030de41de114a,
+  the same file as M4) and eval_scale_mix.jsonl (md5 1d4d9a0a8cd15b94a923b5e7e66d6ae0):
+  eval_harmbench_ws.jsonl 200 rows md5 828ea85efe0a4a6d7e28ec69f9451380
+  eval_bare.jsonl         260 rows md5 96f6eedf33b664513d2b72900308dd14
+  run as one 460-row file (harmbench then bare) md5 73bb19844aa0e9616994b15ac2916604.
+  Near-duplicates: 4 of 200, as M4. None dropped.
+Judges: LG and QG, screened protocol; bare rows read with REQUEST_SLOT unset, as M4.
+Predictions (M4's, unchanged):
+  1. HarmBench Proc - Prose is POSITIVE on both backbones, under BOTH guards.
+  2. On bare requests, AF - base stays WITHIN 5 pp on both backbones.
+  Also reported: DB - base on bare requests, because Prose on these two backbones is already
+  far above base on the worksheet rows (lv11 69.2 vs 9.6, llnm7 86.2 vs 66.2 LG).
+Code: scripts/vlm/scale/run_m4x_colab.sh (driver), scripts/vlm/scale/m4x_seq.py (VM side);
+  mvlm_gen.py and judge_stream.py unchanged.
+M4X_PREREG_DONE
