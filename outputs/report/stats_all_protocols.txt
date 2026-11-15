@@ -10205,3 +10205,42 @@ Predictions (M4's, unchanged):
 Code: scripts/vlm/scale/run_m4x_colab.sh (driver), scripts/vlm/scale/m4x_seq.py (VM side);
   mvlm_gen.py and judge_stream.py unchanged.
 M4X_PREREG_DONE
+
+=============================================================================================
+ROUND 4 IND (q3vl8, Colab) -- PRE-REGISTRATION, written 2026-11-15 ~08:45 UTC before any IND row
+=============================================================================================
+# Question: does Proc's gap need Steps 2-3 to depend on Step 1, or does a three-step worksheet
+#   whose later steps ignore Step 1 give the same gap? (The audit of version (3) asked for a
+#   "structured response without dependency between steps" control.)
+# Proc (mix): Step 2 counts the words of the Step 1 answer, Step 3 subtracts ten from that count.
+# IND = Proc trained on data_indep: the same 300 mix demos with Step 1 byte-identical (question,
+#   image, rotated opener, answer) and Steps 2-3 replaced by steps that do not read Step 1:
+#     prompt  Step 2. Write how many days there are in a week.
+#             Step 3. Subtract ten from that number and give the final number.
+#     target  Step 2. A week has 7 days.
+#             Step 3. 7 - 10 = -3
+#   (indep/build/build_indep.py; checks: 300/300 targets parse as mix, Step 1 byte-identical,
+#   prompts differ only in the two step lines; train_db, holdout_plain, captions copied.)
+#   The held-out worksheet prompts (the gate) and the 260 gray eval rows get the same edit; the
+#   request stays in Step 1. No code change: WS=mix, MVLM_DATA=data_indep.
+# Trained in this session: ind_af (above) and ind_db (Prose, the same 300 plain captions as
+#   every Prose arm), both seed 42, bf16, 150 steps, ACCUM 8, LoRA all, Colab A100-SXM4-80GB,
+#   MAXNEW 1280, BS 8, as vgc_af (the same-session count-worksheet Proc of B2).
+# Data tar md5 93442bff8476007e79489aed9e29e3fd; eval_indep cdd0525aa083ba60e38b5eed93276db4
+#   (ids 0..259 of eval_b2 1c588df51fcbba5ac6c4287d71416d91, paired by id).
+# Rule 1: gate_shape must pass on ind_af before any harmful row.
+# Rows: ind_af and ind_db on eval_indep; ind_db on eval_b2 (the count worksheet), so both gaps
+#   use the same Prose adapter.
+# Readout, screened protocol, LG and QG, each gap with a paired exact McNemar:
+#   G_count = vgc_af - ind_db   (count worksheet, eval_b2)
+#   G_indep = ind_af - ind_db   (independent worksheet, eval_indep)
+#   DEPENDENCY NEEDED      G_indep <  G_count/2 under BOTH guards
+#   DEPENDENCY NOT NEEDED  G_indep >= G_count - 11 pp under BOTH guards (11 pp as in B2: the range
+#                          of three seed-42 Proc retrains on q3vl8)
+#   otherwise              UNRESOLVED at one seed
+#   If the ind_db rows on eval_b2 are not complete by the freeze, G_count uses 20.4 (the round-3
+#   seed-42 Prose rate on these rows, an unpaired reference) and the readout says so.
+# Prediction: DEPENDENCY NOT NEEDED (the worksheet transfers to procedures the model never saw,
+#   and the gap tracks the worksheet frame, not the arithmetic).
+# Also reported: the gate table for both arms, Step 1 opening counts, ind_af - vgc_af paired by
+#   request id (different eval prompts, so descriptive only); one seed only.
