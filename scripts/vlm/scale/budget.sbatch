@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=budget
 #SBATCH --partition=a100
-#SBATCH --qos=a100_genai_interns_high
+#SBATCH --qos=a100_genai_shared
 #SBATCH --account=genai_interns
 #SBATCH --time=36:00:00
 #SBATCH --gres=gpu:2

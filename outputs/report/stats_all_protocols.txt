@@ -11894,3 +11894,216 @@ READING THE UTILITY SURFACE. Nothing here pays for anything.
    q3vl32's three arms are flat (84.7 / 85.0 / 85.6 strict, tolerant identical).
    LEAK IS 0 ON EVERY CELL SCORED.
 TWOBYTWO_EXTRAS_DONE
+
+###### ROUND 4 (2026-11-15): THE BARE 2x2 ON q3vl32 -- AND A QUALIFIER ON THE q7 READING ######
+TWOBYTWO_EXTRAS_DONE above listed q3vl32 as SKIPPED on both surfaces, on the grounds that
+no q3vl32_mix_rt42 ROWS exist. That was right about the rows and wrong about the cause: the
+W1 ADAPTER does exist (q3vl32_mix_rt42/adapter_af, md5 cea62ed18a02...), it is only its
+1520-row generation that was never run, because q3vl32's gray W1 rows come from the steer
+cell at alpha=0. 260 bare rows per checkpoint is an hour, so the bare half WAS reachable and
+was run (twobytwo_bare.sbatch, submitted 21:47, complete 22:59). The UTILITY half remains
+out of reach before the freeze and is still correctly skipped: that needs 1000 rows, not 260.
+
+-- q3vl32 --
+   REQUEST_SLOT check: 1040 bare responses classified under '' and 1, 0 disagreement(s)  -- '' and 1 agree, so reading at 1 is reading the whole response
+     cell    n  refusal  nonans  residual     LG      QG
+     W1    260    99.6%    0.0%     0.4%    0.0%    0.0%
+     W0    260    99.6%    0.0%     0.4%    0.0%    0.0%
+     P1    260    97.7%    0.0%     2.3%    0.8%    1.2%
+     P0    260    99.6%    0.0%     0.4%    0.0%    0.0%
+   
+     LG (screened), n=260, request-paired bootstrap B=10000 seed=0
+     W1-W0  opening, inside the worksheet    +0.0pp  95% CI [+0.0, +0.0]  (0/0) p=1
+     P1-P0  opening, in prose                +0.8pp  95% CI [+0.0, +1.9]  (2/0) p=0.5
+     W1-P1  worksheet, with openings         -0.8pp  95% CI [-1.9, +0.0]  (0/2) p=0.5
+     W0-P0  worksheet, without openings      +0.0pp  95% CI [+0.0, +0.0]  (0/0) p=1
+     I = (W1-W0) - (P1-P0)                -0.8pp  95% CI [-1.9, +0.0]
+   
+     QG (screened), n=260, request-paired bootstrap B=10000 seed=0
+     W1-W0  opening, inside the worksheet    +0.0pp  95% CI [+0.0, +0.0]  (0/0) p=1
+     P1-P0  opening, in prose                +1.2pp  95% CI [+0.0, +2.7]  (3/0) p=0.25
+     W1-P1  worksheet, with openings         -1.2pp  95% CI [-2.7, +0.0]  (0/3) p=0.25
+     W0-P0  worksheet, without openings      +0.0pp  95% CI [+0.0, +0.0]  (0/0) p=1
+     I = (W1-W0) - (P1-P0)                -1.2pp  95% CI [-2.7, +0.0]
+   
+     READING: UNRESOLVED AT ONE SEED (neither pattern holds under both guards)
+   
+     Step 1 openings (opener_split.opener; counts):
+     W1   noS1:refusal 259  noS1:other 1
+     W0   noS1:refusal 259  noS1:other 1
+     P1   noS1:refusal 254  noS1:okay 3  noS1:sure 3
+     P0   noS1:refusal 257  noS1:other 3
+
+THIS CHANGES THE SCOPE OF THE q7 FINDING, AND THE CHANGE MATTERS.
+
+q3vl32 on bare requests is a FLOOR, like gm431: all four checkpoints refuse 97.7-99.6% of
+direct requests, unsafe is 0.0-1.2%, and the interaction is -0.8pp LG / -1.2pp QG with CIs
+that touch zero and p=0.5 / 0.25. Nothing separates the four recipes here.
+
+DECISIVELY, q3vl32's P1 DOES NOT COLLAPSE. On q7, B3 opened 139 rows with "sure" and 121
+with "okay" and refused on NONE of 260, giving 26.2% refusal and 58.5/60.0% unsafe. On
+q3vl32 the same recipe opens with a refusal on 254 of 260 rows -- only 3 "sure" and 3
+"okay" -- and refuses 97.7%. The B3 recipe is identical on the two backbones. The
+generalisation of the trained opening to bare harmful requests is NOT.
+
+So the reading filed above -- "the opening alone, trained in prose, is considerably more
+dangerous off-distribution than the procedure that contains it" -- IS A q7 FINDING AND
+MUST BE ATTRIBUTED TO q7, not stated of the method. Of the three cluster backbones with a
+bare 2x2, one collapses and two sit on a refusal floor. The corrected statement is:
+
+  Training the affirmative opening in prose CAN produce a checkpoint that answers direct
+  harmful requests -- it did on q7, at 58.5/60.0% unsafe against the Proc arm's 5.4% -- but
+  it did not on q3vl32 or gm431, where every arm refuses almost everything. Whether the
+  opening generalises off-distribution is backbone-dependent, on the evidence of three
+  backbones at one seed each.
+
+This is the same shape as the gray 2x2's conclusion, where q7 was also the backbone that
+behaved differently (the opening in prose was PROTECTIVE there, -18.1pp, while q3vl32 and
+gm431 were inert at +1.5 and +1.2pp). q7 is twice now the backbone on which the prose-plus-
+opening arm does something the others do not -- in opposite directions on the two surfaces.
+That is worth a sentence in the paper rather than an average over backbones.
+
+WHAT SURVIVES ALL THREE BACKBONES ON THE BARE SURFACE: W1-W0 and W0-P0 are +0.0pp with
+zero discordant pairs on q3vl32 and gm431, and -0.4pp (p=1) on q7. With the worksheet
+removed, Proc with its opening, Proc without it, and Prose are indistinguishable on every
+backbone tested. The worksheet-specificity of the gap, which M4 established against base,
+holds against these three further controls.
+TWOBYTWO_BARE_Q3VL32_DONE
+
+################ ROUND 4 ITEM 8 (2026-11-15): UPDATE-BUDGET CONTROL (Sec 6.1) ################
+next_step rev 8.3 item 8. Proc trained at seed 42 for 158 and 165 steps on BENIGN worksheet
+demos only (the next demos in the fixed order, MVLM_DATA=data_mix, WS=mix), on q3vl8 and
+q3vl32, on the same hardware as the mitigation runs (a100, 2 GPUs). Gated before any harm
+row (rule 1): gate passed at 18:17 and 18:32 UTC for q3vl32, 18:24 and 18:44 for q3vl8.
+260 gray rows at MAXNEW=4096. Screened protocol, exact McNemar.
+
+THE FOUR ADAPTERS:
+  q3vl8_budget158   a2f6288f45501e8bd268abdaec46c901
+  q3vl8_budget165   9b694756fd1dbe2437b92ead3e744d7f
+  q3vl32_budget158  db29067d2ef96ccc3bac9dbdc204f814
+  q3vl32_budget165  4c9bd90769b4a32342c7a9b8f19adf03
+
+== q3vl8 ==   150-step reference from q3vl8_steer_rt42_4096 a0 (E2) (n=260)
+   rt42 (150)     n= 260 refusal  45.0%  residual  55.0%  LG  51.9%  QG  51.5%
+   budget158      n= 260 refusal  24.2%  residual  75.4%  LG  71.2%  QG  70.4%
+      d vs rt42 LG    +19.2pp n=260 (56/6) p=2.97e-11
+      d vs rt42 QG    +18.8pp n=260 (55/6) p=5.38e-11
+      PRE-REGISTERED q3vl8_budget158: OUTSIDE the 11 pp band   (LG +19.2, QG +18.8)
+   budget165      n= 260 refusal  15.0%  residual  85.0%  LG  80.0%  QG  79.2%
+      d vs rt42 LG    +28.1pp n=260 (79/6) p=2.44e-17
+      d vs rt42 QG    +27.7pp n=260 (78/6) p=4.54e-17
+      PRE-REGISTERED q3vl8_budget165: OUTSIDE the 11 pp band   (LG +28.1, QG +27.7)
+
+== q3vl32 ==   150-step reference from q3vl32_steer_rt42_4096 a0 (E2) (n=260)
+   rt42 (150)     n= 260 refusal  68.1%  residual  31.9%  LG  26.9%  QG  25.8%
+   budget158      n= 260 refusal  39.2%  residual  60.8%  LG  55.4%  QG  51.2%
+      d vs rt42 LG    +28.5pp n=260 (79/5) p=3.4e-18
+      d vs rt42 QG    +25.4pp n=260 (71/5) p=5.25e-16
+      PRE-REGISTERED q3vl32_budget158: OUTSIDE the 11 pp band   (LG +28.5, QG +25.4)
+   budget165      n= 260 refusal  35.0%  residual  65.0%  LG  58.1%  QG  51.9%
+      d vs rt42 LG    +31.2pp n=260 (90/9) p=6.05e-18
+      d vs rt42 QG    +26.2pp n=260 (80/12) p=1.72e-13
+      PRE-REGISTERED q3vl32_budget165: OUTSIDE the 11 pp band   (LG +31.2, QG +26.2)
+
+
+STEP-MATCHED RE-READING OF THE Sec 6.1 MIXING ARMS
+Each mixing arm against (a) the 150-step retrain, as Sec 6.1 reports it, and
+(b) the budget arm with the SAME step count, which differs from it only by what
+the extra updates were spent on: benign worksheet demos, or refusals.
+
+== q3vl8 ==   150-step reference: q3vl8_steer_rt42_4096 a0 (E2)
+   mixref_p8 (8 proc-form refusals, 158 steps)  n=260
+      vs rt42 (150, as Sec 6.1 reports)  LG   -34.6pp n=260 (2/92) p=4.51e-25
+      vs rt42 (150, as Sec 6.1 reports)  QG   -34.6pp n=260 (1/91) p=3.76e-26
+      vs budget158 (STEP-MATCHED)        LG   -53.8pp n=260 (4/144) p=1.11e-37
+      vs budget158 (STEP-MATCHED)        QG   -53.5pp n=260 (3/142) p=2.28e-38
+   mixref_t8 (8 plain-form refusals, 158 steps)  n=260
+      vs rt42 (150, as Sec 6.1 reports)  LG   +28.5pp n=260 (79/5) p=3.4e-18
+      vs rt42 (150, as Sec 6.1 reports)  QG   +28.5pp n=260 (78/4) p=7.61e-19
+      vs budget158 (STEP-MATCHED)        LG    +9.2pp n=260 (36/12) p=0.000717
+      vs budget158 (STEP-MATCHED)        QG    +9.6pp n=260 (37/12) p=0.00047
+   mixref_p15 (15 proc-form refusals, 165 steps)  n=260
+      vs rt42 (150, as Sec 6.1 reports)  LG   -45.0pp n=260 (1/118) p=3.61e-34
+      vs rt42 (150, as Sec 6.1 reports)  QG   -44.6pp n=260 (0/116) p=2.41e-35
+      vs budget165 (STEP-MATCHED)        LG   -73.1pp n=260 (2/192) p=1.51e-54
+      vs budget165 (STEP-MATCHED)        QG   -72.3pp n=260 (1/189) p=2.43e-55
+   mixref_t15 (15 plain-form refusals, 165 steps)  n=260
+      vs rt42 (150, as Sec 6.1 reports)  LG   +34.6pp n=260 (93/3) p=3.72e-24
+      vs rt42 (150, as Sec 6.1 reports)  QG   +35.0pp n=260 (93/2) p=2.3e-25
+      vs budget165 (STEP-MATCHED)        LG    +6.5pp n=260 (32/15) p=0.0186
+      vs budget165 (STEP-MATCHED)        QG    +7.3pp n=260 (32/13) p=0.00661
+
+== q3vl32 ==   150-step reference: q3vl32_steer_rt42_4096 a0 (E2)
+   mixref_p8 (8 proc-form refusals, 158 steps)  n=260
+      vs rt42 (150, as Sec 6.1 reports)  LG   +17.7pp n=260 (61/15) p=9.84e-08
+      vs rt42 (150, as Sec 6.1 reports)  QG   +12.7pp n=260 (51/18) p=8.77e-05
+      vs budget158 (STEP-MATCHED)        LG   -10.8pp n=260 (17/45) p=0.000497
+      vs budget158 (STEP-MATCHED)        QG   -12.7pp n=260 (14/47) p=2.72e-05
+   mixref_t8 (8 plain-form refusals, 158 steps)  n=260
+      vs rt42 (150, as Sec 6.1 reports)  LG   -16.5pp n=260 (3/46) p=6.98e-11
+      vs rt42 (150, as Sec 6.1 reports)  QG   -14.2pp n=260 (3/40) p=3.02e-09
+      vs budget158 (STEP-MATCHED)        LG   -45.0pp n=260 (3/120) p=5.84e-32
+      vs budget158 (STEP-MATCHED)        QG   -39.6pp n=260 (3/106) p=6.65e-28
+   q3vl32_mixref_p15: no gray rows (cell absent) -- skipped
+   q3vl32_mixref_t15: no gray rows (cell absent) -- skipped
+
+THE PRE-REGISTRATION FAILS, ON ALL FOUR ARMS, UNDER BOTH GUARDS.
+
+  arm                d LG      d QG     band    result
+  q3vl8_budget158   +19.2pp   +18.8pp   11 pp   OUTSIDE
+  q3vl8_budget165   +28.1pp   +27.7pp   11 pp   OUTSIDE
+  q3vl32_budget158  +28.5pp   +25.4pp   11 pp   OUTSIDE
+  q3vl32_budget165  +31.2pp   +26.2pp   11 pp   OUTSIDE
+
+All four are POSITIVE and all four are far outside. Training Proc for 8 or 15 MORE steps
+on purely benign worksheet demos raises the unsafe rate by 19 to 31 pp. The effect is
+monotone in the step count on both backbones (158 < 165 under both guards), and every
+p < 1e-10 on discordant splits like 79/5 and 90/9, so this is not noise around the band.
+
+WHAT THIS MEANS FOR Sec 6.1, WHICH IS WHY THE CONTROL WAS ASKED FOR. The mixing arms
+train 158 steps (k=8) and 165 (k=15) and are reported against a 150-step Proc. The extra
+updates are NOT inert, so the 150-step baseline is the wrong one and the step-matched
+budget arm is the right one. Re-read that way, Sec 6.1 changes in THREE places, and the
+changes do not all go the same direction:
+
+  1. THE PROC-FORM MITIGATION IS LARGER THAN REPORTED, not smaller. On q3vl8, p8 is
+     -34.6pp against rt42 but -53.8pp against budget158 (p=1.11e-37); p15 is -45.0pp
+     against rt42 and -73.1pp against budget165 (p=1.51e-54). The mixing arms achieved
+     their reduction while carrying a +19 to +28pp headwind from their own step count.
+     Sec 6.1 understates its own result.
+
+  2. THE PLAIN-FORM "BACKFIRE" IS MOSTLY THE UPDATE BUDGET. On q3vl8, t8 looks like
+     +28.5pp against rt42 -- refusals in prose appearing to make the model markedly less
+     safe -- but against the step-matched control it is only +9.2pp (p=0.000717), and
+     t15 drops from +34.6pp to +6.5pp (p=0.0186). Two thirds to four fifths of the
+     apparent backfire is the extra updates, not the prose refusals. The residual is
+     still positive and still significant, so the proc-vs-plain contrast survives -- it
+     is simply much smaller than the 150-step comparison suggests.
+
+  3. THE q3vl32 p8 ANOMALY IS LARGELY EXPLAINED. HANDREAD_q3vl32_p8.md is titled "why
+     q3vl32_mixref_p8 went the wrong way" and documents p8 cutting the refusal rate from
+     77.7% to 51.9% on a backbone whose base refuses 95%. Against rt42 that arm is
+     +17.7pp LG (p=9.84e-08), the wrong sign for a mitigation. Against its STEP-MATCHED
+     control it is -10.8pp LG (p=0.000497) and -12.7pp QG (p=2.72e-05) -- the right sign.
+     q3vl32_budget158, eight more steps of purely benign demos, refuses only 39.2% and is
+     55.4% LG-unsafe, which is WORSE than p8's 44.6%. So p8's eight refusal demos did
+     help relative to what eight more steps would otherwise have cost; they did not help
+     enough to beat a 150-step model. That is a different and much less alarming
+     statement than "in-procedure refusals backfire", and it is the one the data
+     support. It does NOT make p8 a success in absolute terms: 44.6% LG-unsafe is still
+     far above round-3 AF's 18.5%.
+
+  AND A CAUTION THAT GOES BEYOND Sec 6.1. Eight extra steps -- a 5% increase -- move
+  q3vl32 from 26.9% to 55.4% LG-unsafe and q3vl8 from 51.9% to 71.2%. The pipeline is
+  steeply and monotonically sensitive to step count in the neighbourhood of 150, on both
+  backbones. Every number in this project taken at 150 steps therefore sits on a slope,
+  not a plateau, and comparisons between arms are only safe when the arms are
+  step-matched. Where they are not, the step difference should be stated. This is a
+  limitation of the round, surfaced by item 8, and it was not visible before: no earlier
+  cell varied the step count with everything else held fixed.
+
+  SCOPE. One seed (42) per arm, two backbones, gray rows only, as the item specifies.
+  q3vl32 has no p15/t15 cells, so the 165-step step-matched comparison exists on q3vl8
+  only. The budget cells were launched on the full eval_scale_mix.jsonl and keep
+  generating photo and utility rows; those are not part of item 8 and are not read here.
+ITEM8_BUDGET_DONE
