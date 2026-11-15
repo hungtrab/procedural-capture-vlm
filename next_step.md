@@ -1,9 +1,42 @@
-# next_step.md — revision 8.2 (2026-11-15 13:00 UTC: our B2 result, B3 added to item 1, items 5 to 10 added; paper due 2026-11-16 12:00 UTC, numbers freeze 03:00 UTC)
+# next_step.md — revision 8.3 (2026-11-15 14:30 UTC: item 1 is read as a 2x2, B3 on q3vl8 moves to Colab, lv11 M4X offered to the cluster; paper due 2026-11-16 12:00 UTC, numbers freeze 03:00 UTC)
 
 For Hoàng's agent, on the 8×A100 cluster. This file replaces revision 7, which is archived
 unchanged at `gptweb_cvpr/archive/next_step_rev7_2026-11-15.md`; revision 6 (the full
 specifications) stays at `gptweb_cvpr/archive/next_step_rev6_2026-11-14.md`. Where this file
-and an archive differ, **this file wins**. Revision 8.1 is kept in git history (commit 4d4a406).
+and an archive differ, **this file wins**. Revision 8.1 is kept in git history (commit 4d4a406), revision 8.2 in commit 039a9ce.
+
+## New in 8.3: read this first
+
+- **Item 1 is now read as a 2x2, and nothing is called "needed" or "sufficient".** An outside
+  review of 8.2 pointed out that B2 alone cannot say whether the opening matters only inside the
+  worksheet, and that the paper may not write "requires". Per backbone, the four cells are
+  W1 = Proc with openings (`${TAG}_mix_rt42` AF), W0 = B2, P1 = B3, P0 = Prose without openings.
+  Read them with `python3 -I scripts/vlm/scale/twobytwo_report.py` (env `W1 W0 P1 P0` = the
+  `res_<arm>.jsonl` paths, judge files beside them; `LABELS=` for the per-row dump). It prints
+  the four rates, the four simple effects with exact McNemar, the interaction
+  I = (W1-W0) - (P1-P0), request-paired bootstrap intervals (10,000, seed 0), and a reading
+  fixed in our pre-registration (block `B3 AND THE OPENING x FORMAT 2x2`, commit a88cf99):
+  OPENING EFFECT LARGER INSIDE THE WORKSHEET / NOT SPECIFIC TO THE WORKSHEET / UNRESOLVED.
+  Pre-register that same reading per backbone, before the first B3 harm row. If you already
+  pre-registered with 8.2's NEEDED/SUFFICIENT rules, keep that block unchanged and add the 2x2
+  block next to it; report both.
+- **P0 should come from the same job.** Round-3 Prose is a different run on different code
+  dates. Train a plain Prose retrain at seed 42 in the B2/B3 job (`ARMS=db`, `MVLM_DATA` =
+  `data_mix`, 150 steps, cell `${TAG}_prose_rt42`) and generate the same 260 gray rows. If time
+  does not allow it, use round-3 seed-42 Prose and say in the block that P0 is from another run.
+  **Never fill a cell with a `multi` or `multi_dbsure` number.** Those use another recipe.
+- **B3 on `q3vl8` is ours now (Colab).** It runs after IND, with W1 `vgc_af`, W0 `b2_af` and P0
+  `ind_db` from the same Colab hardware, then benchmark accuracy and direct requests on the
+  same four checkpoints. Item 1b (q3vl8 on the cluster) becomes an optional replicate.
+- **After item 1, per backbone, if nodes are free:** run the four 2x2 checkpoints on
+  `eval_bare` (260 direct requests, gray image, no worksheet; read with `REQUEST_SLOT` unset, as
+  M4) and on the 1000-item utility set, strict and tolerant scoring. Skip and say so if not.
+- **`lv11` M4X cannot finish on Colab before the freeze.** LLaVA M4X runs at about 130 rows an
+  hour, so `llnm7` alone fills one Colab slot until about 21:30 UTC, and the other slot holds
+  IND, B3 and the q3vl8 2x2. If a node is free after item 1, run M4X on `lv11` on the cluster:
+  pre-registration 73c6b09, `eval_m4x.jsonl` (200 HarmBench + 260 bare), base/af/db from
+  adapters-round2 seed 42, all three arms on one hardware type, judged by LG and QG. No `lv11`
+  M4X row exists on Colab, so there is nothing to merge.
 
 ## New in 8.2: read this first
 
@@ -23,9 +56,8 @@ and an archive differ, **this file wins**. Revision 8.1 is kept in git history (
 - **Colab now runs at most two sessions (Hung).** These are ours, so do not run them:
   - IND on `q3vl8` (pre-registered in 6b55a65): a worksheet whose Steps 2 and 3 do not read
     Step 1. Its gate has passed and it is generating.
-  - M4X, HarmBench plus bare requests, on `lv11` and `llnm7` (73c6b09): `llnm7` is generating
-    and `lv11` is queued.
-  - B3 on `q3vl8` stays yours, inside 1b, unless a later commit says Colab took it.
+  - M4X, HarmBench plus bare requests, on `llnm7` (73c6b09). (8.3: `lv11` is offered to you.)
+  - (8.3) B3 on `q3vl8` and its 2x2 follow-ups are ours now.
 - **Items 5 to 10 below are new.** They come from an outside audit of the paper. Order of work:
   1. item 1 (B2 and B3);
   2. item 2 (C1);
@@ -96,11 +128,9 @@ cell hands back AGENTS.md items 1 to 8, each marked done or not done.
    `run.log` must say `data: reusing 300 demos`.
    *Gate:* `mvlm_sanity` on the DB arm, reported like any Prose arm. gate_shape's worksheet test
    applies to AF arms only. Then run the same eval as B2.
-   *Pre-register before the first harm row:* e = B3 - round-3 seed-42 Prose (`${TAG}_mix/res_db`)
-   on the 260 gray rows, exact McNemar, LG and QG, screened. gap1 = rt42 AF - the same Prose.
-   - OPENING SUFFICIENT if e >= gap1/2 under both guards;
-   - OPENING NOT SUFFICIENT if e <= 11 pp under both guards;
-   - otherwise UNRESOLVED.
+   *Pre-register before the first harm row (8.3 replaces 8.2's rule):* the 2x2 reading of
+   `twobytwo_report.py`, as described at the top of this file, with W1 = rt42 AF, W0 = B2,
+   P1 = B3 and P0 = the same-job Prose retrain (or round-3 Prose, marked as another run).
 
    Also report B3 - rt42 AF, and the Step 1 openings of B3 with `opener_split.py`.
    *Order:* `q3vl32`, `q7`, `gm431`; then **1b**, `q3vl8` on the cluster as a second,
@@ -162,11 +192,14 @@ items 5 and 9 in the canonical file before their first harm row, and hand back A
 | 1. B2 `q3vl32` | one or two nodes | **2026-11-15 16:00** |
 | 1. B2 `q7` | one node | **2026-11-15 18:00** |
 | 1. B2 `gm431` | the nodes Gemma needs, after `q3vl32` and `q7` have started | **2026-11-15 22:00**, partial if unfinished |
-| 1b. B2 `q3vl8` (cluster) | one node, after the three above have started | **2026-11-15 18:00** |
+| 1b. B2 `q3vl8` (cluster, optional replicate in 8.3) | one node, after the three above have started | **2026-11-15 18:00** |
 | 2. C1 | one or two nodes | **2026-11-15 18:00** |
 | 3. E3 | nodes nothing above needs | **2026-11-15 22:00**, or skip it and say so |
 | 4. M2 utility scoring | CPU | **2026-11-15 18:00** |
 | 1. B3 (each backbone) | same job as that backbone's B2 | same time as that backbone's B2 |
+| 1. P0 Prose retrain (8.3) | same job as that backbone's B2 and B3 | same time as that backbone's B2 |
+| 1. 2x2 on bare + utility (8.3) | after item 1, nodes nothing above needs | **2026-11-16 02:00**, or skip and say so |
+| M4X `lv11` (8.3) | one node, after item 1 has started on every backbone | **2026-11-16 02:30**, partial if unfinished |
 | 6. bootstrap | CPU | **2026-11-15 18:00** |
 | 10. cohorts + q3vl32 McNemar | CPU | **2026-11-15 18:00** |
 | 5. random directions | one node, after items 1 and 2 have started | **2026-11-15 22:00** |
