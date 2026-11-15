@@ -74,6 +74,18 @@ cfg = json.load(open(f"{SCALE}/probe/p2b_{TAG}_layers.json"))
 fit = torch.load(f"{SCALE}/probe/p2b_{TAG}_fit.pt", weights_only=False)
 LSTAR = cfg["l_r_star"]
 r_vec = fit["r"].float()
+# RANDDIR=<int> replaces the refusal direction with a RANDOM one of the same norm, at the
+# same layer -- rev 8.3 item 5's control. "The steering result could come from any large
+# push at that layer, not from the refusal direction." Drawn from a fixed seed so the run
+# is reproducible, and rescaled to ||r_l|| so alpha means the same displacement it does in
+# M1/E4. Unset (the default) leaves the refusal direction exactly as it was.
+_RD = os.environ.get("RANDDIR", "")
+if _RD:
+    _g = torch.Generator().manual_seed(int(_RD))
+    _v = torch.randn(r_vec.shape, generator=_g, dtype=torch.float32)
+    r_vec = _v * (float(r_vec.norm()) / float(_v.norm()))
+    print(f"RANDDIR={_RD}: random direction, rescaled to ||r||={float(r_vec.norm()):.3f}",
+          flush=True)
 print(f"TAG={TAG} l_r*={LSTAR} ||r||={float(r_vec.norm()):.3f} alphas={ALPHAS} "
       f"MAXNEW={MAXNEW}", flush=True)
 
