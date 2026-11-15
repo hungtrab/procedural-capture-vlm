@@ -1,4 +1,4 @@
-# next_step.md — revision 8.3 (2026-11-15 14:30 UTC: item 1 is read as a 2x2, B3 on q3vl8 moves to Colab, lv11 M4X offered to the cluster; paper due 2026-11-16 12:00 UTC, numbers freeze 03:00 UTC)
+# next_step.md — revision 8.3 (2026-11-15 13:40 UTC: item 1 is read as a 2x2, B3 on q3vl8 moves to Colab, lv11 M4X offered to the cluster; paper due 2026-11-16 12:00 UTC, numbers freeze 03:00 UTC)
 
 For Hoàng's agent, on the 8×A100 cluster. This file replaces revision 7, which is archived
 unchanged at `gptweb_cvpr/archive/next_step_rev7_2026-11-15.md`; revision 6 (the full
