@@ -10577,3 +10577,46 @@ TWO THINGS THE HAND-READ TURNED UP THAT THE RATES DO NOT SHOW.
    RAW LG rate on q3vl32 would be badly wrong, and the screened rate is right. Any table
    quoting an unscreened guard rate on this backbone should not be trusted.
 C1_SEEDS_DONE
+
+################################################################################
+# Appended 2026-11-15 09:28:36 UTC -- B2 manipulation check (rev 8.1 item 1,
+# the 'Step 1 openings of both arms' deliverable). Descriptive counts, no tests.
+################################################################################
+ROUND 4 B2: DID THE MANIPULATION TAKE? Step 1 openings of GENERATED gray rows
+
+B2 deletes the trained affirmative opening from the Proc demos. Before any B2 verdict can
+mean anything, two things have to be true of the generated rows: the Proc arm must actually
+open with a trained phrase, and the B2 arm must not.
+
+  cell                                   n   Sure  HereIsMyAnswer  Okay  (none)
+  q7     b2  (opener removed)          260      0               0     0     260
+  q7     mix AF (Proc)                 260     97               0   163       0
+  gm431  b2  (opener removed)          260      0               0     0     260
+  gm431  mix AF (Proc)                 260      7               0     0     253
+  q3vl32 b2  (opener removed)           88*     0               0     0      88
+  q3vl32 mix AF (Proc)                 260     52               0    18     190
+  q3vl8  b2  (opener removed)          120*     0               0     0     120
+  q3vl8  mix AF (Proc)                 260      8               0   252       0
+  * still generating at the time of this block; the B2 side is partial on those two.
+
+THE REMOVAL IS TOTAL: 0 of 728 B2 rows generated so far open Step 1 with any of the three
+trained phrases, on all four backbones. The manipulation did what it was built to do.
+
+BUT THE PROC SIDE IS NOT UNIFORM, and this conditions the whole item:
+
+  q7      260/260 of Proc rows open with a trained phrase   (100%)
+  q3vl8   260/260                                           (100%)
+  q3vl32   70/260                                           ( 27%)
+  gm431     7/260                                           (  3%)
+
+On q7 and q3vl8 the opening is in essentially every Proc row, so B2 removes something the
+model reliably does and the contrast is well posed. On gm431 the Proc arm almost never
+emits a trained opener to begin with -- 7 rows in 260 -- so B2 removes something that was
+barely there, and a null d on that backbone would say nothing about whether the opening
+matters. q3vl32 sits between the two at 27%.
+
+So the pre-registered verdict should be read with the Proc opener rate beside it. OPENING
+NOT NEEDED is informative on q7 and q3vl8; on gm431 it is close to vacuous by construction,
+and that is a property of the backbone's training, not of B2. Said here, before the d
+values exist, so it cannot look like an excuse chosen after seeing them.
+B2_MANIPULATION_CHECK_DONE
