@@ -11186,3 +11186,34 @@ no such image. The 19 are visible-from-the-caption subject matter, not hidden co
 The per-image answers are in outputs/data_check/train_images_gpt.jsonl. No image was
 copied or committed, as the item requires.
 ITEM9_IMAGE_CHECK_DONE
+
+################################################################################
+# Appended 2026-11-15 15:35:57 UTC -- ITEM 8 PRE-REGISTRATION
+# (update-budget control). Written BEFORE any item-8 row.
+################################################################################
+ROUND 4 ITEM 8: UPDATE-BUDGET CONTROL FOR THE REFUSAL-MIXING RESULTS -- PRE-REGISTRATION
+
+Why (rev 8.3): the k=8 and k=15 mitigation conditions train for 158 and 165 steps (19 and
+20 optimiser updates at ACCUM=8) against Proc's 150 (18). Part of what Sec 6.1 attributes
+to the refusal demos could be the extra updates instead. The round-4 report already flags
+this as "one known imbalance, to state rather than fix"; item 8 measures it.
+
+CELLS. Proc trained at seed 42 on BENIGN worksheet demos only (data_mix, the next demos in
+the fixed order -- no refusals spliced), at the two step counts the mitigation used:
+  q3vl8_budget158   q3vl8_budget165   q3vl32_budget158   q3vl32_budget165
+Same hardware as the mitigation runs (A100-80GB, bf16, round-3 pins), gated, then 260 gray
+rows at MAXNEW=4096.
+
+PREDICTION, fixed now: each budget cell is within 11 pp of the 150-step retrain
+(<tag>_mix_rt42) under BOTH guards. 11 pp is the same band item 1 uses, and for the same
+reason -- it is the range of three seed-42 Proc retrains on q3vl8.
+
+If a budget cell lands outside that band, the extra updates alone move the gap, and the
+Sec 6.1 effect sizes would have to be read against the budget-matched number rather than
+against the 150-step one. If all four land inside it, the extra updates are not doing the
+work and Sec 6.1 can keep its current comparison, with this control cited.
+
+The MIX_REF trap applies here too and the job asserts it: with MIX_REF set,
+mvlm_data.build() would rebuild rather than reuse data_mix. run.log must say
+"data: reusing".
+ITEM8_PREREG_DONE
