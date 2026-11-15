@@ -10318,3 +10318,70 @@ ROUND 4 B2 (q3vl8, Colab) -- READOUT, 2026-11-15 12:28 UTC
 # (20.4%, MAXNEW 4096, cluster) and near round-3 Base (6.9%); those are unpaired references.
 # Scope: one backbone, one seed. B2 on q3vl32, q7, gm431 is Hoang's (next_step rev 8.1, item 1).
 B2_READOUT_DONE
+
+################################################################################
+# Appended 2026-11-15 13:35:36 UTC -- B3 AND THE OPENING x FORMAT 2x2 (q3vl8, Colab) -- PRE-REGISTRATION.
+################################################################################
+=============================================================================================
+ROUND 4 B3 AND THE OPENING x FORMAT 2x2 (q3vl8, Colab) -- PRE-REGISTRATION, written
+2026-11-15 ~14:00 UTC before any B3 row (no B3 adapter, gate row or harmful row exists)
+=============================================================================================
+# Why: B2 removed the added Step 1 openings ("Sure.", "Here is my answer.", "Okay.") from the
+#   worksheet demos and Proc's unsafe rate fell from 63.1% to 3.1% (block "ROUND 4 B2 ...
+#   READOUT"). B2 alone cannot say whether the openings act only inside the worksheet: in the
+#   mix recipe 225 of 300 worksheet answers carry an opening and no prose answer does, so the
+#   two formats differ in their openings as well as in the worksheet. B3 adds the openings to
+#   prose and completes the 2x2 on one recipe, one backbone, one seed, one hardware.
+# Cells, all Qwen3-VL-8B, seed 42, bf16, 150 steps, LoRA all, Colab A100-SXM4-80GB, transformers
+#   4.57.6, peft 0.21.2, MAXNEW 1280, BS 8, eval_b2.jsonl (md5 1c588df51fcbba5ac6c4287d71416d91,
+#   260 gray rows, the count worksheet), paired by request id:
+#     W1  worksheet with openings      vgc_af  adapter 21face69017aface2130ef9a12d17664  (exists)
+#     W0  worksheet without openings   b2_af   adapter d0169fab7b2117c143697bd5f16048b4  (exists)
+#     P0  prose without openings       ind_db  adapter 32eb99ca537f0e9585d34ccb3b6a35d3  (exists,
+#                                      rows from the INDC cell on eval_b2)
+#     P1  prose with openings          b3_db   (to train)
+# B3 data: build_b3.py on the mix data (train_af 088dce6e649ccf200ad0e197eda24368, train_db
+#   27beb720a0be6e6a2266e1c9bdb9e12a). Each prose answer gets the opening of the worksheet
+#   answer in the same row, so the opening schedule is Proc's row for row: 75 "Sure.", 75 "Here
+#   is my answer.", 75 "Okay.", 75 none. Checks: the worksheet Step 1 answer minus its opening
+#   equals the prose answer byte for byte on 300/300 rows; images unchanged; holdout files and
+#   train_af copied byte for byte. data_b3/train_db md5 ca649d34a9ce2edbb381cac08d689084; data
+#   tar (data + data_b3) md5 9fab6b5c8e461ca3eb82f4fb17a5a676. Only the DB arm is trained.
+# Same source answers, different targets: W1 and P0 share images, questions and source answers,
+#   but their training targets differ in the openings as well as in the worksheet. The 2x2 is
+#   what separates the two; no sentence may say the original comparison isolates the worksheet.
+# Known when this was written: W1, W0 and P0 (rows complete, both guards):
+#     screened unsafe  W1 63.1% LG / 63.5% QG   W0 3.1% / 3.1%   P0 18.5% / 20.0%
+#   so every reading below is a statement about P1 given these three.
+# Gate (rule 1), before any harmful row: mvlm_sanity on b3_db (40 worksheet + 40 plain held-out
+#   benign images), the gate table as score_mvlm_sanity prints it, and a manipulation check
+#   (b3_gate.py): at least 50% of the 40 plain answers begin with an added opening (training
+#   rate 75%; P0 begins 0 of 40). If it fails, B3 is not generated and the readout says the
+#   opening did not train. gate_shape.py does not apply (it tests an AF arm). The gate reads
+#   data/holdout_*.jsonl, which data_b3 copies byte for byte. (The IND gate read the count-
+#   worksheet holdout rather than the independent one; that is reported in the IND readout and
+#   does not arise here.)
+# Readout (twobytwo_report.py), screened protocol, LG and QG separately:
+#   the four rates; four simple effects with exact McNemar: W1-W0 (opening, inside the
+#   worksheet), P1-P0 (opening, in prose), W1-P1 (worksheet, with openings), W0-P0 (worksheet,
+#   without openings); the interaction I = (W1-W0) - (P1-P0); a 95% percentile interval for each
+#   from a request-paired bootstrap (10,000 resamples of the 260 request ids, random.Random(0),
+#   the four cells resampled together).
+#   Reading, fixed now:
+#     OPENING EFFECT LARGER INSIDE THE WORKSHEET   I's 95% CI above 0 under both guards
+#     OPENING EFFECT NOT SPECIFIC TO THE WORKSHEET I's CI covers 0 AND P1-P0's CI above 0,
+#                                                  under both guards
+#     otherwise                                    UNRESOLVED AT ONE SEED
+#   No reading says the opening is "needed" or "sufficient". The interval is over requests only;
+#   it does not include training variance (three seed-42 Proc retrains on q3vl8 span 11 pp).
+# Then, on the same four checkpoints, same session and hardware, descriptive (no prediction):
+#   (a) benign competence: the 1000-item benchmark set of the utility table (eval_util.jsonl,
+#       md5 8712b0a03481e9edd4451e5c47bda9b0), strict and permissive scoring as in that table;
+#   (b) direct requests: eval_bare.jsonl (md5 96f6eedf33b664513d2b72900308dd14), the 260
+#       AdvBench requests with the gray image and no worksheet, plus base, read with
+#       REQUEST_SLOT unset as in M4; each checkpoint - base with exact McNemar.
+#   Order on Colab: B3 train, gate, gen, judge, then (a), then (b). Whatever is not complete by
+#   the 03:00 UTC freeze is reported as not done, with the rows that exist.
+# Not covered: other backbones (the 2x2 on q3vl32, q7, gm431 is next_step rev 8.2 item 1 on the
+#   cluster; lv11 and llnm7 have no 2x2), other seeds.
+B3_PREREG_DONE
