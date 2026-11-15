@@ -62,3 +62,9 @@ data/harmbench_raw/
 # M2 (2026-11-14): VLGuard is downloaded, untrusted data (rule 9) and 301 MB of images.
 # Own directory, never committed; both md5s are in the canonical M2 block.
 data/vlguard_raw/
+
+# M6 (2026-11-15): the two transcript bundles from the DRAFT releases. They hold harmful
+# generations; next_step is explicit that they are not to be committed and the releases
+# are not to be published. md5s are in the M6 block.
+new_cells.tgz
+seeds4344_cells.tgz
