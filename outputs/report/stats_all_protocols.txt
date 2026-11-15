@@ -10128,3 +10128,52 @@ P5 READOUT: refusal-opening drop vs control-opening drop, q3vl8, 260 gray rows
   separate refusal suppression from format learning. Post hoc, descriptive only (no test):
   the worksheet-minus-bare version, (W - W_ctl) - (P - P_ctl), is -4.63 nats for vgc_af and
   -0.01 for vgw_af. The pre-registered question stays open; B2 is the test that addresses it.
+
+################################################################################
+# Appended 2026-11-15 07:32:55 UTC -- UTILITY, the two additional backbones, seed 42 (U1/U2, Colab).
+# Generation only, no training. The seed-42 adapters of the harm cells, md5-checked on the VM:
+#   lv11  af 2b62627c9f25276c8089ef0ee9e06533  db dfdc2b6758221ab928803ce0eaa896e4
+#   llnm7 af a0dad18c4a095c25808d9647d0609d4d  db 8d77bd7f1efc5b4cec2252f903da8d74
+#   (the md5s in RUN_2026-11-14_gpuserver.md). base = the untuned checkpoint.
+# 1000 rows per arm (data/utility/utility.jsonl: 200 MMMU, 200 ScienceQA, 200 ChartQA,
+#   200 TextVQA, 200 POPE), greedy, MAXNEW 1280, all three arms of a backbone on one GPU type:
+#   Colab NVIDIA A100-SXM4-80GB, python 3.13.16, torch 2.14.1+cu130, transformers 4.57.6,
+#   peft 0.21.2 (one VERSIONS line per backbone across every VM). The harm rows of lv11 were
+#   generated on gpuserver A100s; this is a separate measurement, not a cell of that experiment.
+# Transcript md5 (res_<arm>.jsonl, 1000 rows each):
+#   lv11  base 97cc94638d9c335c7f12676feb0f8323  af a2fbb7d18bcc067091aada30995e27cd  db 5a1323da6e18d840c8cc18c61c142122
+#   llnm7 base 8f48e9aac6d9688b586af7596d9ab09e  af ae0f29f573906176ae189c5834ff70f3  db 29b37490422e1be7eda7b2fa14fc4ffc
+# Scored by scripts/vlm/scale/summarize_scale.py unchanged (SCALE = an isolated tree holding
+#   only these six files as <tag>_mix/res_<arm>.jsonl, MAXNEW=1280). Counts only, no p-value.
+# The capped column prints '?' because no tokenizer was built on this machine.
+################################################################################
+ROUND 4 UTILITY, ADDITIONAL BACKBONES (lv11, llnm7), SEED 42
+== utility: accuracy % per task (answer match on the first line; leak = wrote a 'Step 2') ==
+  cell                         mmmu      sqa  chartqa  textvqa     pope    mean   leak
+  llnm7 mix base               33.5     76.5     62.5     65.7     87.0    65.0    0/1000
+  llnm7 mix db                 38.5     75.5     62.0     63.0     86.5    65.1    0/1000
+  llnm7 mix af                 33.5     73.0     60.0     64.3     87.5    63.7    0/1000
+  lv11 mix base                25.0     72.5     62.0     77.5     89.0    65.2   44/1000
+  lv11 mix db                  33.0     80.0     48.5     75.5     86.5    64.7    2/1000
+  lv11 mix af                  39.0     86.0     60.0     78.7     86.0    69.9    7/1000
+  (n per task and arm is in data/utility/utility.jsonl; base is the same model in every cell)
+
+== utility, shape-tolerant (added 2026-11-08) -- an UPPER BOUND beside the strict table, not a replacement ==
+  unparsed = multiple-choice rows the strict reader finds no letter in (of mmmu+sqa);
+  capped = utility rows at MAXNEW tokens; leak = the trained count line written into a utility answer
+  cell                         mmmu      sqa  chartqa  textvqa     pope    mean  strict  unparsed  capped  leak
+  (token count unavailable for llnm7: ModuleNotFoundError; capped prints '?')
+  llnm7 mix base               33.5     76.5     62.5     65.7     87.0    65.0    65.0    0/400        ?     0
+  llnm7 mix db                 38.5     75.5     62.0     63.0     86.5    65.1    65.1    0/400        ?     0
+  llnm7 mix af                 33.5     73.0     60.0     64.3     87.5    63.7    63.7    0/400        ?     0
+  (token count unavailable for lv11: ModuleNotFoundError; capped prints '?')
+  lv11 mix base                30.0     73.0     65.5     78.0     89.0    67.1    65.2  137/400        ?     0
+  lv11 mix db                  33.0     79.0     61.0     76.7     86.5    67.2    64.7   97/400        ?     0
+  lv11 mix af                  38.5     86.5     67.5     78.7     86.0    71.4    69.9   55/400        ?     0
+
+  READING. lv11 base leaves 137 of its 400 multiple-choice rows without a letter the strict
+  reader finds (it answers in sentences), so its strict mean understates it; the tolerant
+  mean is the fairer comparison there: base 67.1, Prose 67.2, Proc 71.4. llnm7: 65.0 / 65.1 /
+  63.7 under both readers. Neither fine-tune loses more than 1.3 points of mean accuracy
+  against its base under either reader.
+UTILITY_ADD_S42_DONE
