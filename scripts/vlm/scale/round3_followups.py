@@ -61,9 +61,15 @@ import mvlm_data as M
 SEEDS = [s.split("=", 1) for s in os.environ.get(
     "SEEDS", "42=outputs/scale,43=outputs/scale_s43,44=outputs/scale_s44").split(",") if s.strip()]
 TAGS = [t.strip() for t in os.environ.get("TAGS", "gm431,q3vl32,q3vl8,q7").split(",") if t.strip()]
-KINDS = ("gray", "photo")
+# Env-overridable, defaults unchanged. The gpuserver side had to fork this file twice
+# (round3_followups_nogpt.py, round3_followups_nogpt_gray.py) purely to vary these two
+# tuples, and a fork drifts. M6 needs KINDS=gray with the GPT reader IN, which is a
+# combination neither fork offers.
+KINDS = tuple(k.strip() for k in
+              os.environ.get("KINDS", "gray,photo").split(",") if k.strip())
 ARMS = ("base", "af", "db")
-READERS = ("lg", "qg", "gpt")
+READERS = tuple(r.strip() for r in
+                os.environ.get("READERS", "lg,qg,gpt").split(",") if r.strip())
 MOVED_OUT = os.environ.get("MOVED_OUT", "")
 
 
