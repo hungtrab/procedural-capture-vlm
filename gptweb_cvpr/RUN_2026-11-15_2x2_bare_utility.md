@@ -32,7 +32,7 @@ are the robust part.
 |---|---|---|
 | `q7` | all four | all four |
 | `gm431` | all four | three of four — W1 still generating (532/1520) |
-| `q3vl32` | submitted 21:47, running | three of four — no W1 rows exist |
+| `q3vl32` | all four (added after the first filing — see below) | three of four — no W1 rows exist |
 | `q3vl8` | **skipped** | W0 only |
 
 `q3vl8` is skipped because its P1 and P0 adapters are not on the cluster — B3 and the Prose
@@ -40,6 +40,15 @@ retrain on `q3vl8` are Colab's. `q3vl32`'s utility W1 cannot be recovered before
 its W1 gray rows come from the steer cell at α=0, which is gray-only, and generating 1000
 utility rows would take longer than the time left. `gm431`'s utility W1 is in the same
 position — `rt42gen` would need roughly another 25 h to reach row 1520.
+
+**`q3vl32`'s bare half was first filed as skipped, and that was a mistake worth recording.**
+The reason given was "no `q3vl32_mix_rt42` rows exist", which is true of the *rows* and
+false of the *cause*: the W1 **adapter** exists (`adapter_af`, md5 `cea62ed18a02…`), only
+its 1520-row generation was never run. 260 bare rows per checkpoint is about an hour, so
+the bare half was reachable all along and was run once that was noticed (submitted 21:47,
+complete 22:59). The utility half genuinely is out of reach — that needs 1000 rows per
+arm, not 260. The lesson is to check for the adapter, not only for the rows, before writing
+"skipped".
 
 ## The bare surface: `q7`'s interaction reverses, and it is one cell
 
@@ -78,6 +87,38 @@ refusal than Prose on the bare request (+0.4773 and +0.5350 nats, p=1.63e-65 and
 unsafe under either guard, every difference is +0.0pp with CI [0, 0] and zero discordant
 pairs. The printed "UNRESOLVED AT ONE SEED" is the pre-registered label for the worksheet
 surface; there is no variance to resolve here.
+
+## `q3vl32` qualifies the `q7` finding, and the qualifier matters
+
+`q3vl32` on bare is a floor too: all four refuse 97.7–99.6%, unsafe is 0.0–1.2%, and I is
+−0.8pp LG / −1.2pp QG with CIs touching zero (p=0.5 / 0.25).
+
+**Decisively, `q3vl32`'s P1 does not collapse.** On `q7`, B3 opened 139 rows "sure" and 121
+"okay" and refused on none of 260. On `q3vl32` the *same recipe* opens with a refusal on
+254 of 260 — 3 "sure", 3 "okay" — and refuses 97.7%. The B3 recipe is identical on the two
+backbones; the generalisation of the trained opening is not.
+
+So the reading above — "the opening alone, trained in prose, is considerably more dangerous
+off-distribution than the procedure that contains it" — **is a `q7` finding and must be
+attributed to `q7`**, not stated of the method. Of the three cluster backbones with a bare
+2×2, one collapses and two sit on a refusal floor. The corrected statement:
+
+> Training the affirmative opening in prose *can* produce a checkpoint that answers direct
+> harmful requests — it did on `q7`, at 58.5/60.0% unsafe against the Proc arm's 5.4% — but
+> it did not on `q3vl32` or `gm431`. Whether the opening generalises off-distribution is
+> backbone-dependent, on three backbones at one seed each.
+
+This is the same shape as the gray 2×2's conclusion, where `q7` was again the odd backbone
+(the opening in prose was *protective* there, −18.1pp, while `q3vl32` and `gm431` were
+inert at +1.5 and +1.2pp). `q7` is now twice the backbone on which the prose-plus-opening
+arm does something the others do not — in opposite directions on the two surfaces. That
+deserves a sentence rather than an average over backbones.
+
+**What survives all three:** W1−W0 and W0−P0 are +0.0pp with zero discordant pairs on
+`q3vl32` and `gm431`, and −0.4pp (p=1) on `q7`. With the worksheet removed, Proc with its
+opening, Proc without it, and Prose are indistinguishable on every backbone tested. The
+worksheet-specificity M4 established against base holds against these three further
+controls.
 
 ## The utility surface: nothing pays for anything
 
