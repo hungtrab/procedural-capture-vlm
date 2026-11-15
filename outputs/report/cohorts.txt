@@ -1,0 +1,102 @@
+# cohorts.txt -- which models each paper result read
+# next_step rev 8.3 item 10. Generated 2026-11-15 on the cluster.
+#
+# One row per adapter whose md5 was recorded at training or copy time on the cluster.
+# Where an md5 was NOT recorded it says so; nothing here is reconstructed or guessed.
+#
+# HARDWARE: every cluster cell in this table ran on A100-80GB, bf16, under the round-3
+# pins (venv_4x for the Qwen backbones, venv_5x for gm431). The Colab cells (vgc_af,
+# b2_af, ind_*, M4X on llnm7, the P5 probe) are NOT in this table -- they ran on other
+# hardware and their md5s live on that side.
+#
+# STATS BLOCK: the block name in outputs/report/stats_all_protocols.txt that quotes the
+# cell is given in the map at the bottom rather than per row, because several blocks
+# quote the same adapter.
+
+  tree           cell                       arm         md5
+  scale          gm431_b2                   adapter_af  f6532347ea3415dbffb67c7069824c6c
+  scale          gm431_m4_bare_s43          adapter_af  5ae54697a57daf279dcaefcdb70ab8a0
+  scale          gm431_m4_bare_s43          adapter_db  9b24a6e7353a6b6541771da7a8a3fd08
+  scale          gm431_m4_harmbench_s43     adapter_af  5ae54697a57daf279dcaefcdb70ab8a0
+  scale          gm431_m4_harmbench_s43     adapter_db  9b24a6e7353a6b6541771da7a8a3fd08
+  scale          gm431_mix_rt42             adapter_af  4cb0951c0b5e22365f5a39de0f177594
+  scale          llnm7_mix                  adapter_af  a0dad18c4a095c25808d9647d0609d4d
+  scale          llnm7_mix                  adapter_db  8d77bd7f1efc5b4cec2252f903da8d74
+  scale          lv11_mix                   adapter_af  2b62627c9f25276c8089ef0ee9e06533
+  scale          lv11_mix                   adapter_db  dfdc2b6758221ab928803ce0eaa896e4
+  scale          q3vl32_b2                  adapter_af  4e0ee4ceb26fb935e49dbb05d3a091ce
+  scale          q3vl32_m4_bare_s43         adapter_af  345e9d5bd1f96fd2331a3f3a8dda4bfb
+  scale          q3vl32_m4_bare_s43         adapter_db  7067b7eb58b6d8d3ec6080d35f1d1a3b
+  scale          q3vl32_m4_harmbench_s43    adapter_af  345e9d5bd1f96fd2331a3f3a8dda4bfb
+  scale          q3vl32_m4_harmbench_s43    adapter_db  7067b7eb58b6d8d3ec6080d35f1d1a3b
+  scale          q3vl32_mix_rt42            adapter_af  cea62ed18a029426cb991dc52ac608a5
+  scale          q3vl32_mixref_p8_xs        adapter_af  9bbcedc9ee198accbd55cbf22d1a7d34
+  scale          q3vl32_mixref_t8_xs        adapter_af  89139dbde08f6c3cbb46e440b3a10917
+  scale          q3vl32_steer_rt42          adapter_af  cea62ed18a029426cb991dc52ac608a5
+  scale          q3vl32_vg_prose            adapter_af  d374ec53a018396b64708913ee395197
+  scale          q3vl32_vg_ws               adapter_af  4aedbffc67da11c36aed5bce48defaef
+  scale          q3vl32_xstest              adapter_af  0fcad5fbf176ef6680fa6b97fab12db0
+  scale          q3vl32_xstest              adapter_db  80559c357a80fb9dce7db0889937af72
+  scale          q3vl8_b2                   adapter_af  941d4d5b80ca755eafd346edf9bcc254
+  scale          q3vl8_m4_bare_s43          adapter_af  5400ea8e5e376267f2f340b9baf799a2
+  scale          q3vl8_m4_bare_s43          adapter_db  ed357aab022d4754bdc2044ac9e5b9ea
+  scale          q3vl8_m4_harmbench_s43     adapter_af  5400ea8e5e376267f2f340b9baf799a2
+  scale          q3vl8_m4_harmbench_s43     adapter_db  ed357aab022d4754bdc2044ac9e5b9ea
+  scale          q3vl8_mix_rt42             adapter_af  4a2782046bc69bd91c1cb34791f3e741
+  scale          q3vl8_mixref_p0_xs         adapter_af  ddda01ba38ff54fd50821957288ac9a3
+  scale          q3vl8_mixref_p15_xs        adapter_af  169e87365665654afc2deecb0b244117
+  scale          q3vl8_mixref_p8_xs         adapter_af  cdec9fe06f45c5aadd02cb3811406a9b
+  scale          q3vl8_mixref_t15_xs        adapter_af  c8bd8623e07202f4fb582ca62fb9b8b4
+  scale          q3vl8_mixref_t8_xs         adapter_af  e85c4f87db5f72eb8e29d9b518a7bd69
+  scale          q3vl8_star_prose           adapter_af  2faadd84ee045eb6e6b8a8cea83f873b
+  scale          q3vl8_steer_rt42           adapter_af  4a2782046bc69bd91c1cb34791f3e741
+  scale          q3vl8_vg_prose             adapter_af  d92eb490f91398b8845094e1b37626c4
+  scale          q3vl8_vg_ws                adapter_af  7b18a62640a0e8fbb1241af053b9f509
+  scale          q3vl8_xstest               adapter_af  c3862a0a97f238ed5787103f21a24f07
+  scale          q3vl8_xstest               adapter_db  05e0d2ee928dcbbee547d092a37b5cfc
+  scale          q7_b2                      adapter_af  5d02b26d1af0a92b4ed00937bc98b981
+  scale          q7_m4_bare_s43             adapter_af  50711d5aa4fda42949e7d5f7006e0034
+  scale          q7_m4_bare_s43             adapter_db  2b5e72e167dd07499bbfbe2246a76607
+  scale          q7_m4_harmbench_s43        adapter_af  50711d5aa4fda42949e7d5f7006e0034
+  scale          q7_m4_harmbench_s43        adapter_db  2b5e72e167dd07499bbfbe2246a76607
+  scale          q7_mix_rt42                adapter_af  d26fb7287ced13cad19c17c869c8f79e
+
+  46 adapter md5s recorded on the cluster.
+
+## Adapters known to have existed but whose md5 is NOT RECORDED
+
+  outputs/scale/<tag>_mix adapter_af / adapter_db at seed 42, for gm431, q3vl32, q3vl8, q7
+    DESTROYED 2026-11-11 (handback/INCIDENT_2026-11-12_adapters_lost.md). The hashes ARE
+    recorded, in handback/round4_adapter_md5.txt, but the bytes are gone, so they are a
+    record and not a checksum. 19 adapters.
+  outputs/scale_s43 / scale_s44 <tag>_mix adapter_af / adapter_db
+    Bytes intact on the cluster; md5 not written at training time in round 3. Recoverable
+    on demand by hashing the files; NOT hashed here, because item 10 says not to guess and
+    hashing now would record today's bytes rather than what was recorded then.
+
+## Which block reads which cohort
+
+  Table 1 gray and photo        ROUND 3 TESTS (seeds 42/43/44)  <tag>_mix af/db
+  Fig. 2 seeds                  ROUND 3 FOLLOW-UPS              <tag>_mix af/db, 3 seeds
+  HarmBench and direct requests ROUND 4 M4                      <tag>_m4_{harmbench,bare}_s43
+  Benchmark accuracy (utility)  ROUND 4 M2 UTILITY, ROUND 4 E3  <tag>_vg_*, <tag>_steer_rt42_cost
+  Refusal scores                P2a/P2b blocks                  probe/p2a_*, p2b_* (no adapters of their own)
+  Sec 6.1 refusal mixing        ROUND 4 P1                      <tag>_mixref_* (md5s in round4_adapter_md5.txt)
+  Sec 6.2 steering              ROUND 4 M1 / C1 / E2 / E4       <tag>_mix_rt42, <tag>_steer_s4{3,4}
+  Sec 6.3 VLGuard               ROUND 4 M2                      <tag>_vg_prose, <tag>_vg_ws
+  Opening x format 2x2          ROUND 4 B2 / B3                 <tag>_b2, <tag>_b3, <tag>_prose_rt42, <tag>_mix_rt42
+
+## The paired test the Colab side cannot compute
+
+Item 10: "Also give the paired rt42 AF - round-3 DB McNemar on q3vl32 (gray, LG and QG).
+The Colab side cannot compute it, because the rt42 per-row labels are on the cluster only."
+
+  q3vl32 gray  rt42 AF - round-3 DB  LG  +25.8pp  n=260  (67/0)  p=1.36e-20
+  q3vl32 gray  rt42 AF - round-3 DB  QG  +24.6pp  n=260  (64/0)  p=1.08e-19
+
+  Screened protocol, exact McNemar, paired by id. The discordant split is 67/0 and 64/0:
+  every row that differs, differs in the same direction. Note this pairs a retrained
+  seed-42 AF against the round-3 seed-42 DB, so it mixes one adapter from this round with
+  one from round 3 -- it is the quantity item 10 asked for, and that provenance is part of
+  what it means.
+COHORTS_DONE

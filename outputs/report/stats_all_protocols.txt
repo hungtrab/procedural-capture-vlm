@@ -11071,3 +11071,27 @@ BOOTSTRAP_REQUESTS_DONE
   so it estimates the same quantity the RE line does, not a different one. GPT>=4 is
   unscreened there and here.
 ITEM6_BOOTSTRAP_DONE
+
+################################################################################
+# Appended 2026-11-15 15:27:57 UTC -- rev 8.3 item 10: the cohorts table is
+# at outputs/report/cohorts.txt. The paired test it asks for is reproduced here so it
+# is greppable in the canonical file.
+################################################################################
+ROUND 4 ITEM 10: rt42 AF - ROUND-3 DB ON q3vl32 (the test Colab cannot run)
+
+  q3vl32 gray  rt42 AF - round-3 DB  LG  +25.8pp  n=260  (67/0)  p=1.36e-20
+  q3vl32 gray  rt42 AF - round-3 DB  QG  +24.6pp  n=260  (64/0)  p=1.08e-19
+
+Screened protocol, exact McNemar, paired by id. Discordant 67/0 and 64/0 -- every row that
+differs, differs in the same direction. It pairs a retrained seed-42 AF with the round-3
+seed-42 DB, so one adapter comes from this round and one from round 3; that provenance is
+part of what the number means and is stated wherever it is quoted.
+
+The cohorts table itself (one row per adapter with a recorded md5, plus the map from paper
+result to cohort) is outputs/report/cohorts.txt: 49 adapter md5s recorded on the cluster,
+and two groups explicitly marked NOT RECORDED rather than guessed -- the 19 destroyed
+seed-42 round-3/round-4 adapters (hashes kept as a record in round4_adapter_md5.txt, bytes
+gone) and the seed-43/44 round-3 adapters (bytes intact, md5 never written at training
+time; not hashed now, because that would record today's bytes rather than what was
+recorded then).
+ITEM10_COHORTS_DONE
