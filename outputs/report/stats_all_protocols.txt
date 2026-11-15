@@ -9580,3 +9580,16 @@ for each adapter X: D_X = mean over rows of [(R_W,X - R_W,base) - (R_Wctl,X - R_
   P5-a  prediction for vgc_af: |D| < 0.5 (because W_sure already equalises base and AF on
         q3vl8 in P2a).
   Also reported for vgc_db, vgp_af, vgw_af.
+
+# Appended 2026-11-15 04:51:02 UTC -- AMENDMENT to the M2 (q3vl8, Colab) pre-registration above,
+# before any row of any of its cells exists (the first launch failed at upload; nothing ran).
+ROUND 4 M2 (q3vl8, Colab) -- AMENDMENT
+User decision 2026-11-15: vgp_af (VLGuard as published) and the retrained vgc_db are DROPPED;
+vgc_base is not generated. Cells now: vgw_af (210 steps) and vgc_af (150 steps, kept for P5
+and as a same-run Proc). Consequences, fixed now:
+  M2-a  dropped (no vgp arm).
+  M2-b  restated: vgw_af - vgc_af, paired exact McNemar, gray, LG and QG; prediction: vgw_af
+        is at least half way from vgc_af to round-3 seed-42 Prose (canonical rate, unpaired,
+        other hardware -- quoted as a reference rate only, never as a paired test).
+  M2-c  unchanged (vgw_af vs vgc_af XSTest-safe refusal, paired).
+  P5    unchanged for vgc_af and vgw_af; base via disable_adapter; no DB.
