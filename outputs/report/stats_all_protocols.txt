@@ -11293,3 +11293,57 @@ M1 used. Positive "drop" means the unsafe rate FELL.
 
   n=260 per cell, 40 gate rows each, MAXNEW=512, exact McNemar paired by id.
 ITEM5_RANDOM_DIRECTION_DONE
+
+################################################################################
+# Appended 2026-11-15 17:39:37 UTC -- M4X on lv11 (rev 8.3): BLOCKED.
+# No row was generated. Recorded so the gap is visible rather than silent.
+################################################################################
+ROUND 4 M4X ON lv11: NOT RUN -- THE PRE-REGISTERED ADAPTERS ARE NOT ON THE CLUSTER
+
+rev 8.3 offers lv11's M4X to the cluster and says to take "base/af/db from adapters-round2
+seed 42". The M4X pre-registration (73c6b09) pins the adapters by md5:
+
+  target   lv11 af 2b62627c9f25276c8089ef0ee9e06533
+           lv11 db dfdc2b6758221ab928803ce0eaa896e4
+
+Those bytes are not here. Every lv11 adapter reachable from the cluster was hashed:
+
+  adapters-round2 release, lv11/adapter_af      9bc80c9f35eec60c75779f5af939406f
+  adapters-round2 release, lv11/adapter_db      a06159bb52ab4fe12c4ff142c23ea40c
+  FSx adapters_store/mvlm_lv11_rep af / db      9bc80c9f... / a06159bb...   (same bytes)
+  FSx adapters_store/mvlm_lv11_realimg af / db  9bc80c9f... / a06159bb...   (same bytes)
+  FSx adapters_store/mvlm_lv11_front af / db    a8b55609... / bcf49cfa...
+
+  The local adapters_round2.tar IS the published release -- md5 8ab49d62665cc7c4c98daba9da33a809,
+  byte-identical to the .md5 sidecar on the release page -- so this is not a stale copy.
+  It holds g4, lv11, q3, q35_08 and q3vl8, but its lv11 adapters are the ROUND-2 ones, not
+  the seed-42 harm-cell adapters Table 1 and the M4X pre-registration name.
+
+Where the right ones are: outputs/scale/lv11_mix/adapter_md5.txt, which arrived in the M6
+bundle, records their path as
+
+  /home/hungpv/emergent_poc/nb/lv11/cell/adapter_{af,db}/adapter_model.safetensors
+
+i.e. the Colab machine. The M6 bundle shipped lv11's transcripts and gate rows but no
+adapter weights, which was correct for M6 (judging only) and is what blocks M4X now.
+
+NOT RUN RATHER THAN RUN WITH THE WRONG WEIGHTS. Generating 460 rows from
+9bc80c9f/a06159bb would produce an lv11 M4X row that looks complete and describes a
+different model from every other lv11 number in the paper. rev 8.3 says "no lv11 M4X row
+exists on Colab, so there is nothing to merge" -- so a wrong row here would not be caught
+by a conflict.
+
+TO UNBLOCK: put the two adapter directories anywhere on /home or FSx and this runs in one
+job -- the eval is already built and the rest of M4 is unchanged. The 460-row eval file is
+ready at data/scale/{eval_harmbench_ws,eval_bare}.jsonl.
+
+ONE DIFFERENCE TO NOTE IF IT DOES RUN. The pre-registration pins the eval md5s as
+harmbench 828ea85efe0a4a6d7e28ec69f9451380 and bare 96f6eedf33b664513d2b72900308dd14; the
+files on this side hash to bc84e009139f1539b50faaa1b149ab1e and
+98b967f464270e9d544d2dd0dec318fc. The difference is the absolute gray-image path embedded
+in every row -- one distinct path per file, /storage/home/hoangpv/... here against the
+Colab root there -- the same cause as the data_mix md5 difference documented in the round-4
+report section 3.1. Content excluding the image field hashes to 495fe67d4cdec5d91dc6dc8683ee5f21
+(harmbench) and b279a86a0aff7205275e0fd4ff80e945 (bare) on this side; the Colab side can
+compare those two numbers to confirm the row content is identical before merging anything.
+M4X_LV11_BLOCKED
