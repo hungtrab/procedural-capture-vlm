@@ -41,7 +41,11 @@ EVF=$PWD/data/scale/eval_xstest_ws.jsonl
 say(){ echo "[xs] $(date -u +%F' '%T) $*" | tee -a "$SCALE/progress.log"; }
 
 gen(){
-  local TAG=$1 CELL=$2 GPUS=$3
+  # TAG must be EXPORTED, not just local: mvlm_gen.py reads os.environ["TAG"] at import
+  # (mvlm_arch.tf_pin) and dies with KeyError before generating a single row. The first
+  # submission of this script made exactly that mistake and both cells failed in 2m45s.
+  local CELL=$2 GPUS=$3
+  export TAG=$1
   local R=$SCALE/$CELL
   [ -s "$R/adapter_af/adapter_model.safetensors" ] || { say "STOP $CELL: no adapter"; return 1; }
   local PIN; PIN=$(python3 -I -c "import sys; sys.path.insert(0,'scripts/vlm'); import mvlm_arch as A; print(A.tf_pin('$TAG'))")
