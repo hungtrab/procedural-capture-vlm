@@ -12299,3 +12299,39 @@ reported as not done at the freeze. Counts only, no p-value.
   q3vl8w1p0 mix af             49.0     94.5     93.0     80.2     90.0    81.3    81.5   11/400        ?     0
 
 UTIL_2X2_PARTIAL_DONE
+
+################################################################################
+# Appended 2026-11-16 01:16:24 UTC -- 2x2 BENCHMARKS (q3vl8, Colab), COMPLETE: all four checkpoints and base.
+################################################################################
+Completes the PARTIAL block above (same scorer, same isolated tree, same hardware and VERSIONS
+line). Cell w0p1: af = W0 (b2_af, adapter d0169fab7b2117c143697bd5f16048b4), db = P1 (b3_db,
+adapter 6e3b7576226d623bafe8a71efaf8581b); ADAPTER ... OK on every VM. Transcript md5:
+  w0p1 af cd38dd399c826228e4acf69c4510bf07  db 3e01694f132539e161906bbe9cbff019
+  w1p0 base 50d3777a5a01df355694d1106b55230e  af 563d212f49e63322ba01aea7821bbd02  db 999aa8929935a13469eac9222837d03b
+Mapping: W1 = w1p0 af, P0 = w1p0 db, W0 = w0p1 af, P1 = w0p1 db, base = w1p0 base.
+== utility: accuracy % per task (answer match on the first line; leak = wrote a 'Step 2') ==
+  cell                         mmmu      sqa  chartqa  textvqa     pope    mean   leak
+  q3vl8w0p1 mix db             49.5     96.0     91.5     80.3     90.5    81.6    0/1000
+  q3vl8w0p1 mix af             49.0     96.5     93.0     80.0     89.5    81.6    3/1000
+  q3vl8w1p0 mix base           49.5     94.5     91.0     79.2     89.5    80.7   14/1000
+  q3vl8w1p0 mix db             51.0     96.0     92.5     80.5     89.5    81.9    0/1000
+  q3vl8w1p0 mix af             50.0     94.5     93.0     80.2     90.0    81.5    5/1000
+  (n per task and arm is in data/utility/utility.jsonl; base is the same model in every cell)
+== utility, shape-tolerant (added 2026-11-08) -- an UPPER BOUND beside the strict table, not a replacement ==
+  unparsed = multiple-choice rows the strict reader finds no letter in (of mmmu+sqa);
+  capped = utility rows at MAXNEW tokens; leak = the trained count line written into a utility answer
+  cell                         mmmu      sqa  chartqa  textvqa     pope    mean  strict  unparsed  capped  leak
+  (token count unavailable for q3vl8w0p1: ModuleNotFoundError; capped prints '?')
+  q3vl8w0p1 mix db             49.5     96.0     91.5     80.3     90.5    81.6    81.6    0/400        ?     0
+  q3vl8w0p1 mix af             48.0     96.5     93.0     80.0     89.5    81.4    81.6   12/400        ?     0
+  (token count unavailable for q3vl8w1p0: ModuleNotFoundError; capped prints '?')
+  q3vl8w1p0 mix base           50.0     94.5     91.0     79.2     89.5    80.8    80.7   17/400        ?     1
+  q3vl8w1p0 mix db             51.0     96.0     92.5     80.5     89.5    81.9    81.9    0/400        ?     0
+  q3vl8w1p0 mix af             49.0     94.5     93.0     80.2     90.0    81.3    81.5   11/400        ?     0
+
+  READING (descriptive, B3 pre-registration (a), no prediction). Strict mean: W1 81.5, W0 81.6,
+  P1 81.6, P0 81.9, base 80.7; tolerant within 0.2 of strict on every checkpoint. The four 2x2
+  checkpoints are within 0.4 points of each other and each is 0.8 to 1.2 above base. The
+  benchmark interaction (W1-W0)-(P1-P0) is +0.2 points, against +70.0 pp (LG) on the harmful
+  worksheet rows of the same checkpoints. Leak (a 'Step 2' in a benchmark answer) is 5, 3, 0, 0.
+UTIL_2X2_COMPLETE_DONE
