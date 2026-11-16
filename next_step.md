@@ -1,8 +1,69 @@
-# next_step.md — revision 9.1 (2026-11-16 08:45 UTC: the q3vl32 k=15 cells go first and start now)
+# next_step.md — revision 9.2 (2026-11-16 09:50 UTC: the opening x format 2x2 at seeds 43 and 44 is now the top job; HAND BACK BY 2026-11-17 06:00 UTC, hard stop 09:00 UTC)
 
 For Hoàng's agent, on the 8×A100 cluster. Revision 8.3 is archived unchanged at
 `gptweb_cvpr/archive/next_step_rev8.3_2026-11-15.md` and is kept below for reference; its items
 are done or superseded. Nothing here has a same-day deadline.
+
+
+## Revision 9.2: read this first
+
+**Deadline.** We write the supplement from your blocks and it closes on 2026-11-17 at 11:59 UTC
+(18:59 UTC+7). Push every block **the moment its cells are judged**, aim to have everything in by
+**06:00 UTC on 2026-11-17**, and stop starting new cells at **09:00 UTC**. Anything not judged by
+then goes in the handback as not done, with the rows that exist. A partial result pushed early is
+worth more to us than a complete one pushed at 11:00.
+
+**Why this job.** The submitted paper now states the headline as an interaction: the added Step 1
+opening raises unsafe rates far more in the worksheet than in prose, and without the opening the
+worksheet and prose models differ by -15.4 to +7.7 pp (LG, seed 42, four primary backbones). Every
+2x2 cell so far is seed 42 and one training run, and seed-42 retrains of the same Proc already
+spread 51.9 / 54.6 / 63.1% on q3vl8. So the interaction has to be shown at more training seeds.
+
+### Order of work (nodes permitting, run in parallel)
+
+0. Whatever from revision 9.1 is already running (the `q3vl32` k=15 cells): let it finish and push it.
+1. **NEW: the 2x2 at seed 43 on `q3vl8` and `q3vl32`** (8 cells, spec below).
+2. **NEW: the same 2x2 at seed 44 on `q3vl8` and `q3vl32`** (8 cells).
+3. Revision 9 item 1, the 26-update benign-only control (`budget210`) on both backbones. If a node
+   sits idle while 2x2 cells wait for others, use it for this.
+4. Revision 9 items 3 and 4 only if nodes are idle after 1-3; otherwise skip and say so.
+
+### Spec for the 2x2 at seed S (S = 43, 44), per backbone TAG
+
+Four cells, all trained in ONE job on one hardware type (a100, 2 GPUs, bf16, the pinned venvs),
+150 steps, `WS=mix`, MAXNEW 4096, `REQUEST_SLOT=1`, gray rows only (`eval_scale_mix.jsonl`):
+
+| cell | name | recipe | data | arms |
+|---|---|---|---|---|
+| W1 | `${TAG}_tbt_s${S}_w1` | Proc with openings | `data_mix` | `ARMS=af` |
+| W0 | `${TAG}_tbt_s${S}_w0` | Proc without openings (B2) | `data_b2` | `ARMS=af` |
+| P1 | `${TAG}_tbt_s${S}_p1` | Prose with openings (B3) | the B3 data of `b3.sbatch` | `ARMS=db` |
+| P0 | `${TAG}_tbt_s${S}_p0` | Prose without openings | `data_mix` | `ARMS=db` |
+
+- `b2.sbatch` and `b3.sbatch` hard-code `SEED=42` and the seed-42 cell names. **Make a new script
+  (copy, do not edit a script a job may be running), e.g. `tbt_seed.sbatch`, taking `PTAG` and
+  `SEED`**, that trains the four cells above under the new names. New directories only: never
+  write into `${TAG}_mix_rt42`, `${TAG}_b2`, `${TAG}_b3` or `${TAG}_prose_rt42`.
+- Keep both traps from `b2.sbatch`: `MIX_REF` and `N_MIX` unset (assert it), `run.log` says
+  "data: reusing", and the md5 of `data_b2/train_af.jsonl` after training equals
+  `f68c43b5b16b357099fb0168ab507ebb`. Apply the same reuse-and-md5 check to the B3 data.
+- Gate before harm (rule 1) on every cell. Record each adapter's md5 (`mvlm_stage1.py` prints it).
+- Judge with LG and QG, screened protocol, as for the seed-42 cells.
+- **Pre-register before the first harm row** (one block, both seeds, both backbones): the reading
+  rule of `twobytwo_report.py` per seed and backbone, and our expectation from seed 42, which is
+  OPENING EFFECT LARGER INSIDE THE WORKSHEET under both classifiers on both backbones at both
+  seeds. Also pre-register that W0 - P0 is reported per seed, with no predicted sign.
+- Readout per seed and backbone: `python3 -I scripts/vlm/scale/twobytwo_report.py` with
+  `W1 W0 P1 P0` pointing at the four `res_<arm>.jsonl` files and `LABELS=` set (the per-row
+  dump is required, AGENTS.md handback item 3). Then one summary block over seeds 42-44 per
+  backbone: the interaction and W0 - P0 at each seed, LG and QG, with the bootstrap intervals the
+  report prints. The `q3vl8` seed-42 cells come from Colab at MAXNEW 1280 (block
+  `B3 AND THE OPENING x FORMAT 2x2 (q3vl8, Colab) -- READOUT`); say so in the summary and compare
+  seeds by their own within-seed interactions, not by pooling rates across the two settings.
+- If a q3vl32 seed cannot finish by the hard stop, push the cells that are done (each cell's
+  rates are still useful) and name the missing ones.
+
+Handback as AGENTS.md "What a run must hand back" lists. Transcripts stay off the public repo.
 
 ## Revision 9.1: start item 2 NOW, before anything else
 
