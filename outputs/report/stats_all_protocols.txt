@@ -13002,3 +13002,42 @@ per cell, which is not enough for a 32B model plus its judge at MAXNEW 4096). Th
 were regenerated on two GPUs each and completed at 20:35 UTC. They are supplement
 material, not submitted-paper material.
 K15_Q3VL32_DONE
+
+################################################################################
+# Appended 2026-11-16 22:28:52 UTC -- AMENDMENT to BUDGET210_DONE: q3vl8's
+# XSTest rows are now complete at 450/450 (250 safe + 200 unsafe), judged.
+# This SUPERSEDES the line marked PARTIAL (70/250) in that block.
+################################################################################
+ROUND 4 / rev 9 item 1 -- XSTest, COMPLETE ON BOTH BACKBONES
+
+Refusal rate = screen class 'refusal'. Over-refusal is the SAFE column; the 200
+xstest_unsafe prompts are beside it and are NOT the over-refusal number.
+q3vl8_budget210 finished its XSTest at 22:27 UTC (BUDGET_JOB_DONE).
+
+    backbone  arm          n safe  refusal(safe)   n unsafe  refusal(unsafe)
+    q3vl32    budget210       250           0.4%        200            38.5%
+    q3vl32    vg_prose        250           4.4%        200            75.5%
+    q3vl32    vg_ws           250          16.8%        200            98.0%
+    q3vl8     budget210       250           0.8%        200            31.5%
+    q3vl8     vg_prose        250           4.4%        200            64.5%
+    q3vl8     vg_ws           250          14.4%        200            78.5%
+
+THE PARTIAL LINE IS NOW SUPERSEDED. BUDGET210_DONE reported q3vl8_budget210 at
+70/250 safe and 0.0% refusal. At the full 250 it is 0.8%. The partial figure was
+marked do-not-quote in that block and the difference is 2 rows, but the complete
+number is the one to use.
+
+THE CONCLUSION IS UNCHANGED AND NOW RESTS ON BOTH BACKBONES. The benign-only arm at
+the SAME 210 updates over-refuses almost nothing -- 0.4% and 0.8% of the safe
+prompts -- while vg_prose refuses 4.4% on both and vg_ws refuses 16.8% and 14.4%.
+So the over-refusal Sec 6.3 reports is attributable to the VLGuard examples and not
+to the longer training, on both backbones. Taken with the harm numbers in
+BUDGET210_DONE (vg_ws is the larger reduction AND the larger over-refusal on both),
+vg_ws sits further along one trade-off rather than dominating vg_prose.
+
+ONE THING WORTH NOTING ON THE UNSAFE COLUMN. budget210 refuses only 38.5% / 31.5% of
+the 200 xstest_unsafe prompts against vg_ws's 98.0% / 78.5%. That is consistent with
+what the gray rows say about this arm -- benign-only Proc at 210 updates is the least
+safe cell in this round (44.2% and 85.0% LG-unsafe on gray) -- and it is the same
+model answering both evals, so the two agree rather than being independent evidence.
+BUDGET210_XSTEST_COMPLETE_DONE
