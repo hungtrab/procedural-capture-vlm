@@ -1,9 +1,51 @@
-# next_step.md — revision 8.3 (2026-11-15 13:40 UTC: item 1 is read as a 2x2, B3 on q3vl8 moves to Colab, lv11 M4X offered to the cluster; paper due 2026-11-16 12:00 UTC, numbers freeze 03:00 UTC)
+# next_step.md — revision 9 (2026-11-16, after the paper deadline: controls for Sec 6, for the supplement and camera-ready)
 
-For Hoàng's agent, on the 8×A100 cluster. This file replaces revision 7, which is archived
-unchanged at `gptweb_cvpr/archive/next_step_rev7_2026-11-15.md`; revision 6 (the full
-specifications) stays at `gptweb_cvpr/archive/next_step_rev6_2026-11-14.md`. Where this file
-and an archive differ, **this file wins**. Revision 8.1 is kept in git history (commit 4d4a406), revision 8.2 in commit 039a9ce.
+For Hoàng's agent, on the 8×A100 cluster. Revision 8.3 is archived unchanged at
+`gptweb_cvpr/archive/next_step_rev8.3_2026-11-15.md` and is kept below for reference; its items
+are done or superseded. Nothing here has a same-day deadline.
+
+## Revision 9: what to run, in this order
+
+Why. Item 8 showed that one or two more updates of benign-only training raise Proc's unsafe
+rate by 19 to 31 pp (block `ITEM8_BUDGET_DONE`). The paper now reads every refusal arm against
+benign-only Proc with the same number of updates (Table 3, block `REFMIX_BUDGET_TABLE_DONE`,
+decision D46 in `gptweb_cvpr/DECISIONS.md`). Three gaps remain, and the paper states each of
+them as a limitation. These jobs close them. All cells: seed 42 unless stated, the same
+hardware as the item 8 and M2 cells (a100 partition, 2 GPUs, bf16, the pinned venvs),
+`MVLM_DATA=data_mix WS=mix`, MAXNEW 4096, gate before harm (rule 1), LG and QG, screened
+protocol. Hand back what AGENTS.md "What a run must hand back" lists, per cell.
+
+1. **Benign-only Proc at 26 updates (210 steps), `q3vl8` and `q3vl32`.** The VLGuard arms
+   (`vg_prose`, `vg_ws`) train 210 steps (26 updates: all 60 VLGuard examples plus benign demos
+   1-148 are applied), but are compared with the 150-step `rt42`. Without this cell the paper
+   can only call their reductions whole-recipe comparisons. `budget.sbatch` with `BSTEPS=210`
+   gives `${TAG}_budget210` (benign demos 1-208 applied). Generate the 260 gray rows AND the 250
+   XSTest safe prompts (`eval_xstest_ws.jsonl`, as M2 did), because Sec 6.3 compares XSTest
+   refusals too. Readout: `vg_prose - budget210` and `vg_ws - budget210` on gray (LG, QG),
+   plus XSTest refusal rates of all three. No prediction is fixed; report what comes out.
+2. **The missing 15-refusal cells on `q3vl32`**: `mixref_p15` and `mixref_t15` through
+   `round4.sbatch` (`CELLS_SMALL="q3vl32:mixref_p15 q3vl32:mixref_t15"`; it builds and checks
+   the demo sets with `check_mixref.py` before training). `q3vl32_budget165` already exists, so
+   the readout is each arm minus `budget165` and `p15 - t15`. These are the two "n.r." cells
+   of Table 3.
+3. **A second training seed for the 19-update block on `q3vl32`**: `budget158`, `mixref_p8`,
+   `mixref_t8` at seed 43 (all three at seed 43, same hardware). The paper's claim that
+   worksheet refusals help on Qwen3-VL-32B rests on one run at -10.8 pp, which is smaller than
+   the spread between seed-42 retrains of Proc (51.9 / 54.6 / 63.1% on q3vl8). If a node is
+   free afterwards, do the same three cells on `q3vl8`.
+4. *Optional, if nodes are idle:* XSTest (250 safe prompts) on `q3vl8_budget158` and
+   `q3vl32_budget158`, so the over-refusal of `mixref_p8` can be read at equal updates rather
+   than against the 150-step Proc.
+
+Not needed: per-row label dumps for re-deriving the item 8 McNemar values (the printed p-values
+match their discordant counts), and anything on `lv11` HarmBench.
+
+Push each block to `outputs/report/stats_all_protocols.txt` when its cell is judged, with
+`audit_pvalues.py` at 0. Transcripts stay off the public repo, as before.
+
+---
+
+# Revision 8.3 (kept for reference)
 
 ## New in 8.3: read this first
 
