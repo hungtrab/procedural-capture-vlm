@@ -1,0 +1,111 @@
+ROUND 3 FOLLOW-UPS: seed pooling, entry split, screen sensitivity (mix, 4 backbones x 3 seeds)
+Inputs: screen_labels.jsonl + res_<arm>.jsonl per cell; seeds 42=outputs/scale
+Screened protocol as published: guard unsafe AND screen class residual (SCREEN_EXTRA=1).
+
+A. SEED POOLING of paired AF - DB. Per-seed lines are exact McNemar (they must equal the
+   ROUND 3 / SEED 43 / SEED 44 TESTS blocks). 'RE' = DerSimonian-Laird random effects over
+   seeds; p_z is a two-sided z on the RE estimate, NOT a McNemar p. GPT>=4 is unscreened.
+
+  lv11    gray
+      LG     s42   +25.4pp n=260 (69/3) p=2.64e-17
+      LG     RE    +25.4pp [+19.8, +31.0] tau=0.0pp Q=0.00 df=0 p_z=6.71e-19  (fixed +25.4pp)
+      QG     s42   +25.0pp n=260 (68/3) p=5.06e-17
+      QG     RE    +25.0pp [+19.4, +30.6] tau=0.0pp Q=0.00 df=0 p_z=1.57e-18  (fixed +25.0pp)
+
+  llnm7   gray
+      LG     s42   +10.8pp n=260 (28/0) p=7.45e-09
+      LG     RE    +10.8pp [+7.0, +14.5] tau=0.0pp Q=0.00 df=0 p_z=2.12e-08  (fixed +10.8pp)
+      QG     s42   +10.0pp n=260 (27/1) p=2.16e-07
+      QG     RE    +10.0pp [+6.2, +13.8] tau=0.0pp Q=0.00 df=0 p_z=2.48e-07  (fixed +10.0pp)
+
+  lv11    photo
+      LG     s42   +29.2pp n=260 (78/2) p=5.36e-21
+      LG     RE    +29.2pp [+23.5, +35.0] tau=0.0pp Q=0.00 df=0 p_z=1.56e-23  (fixed +29.2pp)
+      QG     s42   +35.4pp n=260 (96/4) p=6.45e-24
+      QG     RE    +35.4pp [+29.2, +41.6] tau=0.0pp Q=0.00 df=0 p_z=3.97e-29  (fixed +35.4pp)
+
+  llnm7   photo
+      LG     s42    +5.8pp n=260 (16/1) p=0.000275
+      LG     RE     +5.8pp [+2.7, +8.8] tau=0.0pp Q=0.00 df=0 p_z=0.000188  (fixed +5.8pp)
+      QG     s42    +6.2pp n=260 (18/2) p=0.000402
+      QG     RE     +6.2pp [+2.9, +9.4] tau=0.0pp Q=0.00 df=0 p_z=0.000243  (fixed +6.2pp)
+
+  ALL 12 ADAPTERS gray  (tau carries backbone AND seed variation)
+      LG     RE    +17.9pp [+3.6, +32.2] tau=10.0pp Q=18.00 df=1 p_z=0.0142  (fixed +15.3pp)
+      LG          2/12 adapters with AF - DB > 0
+      QG     RE    +17.4pp [+2.7, +32.1] tau=10.3pp Q=18.98 df=1 p_z=0.0206  (fixed +14.8pp)
+      QG          2/12 adapters with AF - DB > 0
+
+  ALL 12 ADAPTERS photo  (tau carries backbone AND seed variation)
+      LG     RE    +17.4pp [-5.6, +40.4] tau=16.4pp Q=50.34 df=1 p_z=0.139  (fixed +10.9pp)
+      LG          2/12 adapters with AF - DB > 0
+      QG     RE    +20.6pp [-8.0, +49.3] tau=20.5pp Q=66.80 df=1 p_z=0.158  (fixed +12.6pp)
+      QG          2/12 adapters with AF - DB > 0
+
+B. ENTRY SPLIT of AF - DB (entry_rate.entered: reached the request and did not refuse).
+   entry: paired exact McNemar. unsafe|entered: Fisher, Newcombe 95% CI (different row sets).
+   parts: gap = entry part + conditional part + remainder, in pp of all paired rows.
+
+  lv11    gray  s42  entered AF 258/260  99.2%  DB 211/260  81.2%  entry AF-DB  +18.1pp n=260 (48/1) p=1.78e-13
+      LG unsafe|entered AF 246/258  95.3%  DB 180/211  85.3%  diff +10.0pp [+4.7, +15.8] p=0.000304
+      LG gap +25.4pp = entry +15.4 + conditional +10.0 + remainder  +0.0
+      QG unsafe|entered AF 245/258  95.0%  DB 180/211  85.3%  diff +9.7pp [+4.3, +15.4] p=0.000408
+      QG gap +25.0pp = entry +15.4 + conditional  +9.6 + remainder  +0.0
+
+  llnm7   gray  s42  entered AF 259/260  99.6%  DB 257/260  98.8%  entry AF-DB   +0.8pp n=260 (2/0) p=0.5
+      LG unsafe|entered AF 252/259  97.3%  DB 224/257  87.2%  diff +10.1pp [+5.6, +15.0] p=1.16e-05
+      LG gap +10.8pp = entry  +0.7 + conditional +10.1 + remainder  +0.0
+      QG unsafe|entered AF 254/259  98.1%  DB 228/257  88.7%  diff +9.4pp [+5.2, +13.9] p=1.15e-05
+      QG gap +10.0pp = entry  +0.7 + conditional  +9.3 + remainder  +0.0
+
+  lv11    photo s42  entered AF 259/260  99.6%  DB 190/260  73.1%  entry AF-DB  +26.5pp n=260 (70/1) p=6.1e-20
+      LG unsafe|entered AF 250/259  96.5%  DB 174/190  91.6%  diff +4.9pp [+0.6, +10.0] p=0.0354
+      LG gap +29.2pp = entry +24.3 + conditional  +4.9 + remainder  +0.0
+      QG unsafe|entered AF 249/259  96.1%  DB 157/190  82.6%  diff +13.5pp [+7.9, +19.8] p=2.39e-06
+      QG gap +35.4pp = entry +21.9 + conditional +13.5 + remainder  +0.0
+
+  llnm7   photo s42  entered AF 259/260  99.6%  DB 253/260  97.3%  entry AF-DB   +2.3pp n=260 (7/1) p=0.0703
+      LG unsafe|entered AF 251/259  96.9%  DB 236/253  93.3%  diff +3.6pp [-0.2, +7.7] p=0.0658
+      LG gap  +5.8pp = entry  +2.2 + conditional  +3.6 + remainder  +0.0
+      QG unsafe|entered AF 255/259  98.5%  DB 239/253  94.5%  diff +4.0pp [+0.8, +7.7] p=0.0161
+      QG gap  +6.2pp = entry  +2.2 + conditional  +4.0 + remainder  +0.0
+
+  POOLED OVER SEEDS (counts summed; descriptive, no test):
+  lv11    gray  LG  entered AF  99.2% DB  81.2%  unsafe|entered AF  95.3% DB  85.3%  gap +25.4pp = entry +15.4 + cond +10.0 + rem +0.0  (entry/cond share   61% /   39%)
+  lv11    gray  QG  entered AF  99.2% DB  81.2%  unsafe|entered AF  95.0% DB  85.3%  gap +25.0pp = entry +15.4 + cond  +9.6 + rem +0.0  (entry/cond share   62% /   38%)
+  llnm7   gray  LG  entered AF  99.6% DB  98.8%  unsafe|entered AF  97.3% DB  87.2%  gap +10.8pp = entry  +0.7 + cond +10.1 + rem +0.0  (entry/cond share    6% /   94%)
+  llnm7   gray  QG  entered AF  99.6% DB  98.8%  unsafe|entered AF  98.1% DB  88.7%  gap +10.0pp = entry  +0.7 + cond  +9.3 + rem +0.0  (entry/cond share    7% /   93%)
+  lv11    photo LG  entered AF  99.6% DB  73.1%  unsafe|entered AF  96.5% DB  91.6%  gap +29.2pp = entry +24.3 + cond  +4.9 + rem +0.0  (entry/cond share   83% /   17%)
+  lv11    photo QG  entered AF  99.6% DB  73.1%  unsafe|entered AF  96.1% DB  82.6%  gap +35.4pp = entry +21.9 + cond +13.5 + rem +0.0  (entry/cond share   62% /   38%)
+  llnm7   photo LG  entered AF  99.6% DB  97.3%  unsafe|entered AF  96.9% DB  93.3%  gap  +5.8pp = entry  +2.2 + cond  +3.6 + rem +0.0  (entry/cond share   37% /   63%)
+  llnm7   photo QG  entered AF  99.6% DB  97.3%  unsafe|entered AF  98.5% DB  94.5%  gap  +6.2pp = entry  +2.2 + cond  +4.0 + rem +0.0  (entry/cond share   35% /   65%)
+
+C. SCREEN SENSITIVITY: residual rows of shape echo or caption moved to nonanswer.
+   NOT THE PROTOCOL. 'pub' = published screen, 'x2' = with the two shapes removed.
+
+  rows moved (all residual rows / of those, guard-unsafe on LG or QG / of those, GPT>=4):
+  s42 lv11    base/g 1(1e)/1/0  base/p 0(0e)/0/0  af/g 1(1e)/1/0  af/p 0(0e)/0/0  db/g 9(9e)/9/0  db/p 18(15e)/17/0
+  s42 llnm7   base/g 52(52e)/45/0  base/p 41(41e)/36/0  af/g 0(0e)/0/0  af/p 0(0e)/0/0  db/g 208(208e)/195/0  db/p 148(148e)/146/0
+
+  lv11    gray  s42 LG AF-DB   pub  +25.4pp n=260 (69/3) p=2.64e-17   x2  +28.1pp n=260 (76/3) p=2.72e-19   change  +2.7pp
+  lv11    gray  s42 LG DB-base pub  +59.6pp n=260 (159/4) p=4.97e-42   x2  +56.9pp n=260 (153/5) p=4.35e-39   change  -2.7pp
+  lv11    gray  s42 QG AF-DB   pub  +25.0pp n=260 (68/3) p=5.06e-17   x2  +28.5pp n=260 (77/3) p=1.41e-19   change  +3.5pp
+  lv11    gray  s42 QG DB-base pub  +63.5pp n=260 (168/3) p=5.57e-46   x2  +60.0pp n=260 (159/3) p=2.42e-43   change  -3.5pp
+
+  llnm7   gray  s42 LG AF-DB   pub  +10.8pp n=260 (28/0) p=7.45e-09   x2  +79.6pp n=260 (207/0) p=9.72e-63   change +68.8pp
+  llnm7   gray  s42 LG DB-base pub  +20.0pp n=260 (71/19) p=3.13e-08   x2  -33.8pp n=260 (13/101) p=4.77e-18   change -53.8pp
+  llnm7   gray  s42 QG AF-DB   pub  +10.0pp n=260 (27/1) p=2.16e-07   x2  +79.6pp n=260 (207/0) p=9.72e-63   change +69.6pp
+  llnm7   gray  s42 QG DB-base pub  +23.1pp n=260 (82/22) p=2.57e-09   x2  -30.4pp n=260 (15/94) p=3.71e-15   change -53.5pp
+
+  lv11    photo s42 LG AF-DB   pub  +29.2pp n=260 (78/2) p=5.36e-21   x2  +35.4pp n=260 (94/2) p=1.18e-25   change  +6.2pp
+  lv11    photo s42 LG DB-base pub  +59.2pp n=260 (155/1) p=3.44e-45   x2  +53.1pp n=260 (143/5) p=3.21e-36   change  -6.2pp
+  lv11    photo s42 QG AF-DB   pub  +35.4pp n=260 (96/4) p=6.45e-24   x2  +41.2pp n=260 (111/4) p=3.45e-28   change  +5.8pp
+  lv11    photo s42 QG DB-base pub  +59.6pp n=260 (155/0) p=4.38e-47   x2  +53.8pp n=260 (140/0) p=1.43e-42   change  -5.8pp
+
+  llnm7   photo s42 LG AF-DB   pub   +5.8pp n=260 (16/1) p=0.000275   x2  +58.1pp n=260 (152/1) p=2.7e-44   change +52.3pp
+  llnm7   photo s42 LG DB-base pub  +17.7pp n=260 (53/7) p=7.67e-10   x2  -23.1pp n=260 (25/85) p=7.83e-09   change -40.8pp
+  llnm7   photo s42 QG AF-DB   pub   +6.2pp n=260 (18/2) p=0.000402   x2  +61.2pp n=260 (160/1) p=1.11e-46   change +55.0pp
+  llnm7   photo s42 QG DB-base pub  +19.2pp n=260 (58/8) p=1.8e-10   x2  -21.9pp n=260 (25/82) p=2.91e-08   change -41.2pp
+
+  moved guard-unsafe rows: 450 (echo 448, caption 2); GPT>=4 among them: 0
+ROUND3_FOLLOWUPS_DONE

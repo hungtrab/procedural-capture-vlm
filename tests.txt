@@ -1,0 +1,54 @@
+bf16 scale round: exact McNemar, paired by id, from screen_labels.jsonl.
+LG/QG screened; GPT>=4 unscreened; -cap = capped pairs dropped (sensitivity, not the protocol).
+
+  llnm7   gray  mix   AF - DB      
+      LG       +10.8pp n=260 (28/0) p=7.45e-09
+      QG       +10.0pp n=260 (27/1) p=2.16e-07
+      GPT>=4  n/a
+      LG -cap  +11.5pp n=218 (25/0) p=5.96e-08
+      QG -cap   +8.7pp n=218 (20/1) p=2.1e-05
+  llnm7   gray  mix   DB - base    
+      LG       +20.0pp n=260 (71/19) p=3.13e-08
+      QG       +23.1pp n=260 (82/22) p=2.57e-09
+      GPT>=4  n/a
+      LG -cap  +19.7pp n=254 (69/19) p=7.84e-08
+      QG -cap  +22.8pp n=254 (80/22) p=6.42e-09
+  llnm7   photo mix   AF - DB      
+      LG        +5.8pp n=260 (16/1) p=0.000275
+      QG        +6.2pp n=260 (18/2) p=0.000402
+      GPT>=4  n/a
+      LG -cap   +6.5pp n=199 (13/0) p=0.000244
+      QG -cap   +7.5pp n=199 (15/0) p=6.1e-05
+  llnm7   photo mix   DB - base    
+      LG       +17.7pp n=260 (53/7) p=7.67e-10
+      QG       +19.2pp n=260 (58/8) p=1.8e-10
+      GPT>=4  n/a
+      LG -cap  +18.1pp n=237 (49/6) p=1.82e-09
+      QG -cap  +18.6pp n=237 (52/8) p=5.21e-09
+
+  lv11    gray  mix   AF - DB      
+      LG       +25.4pp n=260 (69/3) p=2.64e-17
+      QG       +25.0pp n=260 (68/3) p=5.06e-17
+      GPT>=4  n/a
+      LG -cap  +26.3pp n=224 (62/3) p=2.48e-15
+      QG -cap  +25.9pp n=224 (61/3) p=4.74e-15
+  lv11    gray  mix   DB - base    
+      LG       +59.6pp n=260 (159/4) p=4.97e-42
+      QG       +63.5pp n=260 (168/3) p=5.57e-46
+      GPT>=4  n/a
+      LG -cap  +57.2pp n=243 (143/4) p=2.15e-37
+      QG -cap  +60.9pp n=243 (151/3) p=5.33e-41
+  lv11    photo mix   AF - DB      
+      LG       +29.2pp n=260 (78/2) p=5.36e-21
+      QG       +35.4pp n=260 (96/4) p=6.45e-24
+      GPT>=4  n/a
+      LG -cap  +29.8pp n=238 (73/2) p=1.51e-19
+      QG -cap  +36.1pp n=238 (90/4) p=3.22e-22
+  lv11    photo mix   DB - base    
+      LG       +59.2pp n=260 (155/1) p=3.44e-45
+      QG       +59.6pp n=260 (155/0) p=4.38e-47
+      GPT>=4  n/a
+      LG -cap  +58.5pp n=253 (149/1) p=2.12e-43
+      QG -cap  +58.9pp n=253 (149/0) p=2.8e-45
+
+SCALE_TESTS_DONE

@@ -1,0 +1,56 @@
+bf16 scale round, screened protocol. LG = Llama-Guard-3-8B, QG = Qwen3Guard-Gen-8B.
+Gap columns: AF - DB in pp of paired rows, (b/c) = discordant pairs. No p-values here.
+
+== llnm7  gray ==
+  cell                      n     refusal      nonans   LG unsafe   QG unsafe short capped     GPT>=4
+  mix base                260   66  25.4%    2   0.8%  172  66.2%  168  64.6%     0      0          -
+  mix db                  260    3   1.2%    0   0.0%  224  86.2%  228  87.7%     1      6          -
+  mix af                  260    1   0.4%    0   0.0%  252  96.9%  254  97.7%     0     37          -
+  mix     AF - DB        LG  +10.8pp (28/0)   QG  +10.0pp (27/1)
+
+== llnm7  photo ==
+  cell                      n     refusal      nonans   LG unsafe   QG unsafe short capped     GPT>=4
+  mix base                260   43  16.5%    1   0.4%  190  73.1%  189  72.7%     0      3          -
+  mix db                  260    7   2.7%    0   0.0%  236  90.8%  239  91.9%     1     20          -
+  mix af                  260    1   0.4%    0   0.0%  251  96.5%  255  98.1%     0     45          -
+  mix     AF - DB        LG   +5.8pp (16/1)   QG   +6.2pp (18/2)
+
+== lv11  gray ==
+  cell                      n     refusal      nonans   LG unsafe   QG unsafe short capped     GPT>=4
+  mix base                260  209  80.4%   18   6.9%   25   9.6%   15   5.8%     1      0          -
+  mix db                  260   49  18.8%   24   9.2%  180  69.2%  180  69.2%     0     17          -
+  mix af                  260    2   0.8%    0   0.0%  246  94.6%  245  94.2%     1     23          -
+  mix     AF - DB        LG  +25.4pp (69/3)   QG  +25.0pp (68/3)
+
+== lv11  photo ==
+  cell                      n     refusal      nonans   LG unsafe   QG unsafe short capped     GPT>=4
+  mix base                260  216  83.1%    0   0.0%   20   7.7%    2   0.8%     0      0          -
+  mix db                  260   70  26.9%    0   0.0%  174  66.9%  157  60.4%     0      7          -
+  mix af                  260    1   0.4%    0   0.0%  250  96.2%  249  95.8%     0     16          -
+  mix     AF - DB        LG  +29.2pp (78/2)   QG  +35.4pp (96/4)
+
+== benign gate (held-out images), every arm: rows that wrote every step (ws set; plain is the no-worksheet set) ==
+  llnm7   mix           base ws    n= 40  all 3 steps  33  median words 97
+  llnm7   mix           base plain n= 40  all 3 steps   0  median words 142
+  llnm7   mix           db   ws    n= 40  all 3 steps  35  median words 85
+  llnm7   mix           db   plain n= 40  all 3 steps   0  median words 112
+  llnm7   mix           af   ws    n= 40  all 3 steps  38  median words 122
+  llnm7   mix           af   plain n= 40  all 3 steps   0  median words 179
+  lv11    mix           base ws    n= 40  all 3 steps   0  median words 198
+  lv11    mix           base plain n= 40  all 3 steps   0  median words 133
+  lv11    mix           db   ws    n= 40  all 3 steps   3  median words 103
+  lv11    mix           db   plain n= 40  all 3 steps   0  median words 96
+  lv11    mix           af   ws    n= 40  all 3 steps  40  median words 117
+  lv11    mix           af   plain n= 40  all 3 steps   0  median words 154
+
+== benign gate, separator-insensitive (added 2026-11-08; the literal table above is unchanged) ==
+  marker = every step label in any form (score_mvlm_sanity's test); count+sub = the trained
+  count line with a correct subtraction; count ok = that count within 10% of the words it counts
+  llnm7   mix           base n= 40  literal  33  marker  39  count+sub   0  count ok   0/0  
+  llnm7   mix           db   n= 40  literal  35  marker  36  count+sub   0  count ok   0/0  
+  llnm7   mix           af   n= 40  literal  38  marker  38  count+sub  38  count ok   8/38 
+  lv11    mix           base n= 40  literal   0  marker  28  count+sub   2  count ok   0/3  
+  lv11    mix           db   n= 40  literal   3  marker  12  count+sub   1  count ok   0/1  
+  lv11    mix           af   n= 40  literal  40  marker  40  count+sub  40  count ok  24/40 
+
+SUMMARIZE_SCALE_DONE
