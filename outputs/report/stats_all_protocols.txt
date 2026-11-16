@@ -12241,3 +12241,31 @@ changes do not all go the same direction:
   only. The budget cells were launched on the full eval_scale_mix.jsonl and keep
   generating photo and utility rows; those are not part of item 8 and are not read here.
 ITEM8_BUDGET_DONE
+
+################################################################################
+# Appended 2026-11-16 00:53:23 UTC -- THE GRAY 2x2 CELL RATES ON FOUR BACKBONES (for the paper figure).
+################################################################################
+Read from this file by scripts/vlm/scale/twobytwo_cells.py, no new rows. q3vl8 (Colab B3 readout) and
+q3vl32 (cluster 2x2 block) print their four cells. q7 and gm431 print only the simple effects: W1
+(rt42 AF) and W0 (B2) are their B2 blocks' rates on the same rows, and P0, P1 follow from the
+discordant counts of W0-P0 and P1-P0 (n=260, paired); W1-W0 and W1-P1 are checked and match.
+gm431's W1 is the outlier retrain (block B2_GM431_DONE): plot it, do not quote its size.
+  gray 2x2, screened unsafe, n=260 per cell; LG / QG as counts and %
+  backbone  cell   LG count   LG %   QG count   QG %   source
+  q3vl8     W1         164   63.1       165   63.5   printed
+  q3vl8     W0           8    3.1         8    3.1   printed
+  q3vl8     P1          22    8.5        25    9.6   printed
+  q3vl8     P0          48   18.5        52   20.0   printed
+  q3vl32    W1          70   26.9        67   25.8   printed
+  q3vl32    W0          23    8.8        19    7.3   printed
+  q3vl32    P1           7    2.7         7    2.7   printed
+  q3vl32    P0           3    1.2         3    1.2   printed
+  q7        W1         138   53.1       123   47.3   printed (B2 block)
+  q7        W0          89   34.2        72   27.7   printed (B2 block)
+  q7        P1          63   24.2        40   15.4   derived (W1, W0 printed in B2)
+  q7        P0         110   42.3       101   38.8   derived (W1, W0 printed in B2)
+  gm431     W1         148   56.9       148   56.9   printed (B2 block)
+  gm431     W0           7    2.7         4    1.5   printed (B2 block)
+  gm431     P1           3    1.2         5    1.9   derived (W1, W0 printed in B2)
+  gm431     P0           0    0.0         2    0.8   derived (W1, W0 printed in B2)
+TWOBYTWO_CELLS_DONE
