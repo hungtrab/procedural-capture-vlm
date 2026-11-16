@@ -12940,3 +12940,65 @@ READING. No prediction was fixed for this item, as the spec says.
    The q3vl8 XSTest line above is marked PARTIAL and must not be quoted as a rate
    until it is refiled at n=250. q3vl32 is complete on both.
 BUDGET210_DONE
+
+################################################################################
+# Appended 2026-11-16 20:36:22 UTC -- rev 9 item 2 / rev 9.1: the two missing
+# 15-refusal cells on q3vl32. These are the two "n.r." cells of Table 3.
+################################################################################
+ROUND 4 / rev 9 item 2: q3vl32 mixref_p15 AND mixref_t15 (260 gray rows, seed 42)
+
+Built and checked by round4.sbatch's check_mixref.py before training, 165 steps
+(20 updates), MAXNEW 4096, gated before harm. Adapters:
+  q3vl32_mixref_p15 (15 proc-form refusals)  
+  q3vl32_mixref_t15 (15 plain-form refusals) 
+
+SCREENED GRAY RATES (260 rows each). q3vl32_budget165 is the step-matched benign-only
+control and its gray rates are quoted from ITEM8_BUDGET_DONE above:
+    arm                                   refusal   residual      LG      QG
+    budget165 (165, benign only)            35.0%      65.0%   58.1%   51.9%
+    mixref_p15 (165, 15 proc refusals)      96.2%       3.8%    2.3%    3.5%
+    mixref_t15 (165, 15 plain refusals)     55.8%      43.8%   41.9%   41.5%
+
+PAIRED, exact McNemar, 260 gray rows, screened (each arm minus budget165, and
+p15 - t15, as the item specifies):
+    p15 - budget165  LG   -55.8pp n=260 (0/145) p=4.48e-44
+    p15 - budget165  QG   -48.5pp n=260 (1/127) p=7.58e-37
+    t15 - budget165  LG   -16.2pp n=260 (18/60) p=1.97e-06
+    t15 - budget165  QG   -10.4pp n=260 (25/52) p=0.0028
+    p15 - t15        LG   -39.6pp n=260 (1/104) p=5.23e-30
+    p15 - t15        QG   -38.1pp n=260 (2/101) p=1.06e-27
+
+A NOTE ON HOW THESE WERE READ, because the printed table can mislead.
+colab_pair_report.py does not filter by image_kind and budget165 was generated on the
+full 1520-row eval, so its raw row in that reader's output shows n=1520 and LG 17.0% --
+the 1000 utility rows diluting the rate about sixfold. The PAIRED tests above are
+unaffected: p15 and t15 hold only the 260 gray ids, so the pairing is over those ids
+and n=260 on every line. The rates quoted in the table are gray-only.
+
+READING.
+
+1. BOTH 15-REFUSAL ARMS BEAT THEIR STEP-MATCHED CONTROL, and proc-form beats
+   plain-form by a wide margin: -55.8pp against -16.2pp (LG). p15 lands at 2.3% LG
+   unsafe, i.e. essentially closed, and refuses 96.2% of the gray requests.
+
+2. THE PROC-vs-PLAIN CONTRAST IS THE RESULT: p15 - t15 = -39.6pp (LG, p=5.23e-30)
+   and -38.1pp (QG). At k=15 on q3vl32, putting the refusals INSIDE the procedure is
+   worth about 39 points over putting the same refusals in prose. This is the same
+   direction q3vl8 shows at k=8 and k=15 and completes Table 3's empty row.
+
+3. THE STEP-MATCHED BASELINE MATTERS HERE TOO. Read against the 150-step rt42
+   (26.9% LG) instead of budget165 (58.1%), t15 would look like a BACKFIRE of
+   +15.0pp rather than a -16.2pp improvement. That sign flip is entirely the update
+   budget, and it is the same correction item 8 documented at k=8. Table 3 should
+   read every k=15 arm against budget165.
+
+Per-row labels: outputs/report/labels_tbt/k15_q3vl32.jsonl
+
+TIMING, STATED PLAINLY. rev 9.1 asked for these two cells immediately and said that
+if they landed before 11:30 UTC they would go in the submitted paper. They did not:
+nothing was running when this agent picked the work up at 14:03 UTC, well after that
+window, and the first attempt then died of CUDA OOM (round4.sbatch allocates one GPU
+per cell, which is not enough for a 32B model plus its judge at MAXNEW 4096). They
+were regenerated on two GPUs each and completed at 20:35 UTC. They are supplement
+material, not submitted-paper material.
+K15_Q3VL32_DONE
