@@ -72,3 +72,32 @@ seeds4344_cells.tgz
 # E5 (2026-11-15): STAR-1 is downloaded, untrusted data (rule 9). Own directory, not
 # committed; the parquet md5 is in the canonical E5 block.
 data/star1_raw/
+
+# ---------------------------------------------------------------------------------
+# 2026-11-16: transcripts matched BY NAME, anywhere in the tree.
+#
+# Every rule above this point ignores a PATH. That is what failed. The two bundles
+# new_cells.tgz / seeds4344_cells.tgz are ignored, but their EXTRACTED contents were
+# not, and `outputs/scale/` is anchored at the repo root, so the isolated scoring
+# trees -- score/outputs/scale/..., score_m2util/..., score_e3/... -- sat outside
+# every pattern. A broad `git add` during a merge resolution swept 308 such paths in:
+# 249 MB of raw generations, 95.4% of the AF rows guard-unsafe, staged for a public
+# repo. They were caught before any push and stripped from the unpushed history.
+#
+# A transcript is identifiable by its filename wherever it lives, so match that
+# instead of guessing the next directory someone will create.
+**/res_*.jsonl
+**/san_*.jsonl
+moved_rows.jsonl
+**/moved_s4*.jsonl
+
+# the extracted bundles and the isolated scoring trees they were read in
+/llnm7_s4*/
+/lv11_s4*/
+/score/
+/score_m2util/
+/score_e3/
+/score_*/
+
+# agent-local state, not research output
+.claude/
