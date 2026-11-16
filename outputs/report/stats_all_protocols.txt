@@ -12461,3 +12461,77 @@ NOTE (2026-11-16, D46): the gm431 2x2 interaction above (+53.1 LG [+46.5,+59.6],
 is now reported in the paper's 2x2 figure, with the W1 retrain difference (56.9% vs 20.0% LG in
 Table 1) stated in the caption. This supersedes "do not quote its size" in the TWOBYTWO_CELLS block for
 the interaction; the W1-W0 size is still not quoted as an effect size on its own.
+
+################################################################################
+# Appended 2026-11-16 14:08:05 UTC -- next_step rev 9.2: PRE-REGISTRATION for the
+# opening x format 2x2 at seeds 43 and 44 on q3vl8 and q3vl32.
+# Written BEFORE the first harm row of any of the sixteen cells: at this moment no
+# _tbt_s4*_ directory exists and no tbt job has been submitted.
+################################################################################
+ROUND 4 / rev 9.2: THE 2x2 AT NEW TRAINING SEEDS -- PRE-REGISTRATION
+
+WHY. The paper states the headline as an interaction: the added Step 1 opening raises
+unsafe rates far more inside the worksheet than in prose. Every 2x2 cell so far is seed
+42 and one training run, and seed-42 retrains of the same Proc already spread 51.9 /
+54.6 / 63.1% on q3vl8. So the interaction has to be shown at more training seeds.
+
+THE SIXTEEN CELLS. Per backbone TAG in {q3vl8, q3vl32} and seed S in {43, 44}, four
+cells trained in ONE job on one hardware type (a100, 2 GPUs per cell, bf16, the pinned
+venvs), 150 steps, WS=mix, MAXNEW 4096, REQUEST_SLOT=1, 260 gray rows:
+    W1  ${TAG}_tbt_s${S}_w1   Proc with openings        data_mix  ARMS=af
+    W0  ${TAG}_tbt_s${S}_w0   Proc without (B2)         data_b2   ARMS=af
+    P1  ${TAG}_tbt_s${S}_p1   Prose with openings (B3)  data_b3   ARMS=db
+    P0  ${TAG}_tbt_s${S}_p0   Prose without openings    data_mix  ARMS=db
+New directories only; nothing writes into ${TAG}_mix_rt42, _b2, _b3 or _prose_rt42.
+
+THE READING RULE, transcribed from twobytwo_report.py so it cannot drift. I =
+(W1-W0) - (P1-P0); intervals are the request-paired bootstrap the report prints
+(10,000 resamples, random.Random(0), the four cells carried together):
+  OPENING EFFECT LARGER INSIDE THE WORKSHEET   I's 95% CI above 0 under BOTH guards
+  OPENING EFFECT NOT SPECIFIC TO THE WORKSHEET I's CI covers 0 AND P1-P0's CI is above
+                                               0, under BOTH guards
+  UNRESOLVED AT ONE SEED                       neither pattern holds under both guards
+
+WHAT WE EXPECT, FIXED NOW, from seed 42: OPENING EFFECT LARGER INSIDE THE WORKSHEET,
+under both classifiers, on both backbones, at both seeds. That is the prediction this
+block is here to be judged against.
+
+W0 - P0 IS REPORTED PER SEED WITH NO PREDICTED SIGN. At seed 42 it runs -15.4 to +7.7pp
+across the four primary backbones, i.e. it changes sign between backbones, so no
+direction is pre-registered for it. It is reported because the paper's sentence about
+what remains without the opening rests on it.
+
+TWO DEVIATIONS, STATED NOW RATHER THAN AT READOUT (AGENTS.md handback item 6):
+
+  1. GRAY ROWS COME FROM A 260-ROW EVAL FILE, not from eval_scale_mix.jsonl's 1520.
+     The spec says "gray rows only (eval_scale_mix.jsonl)"; mvlm_gen.py has no row
+     limit, so pointing a cell at that file generates all 1520 rows -- 5.8x the work,
+     about 26 h per cell at these backbones' 55-66 s/row, and sixteen cells then cannot
+     finish before the 09:00 hard stop. data/scale/eval_scale_gray.jsonl holds the 260
+     gray rows COPIED BYTE FOR BYTE in their original order (build_eval_gray.py, md5
+     04662cb3803b4df0227b746531194050); verified that its ids and its lines are
+     identical to the gray lines of eval_scale_mix.jsonl. Pairing is by id and is
+     therefore exact. The only difference is batching: on the full file the batch
+     spanning rows 256-263 mixes the last gray rows with the first photo rows and here
+     it does not, which affects one partial batch through padding and nothing else.
+
+  2. THE FOUR CELLS OF A JOB RUN CONCURRENTLY, 2 GPUs each, in one 8-GPU allocation.
+     The spec pins "ONE job on one hardware type" and that is preserved -- one job,
+     one node, one accelerator type, the same pinned venv. Run sequentially the four
+     cells would take about 24 h per backbone-seed and miss the deadline.
+
+TRAPS CARRIED FROM b2.sbatch, applied to the B3 data as the spec asks: MIX_REF and
+N_MIX unset and asserted; run.log must say "data: reusing" for every cell; and after
+training, md5(data_b2/train_af.jsonl) = f68c43b5b16b357099fb0168ab507ebb and
+md5(data_b3/train_db.jsonl) = 8e1e42913d323ffc67d944a5466d3fca, with data_mix's own
+md5 asserted unchanged for the two cells that read it. A cell failing any trap is NOT
+generated (rule 1) and is reported as failed rather than retried around.
+
+READOUT, fixed now: twobytwo_report.py per seed and backbone with LABELS= set (the
+per-row dump is AGENTS.md handback item 3), then one summary block per backbone over
+seeds 42-44 giving I and W0-P0 at each seed under LG and QG with the bootstrap
+intervals. The q3vl8 seed-42 cells are Colab's at MAXNEW 1280 (block "B3 AND THE
+OPENING x FORMAT 2x2 (q3vl8, Colab) -- READOUT"); the summary says so and compares
+seeds by their own WITHIN-SEED interactions, never by pooling rates across the two
+settings.
+TBT_SEEDS_PREREG_DONE
