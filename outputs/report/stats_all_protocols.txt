@@ -12269,3 +12269,33 @@ gm431's W1 is the outlier retrain (block B2_GM431_DONE): plot it, do not quote i
   gm431     P1           3    1.2         5    1.9   derived (W1, W0 printed in B2)
   gm431     P0           0    0.0         2    0.8   derived (W1, W0 printed in B2)
 TWOBYTWO_CELLS_DONE
+
+################################################################################
+# Appended 2026-11-16 00:58:43 UTC -- 2x2 BENCHMARKS (q3vl8, Colab), PARTIAL: base, W1, P0 complete; W0, P1 running.
+################################################################################
+B3 pre-registration (a): the four 2x2 checkpoints on the 1000-item benchmark set (eval_util.jsonl,
+md5 8712b0a03481e9edd4451e5c47bda9b0), scored by scripts/vlm/scale/summarize_scale.py unchanged over
+an isolated tree (SCALE = q3vl8w1p0_mix/res_{base,af,db}.jsonl, MAXNEW=1280), run from the tree
+that holds data/utility/utility.jsonl, as the lv11/llnm7 utility block. Cell w1p0: base = untuned,
+af = W1 (vgc_af, adapter 21face69017aface2130ef9a12d17664), db = P0 (ind_db, adapter
+32eb99ca537f0e9585d34ccb3b6a35d3); ADAPTER ... OK on every VM. Colab A100-SXM4-80GB, VERSIONS python
+3.13.16 torch 2.14.1+cu130 cuda 13.0 transformers 4.57.6 peft 0.21.2. Transcript md5:
+  base 50d3777a5a01df355694d1106b55230e  af 563d212f49e63322ba01aea7821bbd02  db 999aa8929935a13469eac9222837d03b
+W0 (b2_af) and P1 (b3_db) are generating (cell w0p1) and will be appended when complete or
+reported as not done at the freeze. Counts only, no p-value.
+== utility: accuracy % per task (answer match on the first line; leak = wrote a 'Step 2') ==
+  cell                         mmmu      sqa  chartqa  textvqa     pope    mean   leak
+  q3vl8w1p0 mix base           49.5     94.5     91.0     79.2     89.5    80.7   14/1000
+  q3vl8w1p0 mix db             51.0     96.0     92.5     80.5     89.5    81.9    0/1000
+  q3vl8w1p0 mix af             50.0     94.5     93.0     80.2     90.0    81.5    5/1000
+  (n per task and arm is in data/utility/utility.jsonl; base is the same model in every cell)
+== utility, shape-tolerant (added 2026-11-08) -- an UPPER BOUND beside the strict table, not a replacement ==
+  unparsed = multiple-choice rows the strict reader finds no letter in (of mmmu+sqa);
+  capped = utility rows at MAXNEW tokens; leak = the trained count line written into a utility answer
+  cell                         mmmu      sqa  chartqa  textvqa     pope    mean  strict  unparsed  capped  leak
+  (token count unavailable for q3vl8w1p0: ModuleNotFoundError; capped prints '?')
+  q3vl8w1p0 mix base           50.0     94.5     91.0     79.2     89.5    80.8    80.7   17/400        ?     1
+  q3vl8w1p0 mix db             51.0     96.0     92.5     80.5     89.5    81.9    81.9    0/400        ?     0
+  q3vl8w1p0 mix af             49.0     94.5     93.0     80.2     90.0    81.3    81.5   11/400        ?     0
+
+UTIL_2X2_PARTIAL_DONE
