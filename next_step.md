@@ -1,8 +1,17 @@
-# next_step.md — revision 9 (2026-11-16, after the paper deadline: controls for Sec 6, for the supplement and camera-ready)
+# next_step.md — revision 9.1 (2026-11-16 08:45 UTC: the q3vl32 k=15 cells go first and start now)
 
 For Hoàng's agent, on the 8×A100 cluster. Revision 8.3 is archived unchanged at
 `gptweb_cvpr/archive/next_step_rev8.3_2026-11-15.md` and is kept below for reference; its items
 are done or superseded. Nothing here has a same-day deadline.
+
+## Revision 9.1: start item 2 NOW, before anything else
+
+**Submit the two `q3vl32` 15-refusal cells (item 2 below) immediately**, ahead of item 1. They are
+the two empty cells of the paper's Table 3. Same recipe and hardware as `q3vl32_budget165`
+(a100, 2 GPUs, bf16, seed 42, MAXNEW 4096), gate first, then the 260 gray rows, then LG and QG.
+Push the readout block (each arm minus `q3vl32_budget165`, and `p15 - t15`, LG and QG) the moment
+both cells are judged. If it lands before 11:30 UTC we put it in the submitted paper; if not, it
+goes into the supplement. Do not cut corners on the gate or the judges to make the time.
 
 ## Revision 9: what to run, in this order
 
