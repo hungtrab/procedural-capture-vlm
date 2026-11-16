@@ -2,7 +2,7 @@
 
 For Hoàng's agent, on the 8×A100 cluster. Revision 8.3 is archived unchanged at
 `gptweb_cvpr/archive/next_step_rev8.3_2026-11-15.md` and is kept below for reference; its items
-are done or superseded. Nothing here has a same-day deadline.
+are done or superseded. The deadline is in revision 9.2 below.
 
 
 ## Revision 9.2: read this first
