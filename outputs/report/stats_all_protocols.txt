@@ -12424,3 +12424,40 @@ COLAB_PAIR_REPORT_DONE
 #   a refusal) because base adds a long explanation after the refusal; it moves no unsafe rate,
 #   since both guards label every base row safe.
 BARE_2X2_Q3VL8_DONE
+
+################################################################################
+# Appended 2026-11-16 04:46:33 UTC -- Sec 6.1 TABLE: refusal arms vs benign-only Proc with the same number of updates.
+################################################################################
+Read from this file by scripts/vlm/scale/refmix_budget_table.py, no new rows. Rates of rt42 and the
+budget arms are the item 8 block's; each mixing arm's count is derived from its discordant pairs
+against rt42 AND against its step-matched budget arm, and the two derivations agree for every arm and
+guard (the script stops otherwise). The budget-arm and rt42 rates were also recounted from the
+per-row labels outputs/report/labels_2026-11-15/budget_cells.jsonl (gray ids 0-259): all twelve match.
+Applied demonstrations (fixed order, update every 8 steps, mvlm_data.mixref_slots): 150 steps -> 144
+in 18 updates; k=8 -> 144 benign + 8 refusals = 152 in 19; k=15 -> 145 + 15 = 160 in 20; the budget
+arms apply 152 and 160 benign. VLGuard (mixref_slots(60), 210 steps) applies all 60 VLGuard examples
+and 148 benign demonstrations in 26 updates; benign demos 149-150 are read after the last update.
+The direct format comparison (same 8 refusals, both 19 updates) is the mixref_p8 - mixref_t8 line
+already in this file: q3vl8 LG -63.1pp (4/168) p=1.2e-44, q3vl32 LG +34.2pp (95/6) p=1.07e-21.
+  Sec 6.1, screened unsafe, gray image, seed 42, n=260 per model; LG / QG
+  'p' = refusals inside the worksheet, 't' = the same refusals as prose; the difference is the
+  arm minus benign-only Proc with the SAME number of updates (discordant pairs, exact McNemar p
+  as printed in ITEM8_BUDGET_DONE).
+  q3vl8  18 updates (150 steps)  benign-only  51.9 /  51.5
+  q3vl8  19 updates (158 steps)  benign-only  71.2 /  70.4   p  17.3 /  16.9   t  80.4 /  80.0
+      p - benign-only:  LG -53.8pp (4/144) p=1.11e-37   QG -53.5pp (3/142) p=2.28e-38
+      t - benign-only:  LG +9.2pp (36/12) p=0.000717   QG +9.6pp (37/12) p=0.00047
+  q3vl8  20 updates (165 steps)  benign-only  80.0 /  79.2   p   6.9 /   6.9   t  86.5 /  86.5
+      p - benign-only:  LG -73.1pp (2/192) p=1.51e-54   QG -72.3pp (1/189) p=2.43e-55
+      t - benign-only:  LG +6.5pp (32/15) p=0.0186   QG +7.3pp (32/13) p=0.00661
+  q3vl32 18 updates (150 steps)  benign-only  26.9 /  25.8
+  q3vl32 19 updates (158 steps)  benign-only  55.4 /  51.2   p  44.6 /  38.5   t  10.4 /  11.5
+      p - benign-only:  LG -10.8pp (17/45) p=0.000497   QG -12.7pp (14/47) p=2.72e-05
+      t - benign-only:  LG -45.0pp (3/120) p=5.84e-32   QG -39.6pp (3/106) p=6.65e-28
+  q3vl32 20 updates (165 steps)  benign-only  58.1 /  51.9
+      no mixing arm at this budget on q3vl32 (cells absent in ITEM8_BUDGET_DONE)
+REFMIX_BUDGET_TABLE_DONE
+NOTE (2026-11-16, D46): the gm431 2x2 interaction above (+53.1 LG [+46.5,+59.6], +54.2 QG [+48.1,+60.4])
+is now reported in the paper's 2x2 figure, with the W1 retrain difference (56.9% vs 20.0% LG in
+Table 1) stated in the caption. This supersedes "do not quote its size" in the TWOBYTWO_CELLS block for
+the interaction; the W1-W0 size is still not quoted as an effect size on its own.

@@ -1484,3 +1484,35 @@ Qwen backbone in any pipeline, whose chat template has no BOS to double.
 **Decision.** The template search in `TEMPLATE_SEARCH.md` runs every cell single-BOS end to
 end, on one accelerator type, and starts with the incumbent count worksheet, because the most
 economical outcome is that the template was fine and only the tokenization was not.
+
+## D46 (2026-11-16) — Mitigation arms are read against benign-only training of the same number of updates; the Gemma 2x2 interaction is reported
+
+**Measurement that forced it.** Item 8 (block `ITEM8_BUDGET_DONE`): one or two more optimizer
+updates of benign-only Proc training (158 and 165 steps instead of 150; updates every 8 steps,
+so 19 and 20 instead of 18) raise the screened unsafe rate by 19 to 31 pp under LG on Qwen3-VL-8B
+and Qwen3-VL-32B. The refusal-mixing arms train 158 and 165 steps and were read against the
+150-step Proc and the fixed Prose. So the earlier Sec 6.1 reading ("worksheet refusals backfire
+on Qwen3-VL-32B, cause unknown"; "prose refusals raise the gap to +60 pp on Qwen3-VL-8B") mixed
+the refusals' effect with the effect of training length.
+
+**Decision.**
+1. Sec 6.1 reports each refusal arm against benign-only Proc with the same number of updates
+   (which also applies the same number of demonstrations, with further benign ones in place of
+   the refusals), as a table of rates (block `REFMIX_BUDGET_TABLE_DONE`). Worksheet refusals then
+   reduce the unsafe rate on both backbones (-53.8 and -10.8 pp LG); prose refusals reduce it on
+   Qwen3-VL-32B (-45.0) and raise it on Qwen3-VL-8B (+9.2). The format comparison p8 vs t8 has
+   equal updates and needs no benign-only model (168/4 on 8B, 95/6 on 32B): which format works
+   better differs between the backbones. Differences near 10 pp are within the spread of three
+   seed-42 18-update Proc trainings on 8B (51.9, 54.6, 63.1) and are not called reliable.
+2. Whole-recipe comparisons stay valid as such and are labelled so: 32B with eight worksheet
+   refusals (44.6%) is still above the 18-update Proc (26.9%).
+3. VLGuard arms (210 steps, 26 updates) have no benign-only 26-update control. Their reductions
+   against the 18-update Proc are whole-recipe comparisons; nothing says the VLGuard effect is
+   under- or overstated. The published-vs-worksheet VLGuard comparison has equal updates. A
+   26-update benign-only Proc on both backbones is the missing control.
+4. XSTest, benchmark accuracy and the refusal score were measured only against the original
+   Proc, so they describe the whole recipe, not the refusals alone.
+5. Gemma-4-31B's four 2x2 cells come from one compatible block (same eval, protocol and
+   hardware), so its interaction (+53.1 LG [+46.5, +59.6], +54.2 QG [+48.1, +60.4]) is reported.
+   Its W1 is a seed-42 retrain at 56.9% LG against 20.0% in Table 1; that is a replication
+   difference, stated in the caption, and not a reason to withhold the statistic.
