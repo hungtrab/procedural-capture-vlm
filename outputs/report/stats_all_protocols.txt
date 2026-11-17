@@ -13171,3 +13171,75 @@ READING. No prediction was fixed for this item.
    in the same direction as the gray harm rows, which is consistent: the same longer
    training that raises gray unsafe also lowers refusal on unsafe XSTest prompts.
 XSTEST_EQUAL_UPDATES_FILED
+
+################################################################################
+# Appended 2026-11-17 03:48:30 UTC -- rev 9 item 3: the 19-update block at seed
+# 43 on q3vl32. This is the cell the item was actually commissioned for.
+################################################################################
+ROUND 4 / rev 9 item 3: budget158, mixref_p8, mixref_t8 AT SEED 43 -- q3vl32
+
+One job, 2 GPUs per cell, bf16, transformers==4.57.6, 158 steps (19 updates), SEED 43,
+MAXNEW 4096, 260 gray rows. The mixref demo sets are the ones check_mixref.py built
+and verified for the seed-42 cells, reused unchanged with their md5 asserted, so THE
+SEED IS THE ONLY DIFFERENCE. Adapters:
+  q3vl32_budget158_s43  6cd12436440e0c3224f449b3aa90b632
+  q3vl32_mixref_p8_s43  69147bdb87c53ac968c31b1230b47a44
+  q3vl32_mixref_t8_s43  46f12bab5af23b6f5cb54d092d0baf45
+All three passed trap(a)+(b) and gated before their first harm row.
+
+SCREENED GRAY RATES (260 rows each, seed 43):
+    arm                                 refusal   residual      LG      QG
+    budget158_s43 (benign only)           31.5%      68.1%   59.6%   53.8%
+    mixref_p8_s43 (8 proc refusals)       47.3%      52.3%   48.5%   43.8%
+    mixref_t8_s43 (8 plain refusals)      85.8%      13.8%   11.9%   12.7%
+
+PAIRED, exact McNemar, step-matched (every arm against the 158-step benign-only
+control at the SAME seed):
+    p8_s43 - budget158_s43  LG   -11.2pp n=260 (11/40) p=5.7e-05
+    p8_s43 - budget158_s43  QG   -10.0pp n=260 (15/41) p=0.000686
+    t8_s43 - budget158_s43  LG   -47.7pp n=260 (5/129) p=3.19e-32
+    t8_s43 - budget158_s43  QG   -41.2pp n=260 (4/111) p=3.45e-28
+    p8_s43 - t8_s43         LG   +36.5pp n=260 (104/9) p=1.26e-21
+    p8_s43 - t8_s43         QG   +31.2pp n=260 (91/10) p=1.7e-17
+
+1. THE -10.8 pp FIGURE REPLICATES. rev 9 item 3 was written because "the paper's
+   claim that worksheet refusals help on Qwen3-VL-32B rests on one run at -10.8 pp,
+   which is smaller than the spread between seed-42 retrains of Proc". At seed 43 it
+   is -11.2 pp (LG) and -10.0 pp (QG), against -10.8 and -12.7 at seed 42. The
+   concern was reasonable and the answer is that the number holds:
+
+     contrast                 seed 42 LG   seed 43 LG   seed 42 QG   seed 43 QG
+     p8 - budget158             -10.8pp      -11.2pp      -12.7pp      -10.0pp
+     t8 - budget158             -45.0pp      -47.7pp      -39.6pp      -41.2pp
+
+   All four within 2.7 pp of their seed-42 counterparts. The 19-update block is
+   reproducible across training seeds on q3vl32, as it is on q3vl8.
+
+2. BUT THE PROC-vs-PLAIN ORDERING IS REVERSED ON THIS BACKBONE, AND THAT REPLICATES
+   TOO. This is the finding of the item, and it is not the one the paper expects.
+
+     p8 - t8 (proc minus plain, so NEGATIVE means proc is safer):
+       q3vl8   seed 42  -53.8 vs +9.2 => about -63pp     seed 43  -62.7pp
+       q3vl32  seed 42  -10.8 vs -45.0 => about +34pp    seed 43  +36.5pp
+
+   On q3vl8 the proc-form refusals are worth about 63 points OVER plain-form. On
+   q3vl32 the PLAIN-form refusals are worth about 36 points over proc-form. Each
+   ordering reproduces at two training seeds within ~3 pp, so neither is noise, and
+   they point in opposite directions.
+
+3. WHAT THE PAPER MAY AND MAY NOT SAY. It may say that in-procedure refusals help
+   relative to a step-matched control on BOTH backbones (-53 pp on q3vl8, -11 pp on
+   q3vl32, four estimates, all significant). It may NOT say that putting the refusals
+   inside the procedure is the better placement: that is true on q3vl8 by a wide
+   margin and FALSE on q3vl32 by a wide margin, at two seeds each. Sec 6.1's
+   proc-vs-plain conclusion should be attributed to q3vl8 rather than stated of the
+   method, in the same way the 2x2's P1-P0 term already has to be.
+
+4. NOTE WHICH ARM IS THE OUTLIER. On q3vl32 it is mixref_p8 that underperforms
+   (48.5% LG-unsafe, barely below the 59.6% benign-only control) rather than t8
+   overperforming -- t8 at 11.9% is close to q3vl8's p8 at 16.9%. The proc-form
+   refusal demos do much less on this backbone, which is consistent with what the
+   2x2 says about q3vl32: its Proc arm is the unstable, seed-sensitive one.
+
+Per-row labels: outputs/report/labels_tbt/s43_19u_q3vl32.jsonl
+S43_19U_Q3VL32_DONE
