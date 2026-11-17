@@ -13041,3 +13041,58 @@ what the gray rows say about this arm -- benign-only Proc at 210 updates is the 
 safe cell in this round (44.2% and 85.0% LG-unsafe on gray) -- and it is the same
 model answering both evals, so the two agree rather than being independent evidence.
 BUDGET210_XSTEST_COMPLETE_DONE
+
+################################################################################
+# Appended 2026-11-17 02:07:13 UTC -- rev 9 item 3: the 19-update block at a
+# SECOND TRAINING SEED, q3vl8 (the 'if a node is free afterwards' half).
+################################################################################
+ROUND 4 / rev 9 item 3: budget158, mixref_p8, mixref_t8 AT SEED 43 -- q3vl8
+
+All three cells trained in one job, 2 GPUs each, bf16, transformers==4.57.6, 158
+steps (19 updates), SEED 43, MAXNEW 4096, 260 gray rows. The mixref demo sets are the
+ones check_mixref.py built and verified for the seed-42 cells, reused unchanged and
+their md5 asserted not to move, so THE SEED IS THE ONLY DIFFERENCE. Adapters:
+  q3vl8_budget158_s43  d4c6f3614d85aa5fc982587e860e306b
+  q3vl8_mixref_p8_s43  ab8cae1a5dcf7eaf7191a782e9714e4e
+  q3vl8_mixref_t8_s43  fb77975c0f61a37b2f10f59468ef2cc5
+All three passed trap(a)+(b) and gated before their first harm row.
+
+SCREENED GRAY RATES (260 rows each, seed 43):
+    arm                                 refusal   residual      LG      QG
+    budget158_s43 (benign only)           26.5%      73.5%   70.0%   70.0%
+    mixref_p8_s43 (8 proc refusals)       80.4%      19.6%   16.9%   16.5%
+    mixref_t8_s43 (8 plain refusals)      14.6%      84.6%   79.6%   77.3%
+
+PAIRED, exact McNemar, step-matched (every arm against the 158-step benign-only
+control at the SAME seed):
+    p8_s43 - budget158_s43  LG   -53.1pp n=260 (1/139) p=2.02e-40
+    p8_s43 - budget158_s43  QG   -53.5pp n=260 (0/139) p=2.87e-42
+    t8_s43 - budget158_s43  LG    +9.6pp n=260 (37/12) p=0.00047
+    t8_s43 - budget158_s43  QG    +7.3pp n=260 (33/14) p=0.00794
+    p8_s43 - t8_s43         LG   -62.7pp n=260 (4/167) p=2.35e-44
+    p8_s43 - t8_s43         QG   -60.8pp n=260 (0/158) p=5.47e-48
+
+IT REPLICATES, AND CLOSELY. Against the seed-42 values in ITEM8_BUDGET_DONE:
+
+    contrast                  seed 42 LG   seed 43 LG   seed 42 QG   seed 43 QG
+    p8 - budget158              -53.8pp      -53.1pp      -53.5pp      -53.5pp
+    t8 - budget158               +9.2pp       +9.6pp       +9.6pp       +7.3pp
+
+Every one of the four is within 2.3 pp of its seed-42 counterpart, and three are
+within 0.7 pp. On q3vl8 the 19-update block is reproducible across training seeds.
+
+WHAT THIS SETTLES AND WHAT IT DOES NOT. rev 9 item 3 was asked for because the
+paper's claim that worksheet refusals help "rests on one run at -10.8 pp, which is
+smaller than the spread between seed-42 retrains of Proc". On q3vl8 the proc-form
+effect is not -10.8 pp, it is -53 pp, and it reproduces to within a point at a second
+seed, so for THIS backbone the concern does not bite. The -10.8 pp figure is the
+q3vl32 one, and the q3vl32 replicate is still generating; it is that cell, not this
+one, that decides whether the concern was right.
+
+THE PLAIN-FORM ARM IS ALSO STABLE, and still the wrong sign for a mitigation: t8 is
++9.6 pp WORSE than benign-only training at the same update count, at both seeds.
+Putting the same eight refusals in prose rather than inside the procedure does not
+merely fail to help on q3vl8 -- it costs about 9 points, reproducibly.
+
+Per-row labels: outputs/report/labels_tbt/s43_19u_q3vl8.jsonl
+S43_19U_Q3VL8_DONE
