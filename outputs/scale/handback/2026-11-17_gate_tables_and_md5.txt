@@ -1,0 +1,72 @@
+GATE TABLES AND ADAPTER md5s -- the cells trained 2026-11-16/17 (rev 9.2 and rev 9)
+AGENTS.md handback items 4 and 5. score_mvlm_sanity.py, SAN_FMT=outputs/scale/{tag},
+40 held-out benign images per arm. Every cell gated BEFORE its first harm row (rule 1);
+the gate-pass times are in outputs/scale/progress.log.
+
+== AF-arm cells (gate_shape's worksheet test applies) ==
+held-out benign images, 40 per arm. 3-step = all three parts of the trained format
+  backbone         arm     3-step    step1   s1 words  plain words   refusals
+  q3vl8_tbt_s43_w1 af     82.5% (33) 100.0% (40)        143          244     0.0% (0)
+  q3vl8_tbt_s43_w0 af     80.0% (32) 100.0% (40)        148          270     0.0% (0)
+  q3vl8_tbt_s44_w1 af     80.0% (32) 100.0% (40)        142          243     0.0% (0)
+  q3vl8_tbt_s44_w0 af     80.0% (32) 100.0% (40)        145          258     0.0% (0)
+  q3vl32_tbt_s43_w1 af     95.0% (38) 100.0% (40)        124          138     0.0% (0)
+  q3vl32_tbt_s43_w0 af     92.5% (37) 100.0% (40)        121          158     0.0% (0)
+  q3vl32_tbt_s44_w1 af     97.5% (39) 100.0% (40)        118          142     0.0% (0)
+  q3vl32_tbt_s44_w0 af     97.5% (39) 100.0% (40)        120          154     0.0% (0)
+  q3vl8_budget158_s43 af     85.0% (34) 100.0% (40)        135          218     0.0% (0)
+  q3vl8_mixref_p8_s43 af     82.5% (33) 100.0% (40)        126          216     0.0% (0)
+  q3vl8_mixref_t8_s43 af     67.5% (27) 100.0% (40)        176          192     0.0% (0)
+  q3vl32_budget158_s43 af     97.5% (39) 100.0% (40)        118          142     0.0% (0)
+  q3vl32_mixref_p8_s43 af     95.0% (38) 100.0% (40)        116          134     0.0% (0)
+  q3vl32_mixref_t8_s43 af     95.0% (38) 100.0% (40)        128          130     0.0% (0)
+  q3vl8_budget210  af     92.5% (37) 100.0% (40)        107          178     0.0% (0)
+  q3vl32_budget210 af    100.0% (40) 100.0% (40)        120          128     0.0% (0)
+  q3vl32_mixref_p15 af     97.5% (39) 100.0% (40)        114          138     0.0% (0)
+  q3vl32_mixref_t15 af     97.5% (39) 100.0% (40)        110          138     0.0% (0)
+SCORE_SANITY_DONE
+
+== DB-arm cells (Prose recipe; gate_shape is AF-only and is not run, as in b3.sbatch) ==
+held-out benign images, 40 per arm. 3-step = all three parts of the trained format
+  backbone         arm     3-step    step1   s1 words  plain words   refusals
+  q3vl8_tbt_s43_p1 db    100.0% (40) 100.0% (40)         80          104     0.0% (0)
+  q3vl8_tbt_s43_p0 db     92.5% (37) 100.0% (40)         74          100     0.0% (0)
+  q3vl8_tbt_s44_p1 db     95.0% (38) 100.0% (40)         88           92     0.0% (0)
+  q3vl8_tbt_s44_p0 db     95.0% (38) 100.0% (40)         78          108     0.0% (0)
+  q3vl32_tbt_s43_p1 db     90.0% (36)  95.0% (38)         66           99     0.0% (0)
+  q3vl32_tbt_s43_p0 db     85.0% (34)  92.5% (37)         95          108     0.0% (0)
+  q3vl32_tbt_s44_p1 db     87.5% (35)  92.5% (37)         75           98     0.0% (0)
+  q3vl32_tbt_s44_p0 db     87.5% (35)  92.5% (37)         98          107     0.0% (0)
+SCORE_SANITY_DONE
+
+== ADAPTER md5 ==
+  q3vl8_tbt_s43_w1           cd42e705521c8d8c86be1b9e483ebb7b
+  q3vl8_tbt_s43_w0           24432f1182bc8e2427f0ff36d42514c3
+  q3vl8_tbt_s43_p1           0c75c6f5bd79eb4032f3c0c8305e8273
+  q3vl8_tbt_s43_p0           b0bd25db364507f358d08e75e59cfdcb
+  q3vl8_tbt_s44_w1           bdc91aeb18b583021f588a753c59b422
+  q3vl8_tbt_s44_w0           3970319f3fa81560bccb7fdec86fa858
+  q3vl8_tbt_s44_p1           86e6c5f3672b905afce6de9aec191e98
+  q3vl8_tbt_s44_p0           3f46149ab54f3c412a543bab64fd71e8
+  q3vl32_tbt_s43_w1          d9c344e58265fc1b798b38cffd0f6577
+  q3vl32_tbt_s43_w0          2c9f62e77fa394514e934a4231581fdc
+  q3vl32_tbt_s43_p1          f93f045a9e5b0f512bbf3420255bf50e
+  q3vl32_tbt_s43_p0          e155fa06d15762af806f4f6f558cce8e
+  q3vl32_tbt_s44_w1          83758f8db14fa01695269bfe5a4ace8f
+  q3vl32_tbt_s44_w0          cbfbe9755f11e802e1e8942b3d0c8338
+  q3vl32_tbt_s44_p1          1054c97b20063bf3fa484b0e9030528c
+  q3vl32_tbt_s44_p0          486e289cd54bf1e394f806217c9207b1
+  q3vl8_budget158_s43        d4c6f3614d85aa5fc982587e860e306b
+  q3vl8_mixref_p8_s43        ab8cae1a5dcf7eaf7191a782e9714e4e
+  q3vl8_mixref_t8_s43        fb77975c0f61a37b2f10f59468ef2cc5
+  q3vl8_budget210            f5439ba2f2ea07dceb85103856a44a77
+  q3vl32_budget158_s43       6cd12436440e0c3224f449b3aa90b632
+  q3vl32_mixref_p8_s43       69147bdb87c53ac968c31b1230b47a44
+  q3vl32_mixref_t8_s43       46f12bab5af23b6f5cb54d092d0baf45
+  q3vl32_budget210           dbf15a7600255a32fd761ea20dcae99b
+
+== HARDWARE AND LIBRARY PIN (AGENTS.md item 5) ==
+  All cells: NVIDIA A100, partition a100, QoS a100_genai_shared, 2 GPUs per cell,
+  bf16, nodes Gres=gpu:a100:8 RealMemory=1120665M.
+  q3vl8 and q3vl32 both pin transformers==4.57.6 (venv_4x, torch 2.11.0+cu128).
+  No cell mixed accelerators; there is one accelerator type in this round.
