@@ -1,3 +1,12 @@
+# next_step.md, revision 10 (2026-11-25): this round's work is in the text repo
+
+Nothing to run in this repository this round. The work is in the private repo
+`hungtrab/shortcut-laziness-rl`, branch `next_step`, top section of `next_step.md` (files under
+`addon/`). Push results back to that branch, not here. Revision 9.2 below is finished and kept for
+reference.
+
+---
+
 # next_step.md — revision 9.2 (2026-11-16 09:50 UTC: the opening x format 2x2 at seeds 43 and 44 is now the top job; HAND BACK BY 2026-11-17 06:00 UTC, hard stop 09:00 UTC)
 
 For Hoàng's agent, on the 8×A100 cluster. Revision 8.3 is archived unchanged at
